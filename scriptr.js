@@ -93,18 +93,8 @@
                     nowarfyAuthInitialised = true;
                     const sessionResult = await nowarfySupabase.auth.getSession();
                     nowarfyAuthUser = sessionResult.data?.session?.user || null;
-
-                    if (nowarfyAuthUser) {
-                        void loadNowarfyTaste();
-                    }
-
                     nowarfySupabase.auth.onAuthStateChange((_event, session) => {
                         nowarfyAuthUser = session?.user || null;
-
-                        if (nowarfyAuthUser) {
-                            void loadNowarfyTaste();
-                        }
-
                         updateNowarfyAuthUI();
                         if (document.getElementById('knowledgeCatalogGrid')) void renderKnowledgeBase();
                         void setupNowarfyRemoteControl();
@@ -791,11 +781,6 @@
         }
 
         const TASTE_STORAGE_KEY = 'youtoo_taste_v1';
-
-        const NOWARFY_TASTE_TABLE = 'nowarfy_user_taste';
-        let nowarfyTasteSyncTimer = null;
-        let nowarfyTasteSyncInFlight = false;
-
         const EMPTY_TASTE = Object.freeze({ version: 3, personalization: true, searches: [], plays: [], channels: [], playlists: [] });
 
         function readTaste() {
@@ -814,110 +799,6 @@
 
         function writeTaste(taste) {
             localStorage.setItem(TASTE_STORAGE_KEY, JSON.stringify({ ...taste, version: 3, updatedAt: Date.now() }));
-
-            scheduleNowarfyTasteSync();
-        }
-
-        function scheduleNowarfyTasteSync() {
-            if (!nowarfySupabase || !nowarfyAuthUser) return;
-
-            clearTimeout(nowarfyTasteSyncTimer);
-
-            nowarfyTasteSyncTimer = setTimeout(() => {
-                void syncNowarfyTaste();
-            }, 800);
-        }
-
-        async function syncNowarfyTaste() {
-            if (nowarfyTasteSyncInFlight || !nowarfySupabase || !nowarfyAuthUser) {
-                return;
-            }
-
-            nowarfyTasteSyncInFlight = true;
-
-            try {
-                const taste = readTaste();
-
-                const { error } = await nowarfySupabase
-                    .from(NOWARFY_TASTE_TABLE)
-                    .upsert({
-                        user_id: nowarfyAuthUser.id,
-                        plays: taste.plays || [],
-                        searches: taste.searches || [],
-                        channels: taste.channels || [],
-                        playlists: taste.playlists || [],
-                        updated_at: new Date().toISOString()
-                    }, {
-                        onConflict: 'user_id'
-                    });
-
-                if (error) {
-                    console.error('Error sincronizando historial:', error);
-                }
-            } finally {
-                nowarfyTasteSyncInFlight = false;
-            }
-        }
-
-        async function loadNowarfyTaste() {
-            if (!nowarfySupabase || !nowarfyAuthUser) return;
-
-            try {
-                const { data, error } = await nowarfySupabase
-                    .from(NOWARFY_TASTE_TABLE)
-                    .select('plays, searches, channels, playlists')
-                    .eq('user_id', nowarfyAuthUser.id)
-                    .maybeSingle();
-
-                if (error) {
-                    console.error('Error cargando historial:', error);
-                    return;
-                }
-
-                if (!data) {
-                    await syncNowarfyTaste();
-                    return;
-                }
-
-                const localTaste = readTaste();
-
-                const mergedPlays = [
-                    ...(localTaste.plays || []),
-                    ...(data.plays || [])
-                ];
-
-                const uniquePlays = Array.from(
-                    new Map(
-                        mergedPlays.map(item => [
-                            item.url || `${item.title}|${item.artist}`,
-                            item
-                        ])
-                    ).values()
-                );
-
-                const mergedTaste = {
-                    ...localTaste,
-                    plays: uniquePlays,
-                    searches: Array.from(new Set([
-                        ...(localTaste.searches || []),
-                        ...(data.searches || [])
-                    ])).slice(0, 12),
-                    channels: Array.from(new Map([
-                        ...(localTaste.channels || []),
-                        ...(data.channels || [])
-                    ].map(item => [item.id, item])).values()),
-                    playlists: Array.from(new Map([
-                        ...(localTaste.playlists || []),
-                        ...(data.playlists || [])
-                    ].map(item => [item.id, item])).values())
-                };
-
-                writeTaste(mergedTaste);
-                await syncNowarfyTaste();
-
-            } catch (error) {
-                console.error('Error cargando historial:', error);
-            }
         }
 
         function rememberUnique(list, entry, getKey, max = Infinity) {
