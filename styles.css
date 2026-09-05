@@ -1333,3 +1333,125 @@ html { scroll-behavior: smooth; }
         to   { background-position: 26% -4%, 92% 32%, 18% 74%, 0 0, 0 0; }
     }
 }
+
+/* ============================================================
+   NOWARFY DYNAMIC MOTIONS, SPINNERS & SMOOTH TOUCH RAILS
+   ============================================================ */
+
+/* Spinners Originales de Carga (Orbit + Pulse + Equalizer) */
+.nowarfy-orbit-loader {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 48px;
+    height: 48px;
+}
+.nowarfy-orbit-loader::before,
+.nowarfy-orbit-loader::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    animation: nowarfySpin 1.4s linear infinite;
+}
+.nowarfy-orbit-loader::before {
+    inset: 0;
+    border: 3px solid transparent;
+    border-top-color: var(--accent);
+    border-right-color: var(--accent-2);
+}
+.nowarfy-orbit-loader::after {
+    inset: 6px;
+    border: 3px solid transparent;
+    border-bottom-color: #a78bfa;
+    border-left-color: #f472b6;
+    animation-duration: 0.9s;
+    animation-direction: reverse;
+}
+@keyframes nowarfySpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Indicador de Carga Infinita en Pie de Página */
+.nowarfy-infinite-sentinel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    gap: 12px;
+    width: 100%;
+    grid-column: 1 / -1;
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+.nowarfy-infinite-sentinel span {
+    background: linear-gradient(90deg, #5eead4, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 0.04em;
+}
+
+/* Ecualizador Animado de Reproducción Activa */
+.nowarfy-eq-bars {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 16px;
+    padding: 0 4px;
+}
+.nowarfy-eq-bars span {
+    width: 3px;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    animation: nowarfyEq 0.8s ease-in-out infinite alternate;
+}
+.nowarfy-eq-bars span:nth-child(1) { animation-delay: 0.1s; height: 40%; }
+.nowarfy-eq-bars span:nth-child(2) { animation-delay: 0.3s; height: 80%; }
+.nowarfy-eq-bars span:nth-child(3) { animation-delay: 0.2s; height: 60%; }
+.nowarfy-eq-bars span:nth-child(4) { animation-delay: 0.4s; height: 100%; }
+
+@keyframes nowarfyEq {
+    0% { transform: scaleY(0.25); }
+    100% { transform: scaleY(1); }
+}
+
+/* Deslizamiento Suave con Momentum Touch y Arrastre por Ratón */
+.library-rail,
+.taste-chips,
+.nowarfy-device-list {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x pan-y;
+}
+
+.library-rail.is-dragging,
+.taste-chips.is-dragging {
+    scroll-behavior: auto;
+    cursor: grabbing !important;
+}
+
+/* Tarjetas Dinámicas con Brillo y Micro-Interacciones 3D */
+.card, .discovery-card, .video-card, .playlist-card {
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.card:hover, .discovery-card:hover, .video-card:hover, .playlist-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(94, 234, 212, 0.15);
+}
+
+/* Efecto Skeleton Pulse durante la carga infinita */
+.skeleton-pulse {
+    background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s infinite;
+}
+@keyframes skeletonShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
