@@ -146,16 +146,16 @@
             </div>
         </div>
         <div class="player-utils">
-            <button type="button" class="btn-control btn-control-toggle" id="shuffleIcon" onclick="toggleShuffle()" title="Aleatorio" aria-label="Reproducción aleatoria"><i class="fas fa-random"></i></button>
+            <i class="fas fa-random btn-control btn-control-toggle" id="shuffleIcon" onclick="toggleShuffle()" title="Aleatorio" aria-label="Reproducción aleatoria" role="button" tabindex="0"></i>
             <div class="volume-control">
-                <button type="button" class="btn-control" id="volIcon" onclick="toggleMute()" title="Silenciar" aria-label="Silenciar o activar volumen"><i class="fas fa-volume-up"></i></button>
+                <i class="fas fa-volume-up btn-control" id="volIcon" onclick="toggleMute()" title="Silenciar o activar volumen" aria-label="Silenciar o activar volumen" role="button" tabindex="0"></i>
                 <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)" aria-label="Volumen">
             </div>
             <button type="button" class="btn-control share-btn whatsapp" id="shareWhatsappBtn" onclick="shareCurrentToWhatsApp()" title="Compartir por WhatsApp" aria-label="Compartir por WhatsApp" disabled><i class="fab fa-whatsapp"></i></button>
             <button type="button" class="btn-control share-btn copy-link" id="copyCurrentLinkBtn" onclick="copyCurrentLink()" title="Copiar enlace" aria-label="Copiar enlace" disabled><i class="fas fa-link"></i></button>
             <button type="button" class="btn-control share-btn download" id="downloadCurrentBtn" onclick="downloadCurrentTrack()" title="Descargar audio con licencia permitida" aria-label="Descargar audio con licencia permitida" hidden><i class="fas fa-download"></i></button>
             <button type="button" class="btn-control" id="videoStageToggleBtn" onclick="toggleVideoStageVisibility()" title="Mostrar video" aria-label="Mostrar video" hidden><i class="fas fa-eye"></i><span class="video-stage-toggle-copy"><strong>Mostrar video</strong><small>El audio sigue activo</small></span><span class="video-mini-indicator" aria-hidden="true"></span></button>
-            <button type="button" class="btn-control btn-control-toggle" id="pipBtn" onclick="toggleFloatingMode()" title="Modo Flotante" aria-label="Alternar modo flotante"><i class="fas fa-compress-arrows-alt"></i></button>
+            <i class="fas fa-compress-arrows-alt btn-control btn-control-toggle" id="pipBtn" onclick="toggleFloatingMode()" title="Modo Flotante" aria-label="Alternar modo flotante" role="button" tabindex="0"></i>
         </div>
     </div>
 
