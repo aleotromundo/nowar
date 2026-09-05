@@ -544,6 +544,67 @@
             await publishNowarfyRemoteState();
         }
 
+        function initRailDragScroll() {
+            const rails = document.querySelectorAll('.library-rail, .taste-chips, .nowarfy-device-list');
+            rails.forEach(rail => {
+                if (rail.dataset.dragInitialized) return;
+                rail.dataset.dragInitialized = 'true';
+                let isDown = false;
+                let startX = 0;
+                let scrollLeft = 0;
+
+                rail.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('button, a, input')) return;
+                    isDown = true;
+                    rail.classList.add('is-dragging');
+                    startX = e.pageX - rail.offsetLeft;
+                    scrollLeft = rail.scrollLeft;
+                });
+
+                rail.addEventListener('mouseleave', () => {
+                    isDown = false;
+                    rail.classList.remove('is-dragging');
+                });
+
+                rail.addEventListener('mouseup', () => {
+                    isDown = false;
+                    rail.classList.remove('is-dragging');
+                });
+
+                rail.addEventListener('mousemove', (e) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - rail.offsetLeft;
+                    const walk = (x - startX) * 1.5;
+                    rail.scrollLeft = scrollLeft - walk;
+                });
+            });
+        }
+
+        let sectionInfiniteObserver = null;
+        let sectionInfiniteLoading = false;
+
+        function attachSectionInfiniteScroll(container, loadMoreCallback) {
+            if (!container || !('IntersectionObserver' in window)) return;
+            let sentinel = container.querySelector('.nowarfy-infinite-sentinel');
+            if (!sentinel) {
+                sentinel = document.createElement('div');
+                sentinel.className = 'nowarfy-infinite-sentinel';
+                sentinel.innerHTML = '<div class="nowarfy-orbit-loader" style="width:36px;height:36px;"></div><span>Sumando más propuestas...</span>';
+                container.appendChild(sentinel);
+            }
+            sectionInfiniteObserver?.disconnect();
+            sectionInfiniteObserver = new IntersectionObserver(entries => {
+                if (entries.some(entry => entry.isIntersecting) && !sectionInfiniteLoading) {
+                    sectionInfiniteLoading = true;
+                    Promise.resolve(loadMoreCallback()).finally(() => {
+                        setTimeout(() => { sectionInfiniteLoading = false; }, 400);
+                    });
+                }
+            }, { rootMargin: '400px 0px' });
+            sectionInfiniteObserver.observe(sentinel);
+        }
+
         let currentList = [];
         let favorites = JSON.parse(localStorage.getItem('nowarfy_favs')) || [];
         let currentIndex = -1; // índice dentro de "queue" (cola de reproducción persistente)
@@ -1061,6 +1122,7 @@
                 button.onclick = () => selectTasteTopic(topic);
                 container.appendChild(button);
             });
+            setTimeout(initRailDragScroll, 20);
         }
 
         function selectTasteTopic(topic) {
@@ -3140,6 +3202,7 @@
             }
             section.appendChild(rail);
             container.appendChild(section);
+            setTimeout(initRailDragScroll, 20);
         }
 
         function renderGrid(list, title, icon) {
