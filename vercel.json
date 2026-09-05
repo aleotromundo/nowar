@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "buildCommand": null,
+  "installCommand": null,
+  "outputDirectory": ".",
+  "framework": null,
+  "crons": [
+    {
+      "path": "/api/cleanup-reserve",
+      "schedule": "17 3 * * *"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

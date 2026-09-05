@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Nowarfy - Tu música, tu estilo">
+  <title>Nowarfy · YouToo</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body class="mode-youtoo">
+  <!-- Ambient Background -->
+  <div class="ambient-artwork-background"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-content">
+      <div class="logo">Nowarfy</div>
+      <ul class="nav-links">
+        <li data-nav="home" class="active">Inicio</li>
+        <li data-nav="explore">Explorar</li>
+        <li data-nav="channels">Canales</li>
+        <li data-nav="playlists">Listas</li>
+        <li data-nav="videos">Videos</li>
+        <li data-nav="music">Música</li>
+        <li data-nav="library">Biblioteca</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Home Section -->
+    <section id="home" class="section active">
+      <div class="card">
+        <h2>Bienvenido a Nowarfy</h2>
+        <p class="mt-2">Tu plataforma de música y videos personalizada</p>
+      </div>
+    </section>
+
+    <!-- Explore Section -->
+    <section id="explore" class="section">
+      <div class="card">
+        <h2>Explorar</h2>
+        <p class="mt-2">Descubre nuevo contenido</p>
+      </div>
+    </section>
+
+    <!-- Channels Section -->
+    <section id="channels" class="section">
+      <div class="card">
+        <h2>Canales</h2>
+        <p class="mt-2">Tus canales favoritos</p>
+      </div>
+    </section>
+
+    <!-- Playlists Section -->
+    <section id="playlists" class="section">
+      <div class="card">
+        <h2>Listas de reproducción</h2>
+        <p class="mt-2">Organiza tu música</p>
+      </div>
+    </section>
+
+    <!-- Videos Section -->
+    <section id="videos" class="section">
+      <div class="card">
+        <h2>Videos</h2>
+        <p class="mt-2">Contenido en video</p>
+      </div>
+    </section>
+
+    <!-- Music Section -->
+    <section id="music" class="section">
+      <div class="card">
+        <h2>Música</h2>
+        <p class="mt-2">Tu biblioteca musical</p>
+      </div>
+    </section>
+
+    <!-- Library Section -->
+    <section id="library" class="section">
+      <div class="card">
+        <h2>Tu biblioteca</h2>
+        <p class="mt-2">Todo tu contenido en un solo lugar</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Player -->
+  <div class="player-container">
+    <div class="player-content">
+      <div class="track-info">
+        <div class="track-title">Selecciona una canción</div>
+        <div class="track-artist">---</div>
+      </div>
+      <div class="player-controls">
+        <button class="control-btn" title="Anterior">⏮</button>
+        <button class="control-btn play-btn" title="Reproducir">▶</button>
+        <button class="control-btn" title="Siguiente">⏭</button>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>
