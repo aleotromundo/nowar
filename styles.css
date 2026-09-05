@@ -1263,3 +1263,69 @@
             body.mode-youtoo .queue-panel { bottom: 146px; }
         }
     
+
+/* ============================================================
+   FLOW · animaciones y transiciones agregadas para dar vida
+   a la interfaz (entrada escalonada de tarjetas/filas, brillo
+   ambiental sutil y transiciones más suaves). Todo lo de abajo
+   es puramente aditivo: no pisa ninguna regla existente.
+   ============================================================ */
+
+html { scroll-behavior: smooth; }
+
+/* Entrada suave para elementos que hoy aparecen "de golpe" */
+@keyframes flowRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes flowFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: no-preference) {
+    .song-row,
+    .discovery-card,
+    .knowledge-candidate-card,
+    .library-rail-section,
+    .catalog-more,
+    .home-welcome,
+    .taste-chip {
+        animation: flowRise .45s var(--ease) both;
+    }
+
+    /* Escalonado tipo "ola" para grillas y listas (cards, filas de canciones,
+       tarjetas de descubrimiento). Si el elemento ya trae un animation-delay
+       puesto desde JS (inline style), ese gana por especificidad y no se toca. */
+    .card:nth-child(1), .song-row:nth-child(1), .discovery-card:nth-child(1), .knowledge-candidate-card:nth-child(1) { animation-delay: 0ms; }
+    .card:nth-child(2), .song-row:nth-child(2), .discovery-card:nth-child(2), .knowledge-candidate-card:nth-child(2) { animation-delay: 30ms; }
+    .card:nth-child(3), .song-row:nth-child(3), .discovery-card:nth-child(3), .knowledge-candidate-card:nth-child(3) { animation-delay: 60ms; }
+    .card:nth-child(4), .song-row:nth-child(4), .discovery-card:nth-child(4), .knowledge-candidate-card:nth-child(4) { animation-delay: 90ms; }
+    .card:nth-child(5), .song-row:nth-child(5), .discovery-card:nth-child(5), .knowledge-candidate-card:nth-child(5) { animation-delay: 120ms; }
+    .card:nth-child(6), .song-row:nth-child(6), .discovery-card:nth-child(6), .knowledge-candidate-card:nth-child(6) { animation-delay: 150ms; }
+    .card:nth-child(7), .song-row:nth-child(7), .discovery-card:nth-child(7), .knowledge-candidate-card:nth-child(7) { animation-delay: 180ms; }
+    .card:nth-child(8), .song-row:nth-child(8), .discovery-card:nth-child(8), .knowledge-candidate-card:nth-child(8) { animation-delay: 210ms; }
+    .card:nth-child(9), .song-row:nth-child(9), .discovery-card:nth-child(9), .knowledge-candidate-card:nth-child(9) { animation-delay: 240ms; }
+    .card:nth-child(10), .song-row:nth-child(10), .discovery-card:nth-child(10), .knowledge-candidate-card:nth-child(10) { animation-delay: 270ms; }
+    .card:nth-child(11), .song-row:nth-child(11), .discovery-card:nth-child(11), .knowledge-candidate-card:nth-child(11) { animation-delay: 300ms; }
+    .card:nth-child(12), .song-row:nth-child(12), .discovery-card:nth-child(12), .knowledge-candidate-card:nth-child(12) { animation-delay: 330ms; }
+    .card:nth-child(n+13), .song-row:nth-child(n+13), .discovery-card:nth-child(n+13), .knowledge-candidate-card:nth-child(n+13) { animation-delay: 360ms; }
+
+    /* El logo y la marca "respiran" apenas, para que la marca no se sienta muerta */
+    .logo i { animation: flowLogoGlow 4.5s ease-in-out infinite; }
+    @keyframes flowLogoGlow {
+        0%, 100% { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+        50% { filter: drop-shadow(0 0 18px var(--accent-glow)); }
+    }
+
+    /* La franja activa del menú lateral entra con un pequeño slide en vez de aparecer seca */
+    .nav-links li.active::before { animation: flowNavBar .3s var(--ease) both; }
+    @keyframes flowNavBar { from { opacity: 0; transform: translateY(-50%) scaleY(.3); } to { opacity: 1; transform: translateY(-50%) scaleY(1); } }
+
+    /* Título de sección: entra desde la izquierda para acompañar el scroll */
+    .section-title { animation: flowSectionTitle .4s var(--ease) both; }
+    @keyframes flowSectionTitle { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+}
+
+/* El fondo ambiental de la zona de contenido se mueve muy despacio, todo el tiempo */
+@media (prefers-reduced-motion: no-preference) {
+    body.mode-youtoo .content-area { background-size: 140% 140%, 140% 140%, 140% 140%, auto, auto; animation: flowContentDrift 26s ease-in-out infinite alternate; }
+    @keyframes flowContentDrift {
+        from { background-position: 20% -10%, 100% 26%, 12% 80%, 0 0, 0 0; }
+        to   { background-position: 26% -4%, 92% 32%, 18% 74%, 0 0, 0 0; }
+    }
+}
