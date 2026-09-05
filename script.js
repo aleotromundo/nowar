@@ -846,6 +846,7 @@
                         searches: taste.searches || [],
                         channels: taste.channels || [],
                         playlists: taste.playlists || [],
+                        favorites: favorites || [],
                         updated_at: new Date().toISOString()
                     }, {
                         onConflict: 'user_id'
@@ -865,7 +866,7 @@
             try {
                 const { data, error } = await nowarfySupabase
                     .from(NOWARFY_TASTE_TABLE)
-                    .select('plays, searches, channels, playlists')
+                    .select('plays, searches, channels, playlists, favorites')
                     .eq('user_id', nowarfyAuthUser.id)
                     .maybeSingle();
 
@@ -911,6 +912,24 @@
                         ...(data.playlists || [])
                     ].map(item => [item.id, item])).values())
                 };
+
+                const mergedFavorites = Array.from(
+                    new Map(
+                        [
+                            ...(favorites || []),
+                            ...(data.favorites || [])
+                        ].map(item => [
+                            item.url || `${item.title}|${item.artist}`,
+                            item
+                        ])
+                    ).values()
+                );
+
+                favorites = mergedFavorites;
+                localStorage.setItem('nowarfy_favs', JSON.stringify(favorites));
+                if (typeof updateFavButton === 'function' && typeof currentQueueSong === 'function') {
+                    try { updateFavButton(currentQueueSong()); } catch (e) { /* reproductor todavía no listo */ }
+                }
 
                 writeTaste(mergedTaste);
                 await syncNowarfyTaste();
@@ -5671,6 +5690,7 @@
                 showToast('Añadido a favoritos', 'fa-heart');
             }
             localStorage.setItem('nowarfy_favs', JSON.stringify(favorites));
+            scheduleNowarfyTasteSync();
             syncFavoriteControl(control, song);
             updateFavButton(currentQueueSong());
             return idx < 0;
