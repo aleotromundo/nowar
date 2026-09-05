@@ -1,7 +1,9 @@
-const CACHE_NAME = 'nowarfy-shell-v29';
+const CACHE_NAME = 'nowarfy-shell-v30';
 const APP_SHELL = [
   '/',
   '/index.html',
+  '/styles.css',
+  '/script.js',
   '/manifest.webmanifest',
   '/favicon.ico',
   '/assets/favicon-32.png',

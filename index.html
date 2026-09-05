@@ -70,8 +70,8 @@
             <div class="search-container">
                 <div class="search-wrap">
                     <i class="fas fa-magnifying-glass"></i>
-                    <input type="text" class="search-input" id="searchInput" placeholder="Buscá videos, artistas o canciones..." oninput="handleSearchInput()" onkeydown="handleSearchKeydown(event)">
-                    <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Limpiar búsqueda"><i class="fas fa-xmark"></i></button>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Buscá videos, artistas o canciones..." oninput="handleSearchInput()" onkeydown="handleSearchKeydown(event)" aria-label="Buscar videos, artistas o canciones">
+                    <button type="button" class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Limpiar búsqueda"><i class="fas fa-xmark"></i></button>
                 </div>
             </div>
             <nav class="taste-rail" aria-label="Categorías para descubrir">
@@ -105,7 +105,7 @@
     <!-- PLAYER BAR (FIJA ABAJO) -->
     <div class="player-bar" id="playerBar">
         <div class="drag-handle"><i class="fas fa-grip-lines"></i></div>
-        <button class="floating-restore-btn" id="floatingRestoreBtn" onclick="toggleFloatingMode()" title="Volver a la vista normal">
+        <button type="button" class="floating-restore-btn" id="floatingRestoreBtn" onclick="toggleFloatingMode()" title="Volver a la vista normal">
             <i class="fas fa-compress-alt"></i> Volver
         </button>
 
@@ -119,16 +119,16 @@
         </div>
         <div class="player-center">
             <div class="controls">
-                <button class="btn-control" onclick="prevSong()" title="Anterior" aria-label="Anterior"><i class="fas fa-step-backward"></i></button>
-                <button class="btn-play" onclick="togglePlay()" id="playBtn" aria-label="Reproducir/Pausar">
+                <button type="button" class="btn-control" onclick="prevSong()" title="Anterior" aria-label="Anterior"><i class="fas fa-step-backward"></i></button>
+                <button type="button" class="btn-play" onclick="togglePlay()" id="playBtn" aria-label="Reproducir/Pausar">
                     <span class="play-icon-wrap">
                         <i class="fas fa-play" id="playIcon"></i>
                         <i class="fas fa-pause" id="pauseIcon" style="display:none;"></i>
                     </span>
                     <div class="orbit-spinner track-spinner on-light" style="--s:16px;--d:3px;"><i></i><i></i><i></i></div>
                 </button>
-                <button class="btn-control" onclick="nextSong(true)" title="Siguiente" aria-label="Siguiente"><i class="fas fa-step-forward"></i></button>
-                <button class="btn-control" id="queueToggleBtn" onclick="toggleQueuePanel()" title="Abrir Playlist" aria-label="Abrir Playlist">
+                <button type="button" class="btn-control" onclick="nextSong(true)" title="Siguiente" aria-label="Siguiente"><i class="fas fa-step-forward"></i></button>
+                <button type="button" class="btn-control" id="queueToggleBtn" onclick="toggleQueuePanel()" title="Abrir Playlist" aria-label="Abrir Playlist">
                     <i class="fas fa-list-ul"></i>
                     <span class="queue-count-badge" id="queueCountBadge">0</span>
                 </button>
@@ -146,16 +146,16 @@
             </div>
         </div>
         <div class="player-utils">
-            <i class="fas fa-random btn-control" id="shuffleIcon" onclick="toggleShuffle()" title="Aleatorio" style="cursor:pointer; opacity:0.5;"></i>
+            <button type="button" class="btn-control btn-control-toggle" id="shuffleIcon" onclick="toggleShuffle()" title="Aleatorio" aria-label="Reproducción aleatoria"><i class="fas fa-random"></i></button>
             <div class="volume-control">
-                <i class="fas fa-volume-up btn-control" id="volIcon" onclick="toggleMute()" title="Silenciar" style="cursor:pointer;"></i>
+                <button type="button" class="btn-control" id="volIcon" onclick="toggleMute()" title="Silenciar" aria-label="Silenciar o activar volumen"><i class="fas fa-volume-up"></i></button>
                 <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)" aria-label="Volumen">
             </div>
             <button type="button" class="btn-control share-btn whatsapp" id="shareWhatsappBtn" onclick="shareCurrentToWhatsApp()" title="Compartir por WhatsApp" aria-label="Compartir por WhatsApp" disabled><i class="fab fa-whatsapp"></i></button>
             <button type="button" class="btn-control share-btn copy-link" id="copyCurrentLinkBtn" onclick="copyCurrentLink()" title="Copiar enlace" aria-label="Copiar enlace" disabled><i class="fas fa-link"></i></button>
             <button type="button" class="btn-control share-btn download" id="downloadCurrentBtn" onclick="downloadCurrentTrack()" title="Descargar audio con licencia permitida" aria-label="Descargar audio con licencia permitida" hidden><i class="fas fa-download"></i></button>
             <button type="button" class="btn-control" id="videoStageToggleBtn" onclick="toggleVideoStageVisibility()" title="Mostrar video" aria-label="Mostrar video" hidden><i class="fas fa-eye"></i><span class="video-stage-toggle-copy"><strong>Mostrar video</strong><small>El audio sigue activo</small></span><span class="video-mini-indicator" aria-hidden="true"></span></button>
-            <i class="fas fa-compress-arrows-alt btn-control" id="pipBtn" onclick="toggleFloatingMode()" title="Modo Flotante" style="cursor:pointer; opacity: 0.7;"></i>
+            <button type="button" class="btn-control btn-control-toggle" id="pipBtn" onclick="toggleFloatingMode()" title="Modo Flotante" aria-label="Alternar modo flotante"><i class="fas fa-compress-arrows-alt"></i></button>
         </div>
     </div>
 
