@@ -310,6 +310,7 @@
                         remoteStatus(nowarfyRemoteIsPlayer ? 'Este dispositivo es el reproductor activo.' : 'Control remoto conectado; el reproductor activo está en otro dispositivo.');
                     })
                     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'youtoo_remote_commands', filter: `user_id=eq.${nowarfyAuthUser.id}` }, payload => { const command = payload.new.command || {}; if (command.commandId && nowarfyRemoteSeenCommandIds.has(command.commandId)) return; if (command.commandId) nowarfyRemoteSeenCommandIds.set(command.commandId, Date.now()); if (payload.new.device_id !== nowarfyRemoteDeviceId && (!command.targetDeviceId || command.targetDeviceId === nowarfyRemoteDeviceId)) { if (nowarfyRemoteIsPlayer) void executeNowarfyRemoteCommand(command); else nowarfyPendingRemoteCommands.push(command); } })
+                    .on('postgres_changes', { event: '*', schema: 'public', table: NOWARFY_TASTE_TABLE, filter: `user_id=eq.${nowarfyAuthUser.id}` }, payload => { if (!nowarfyTasteSyncInFlight) void loadNowarfyTaste(); })
                     .subscribe(status => { nowarfyRemoteBroadcastReady = status === 'SUBSCRIBED'; if (status === 'SUBSCRIBED') { updateNowarfyAuthUI(); remoteStatus(nowarfyRemoteIsPlayer ? 'Este dispositivo es el reproductor activo.' : 'Control remoto conectado; elegí otro dispositivo como reproductor.'); } });
                 // Un ingreso nuevo debe hidratarse con el estado existente de la cuenta antes de
                 // mostrar su Playlist local. Solo el reproductor activo conserva su estado local.
@@ -933,6 +934,14 @@
 
                 writeTaste(mergedTaste);
                 await syncNowarfyTaste();
+
+                if (activeBrowseMode && typeof showSection === 'function') {
+                    if (activeBrowseMode === 'home') {
+                        if (typeof renderHomeFeed === 'function') renderHomeFeed();
+                    } else if (['favorites', 'history', 'taste', 'playlists', 'channels'].includes(activeBrowseMode)) {
+                        showSection(activeBrowseMode, { silent: true });
+                    }
+                }
 
             } catch (error) {
                 console.error('Error cargando historial:', error);
