@@ -98,11 +98,15 @@
                         void loadNowarfyTaste();
                     }
 
-                    nowarfySupabase.auth.onAuthStateChange((_event, session) => {
+                    nowarfySupabase.auth.onAuthStateChange((event, session) => {
+                        const previousUser = nowarfyAuthUser;
                         nowarfyAuthUser = session?.user || null;
 
                         if (nowarfyAuthUser) {
                             void loadNowarfyTaste();
+                            if (event === 'SIGNED_IN' || (!previousUser && nowarfyAuthUser)) {
+                                showToast('Cuenta conectada: historial, favoritos, listas y reproductor sincronizados', 'fa-cloud-arrow-up');
+                            }
                         }
 
                         updateNowarfyAuthUI();
