@@ -1,0 +1,27 @@
+{
+  "name": "Nowarfy · YouToo",
+  "short_name": "Nowarfy",
+  "description": "Biblioteca audiovisual de rock, metal, videos, música y canales públicos.",
+  "id": "/nowarfy",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090914",
+  "theme_color": "#ef4444",
+  "categories": ["music", "video", "entertainment"],
+  "icons": [
+    {
+      "src": "/assets/nowarfy-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/nowarfy-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
