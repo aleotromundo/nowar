@@ -605,6 +605,77 @@
             sectionInfiniteObserver.observe(sentinel);
         }
 
+        let scrollAssembleObserver = null;
+
+        function initScrollAssemblyEngine() {
+            if (!('IntersectionObserver' in window)) return;
+            const container = document.querySelector('.content-area') || document.body;
+
+            scrollAssembleObserver?.disconnect();
+            scrollAssembleObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const el = entry.target;
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.08) {
+                        el.classList.remove('is-disassembled');
+                        el.classList.add('is-assembled');
+                    } else {
+                        const bounds = entry.boundingClientRect;
+                        if (bounds.top < 80) {
+                            el.classList.add('is-disassembled');
+                            el.classList.remove('is-assembled');
+                        } else {
+                            el.classList.remove('is-assembled');
+                            el.classList.remove('is-disassembled');
+                        }
+                    }
+                });
+            }, {
+                root: container.classList.contains('content-area') ? container : null,
+                threshold: [0, 0.1, 0.5, 0.9, 1],
+                rootMargin: '20px 0px 20px 0px'
+            });
+
+            observeScrollAssembly();
+        }
+
+        function observeScrollAssembly(parent = document) {
+            if (!scrollAssembleObserver) return;
+            const selectors = '.card, .song-row, .discovery-card, .video-card, .playlist-card, .library-rail-section, .home-welcome, .section-title, .featured-rail';
+            const targets = parent.querySelectorAll(selectors);
+            targets.forEach((el, index) => {
+                if (!el.classList.contains('scroll-assemble')) {
+                    el.classList.add('scroll-assemble');
+                    el.setAttribute('data-stagger', String((index % 4) + 1));
+                }
+                scrollAssembleObserver.observe(el);
+            });
+        }
+
+        function initTouchSwipeGestures() {
+            const queuePanel = document.getElementById('queuePanel');
+            if (queuePanel && !queuePanel.dataset.touchInitialized) {
+                queuePanel.dataset.touchInitialized = 'true';
+                let startX = 0;
+                let startY = 0;
+                queuePanel.addEventListener('touchstart', (e) => {
+                    if (e.touches.length !== 1) return;
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                }, { passive: true });
+
+                queuePanel.addEventListener('touchend', (e) => {
+                    if (!e.changedTouches.length) return;
+                    const deltaX = e.changedTouches[0].clientX - startX;
+                    const deltaY = e.changedTouches[0].clientY - startY;
+                    if (deltaX > 80 && Math.abs(deltaY) < 60) {
+                        closeQueuePanel();
+                    }
+                }, { passive: true });
+            }
+
+            initRailDragScroll();
+        }
+
         let currentList = [];
         let favorites = JSON.parse(localStorage.getItem('nowarfy_favs')) || [];
         let currentIndex = -1; // índice dentro de "queue" (cola de reproducción persistente)
@@ -2270,6 +2341,7 @@
             const freeMusic = takeNovelItems(homeMusic, used, 12);
             if (freeMusic.length >= 2) renderLibraryRail(freeMusic, 'Música libre disponible', "<i class='fas fa-headphones'></i>", false, { hint: 'Audio con carátula y licencia · sin repetir videos', showControls: true });
             if (!resume.length && !recommended.length && !featured.length && !musicVideos.length && !playlists.length && !freeMusic.length) renderEmptyState('No hay opciones disponibles ahora', 'Probá recargar dentro de unos segundos o buscá un artista.');
+            setTimeout(() => { initScrollAssemblyEngine(); observeScrollAssembly(); }, 40);
         }
 
         function initNowarfyHistory() {
@@ -3216,6 +3288,7 @@
             visibleMedia.forEach((song, idx) => grid.appendChild(buildMediaCard(song, idx)));
             section.appendChild(grid);
             container.appendChild(section);
+            setTimeout(() => { if (typeof observeScrollAssembly === 'function') observeScrollAssembly(section); }, 20);
         }
 
         function setAmbientArtwork(item, lockToCurrent = false) {
@@ -6343,4 +6416,8 @@
             }
         }
         void initNowarfyAuth();
+        setTimeout(() => {
+            initTouchSwipeGestures();
+            initScrollAssemblyEngine();
+        }, 100);
     

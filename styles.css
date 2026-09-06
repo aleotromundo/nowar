@@ -1455,3 +1455,39 @@ html { scroll-behavior: smooth; }
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
+
+/* ============================================================
+   EFECTO DE ENSAMBLADO Y DESARMADO AL NAVEGAR (SCROLL REVEAL & DISSOLVE)
+   ============================================================ */
+
+@media (prefers-reduced-motion: no-preference) {
+    .scroll-assemble {
+        opacity: 0;
+        transform: translateY(38px) scale(0.93) rotateX(4deg);
+        filter: blur(8px) saturate(0.7);
+        transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                    filter 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform, opacity, filter;
+    }
+
+    /* Estado Ensamblado (al entrar en pantalla) */
+    .scroll-assemble.is-assembled {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotateX(0deg);
+        filter: blur(0px) saturate(1);
+    }
+
+    /* Estado Desarmado / Disuelto (al salir por arriba o abajo) */
+    .scroll-assemble.is-disassembled {
+        opacity: 0.12;
+        transform: translateY(-28px) scale(0.95);
+        filter: blur(6px) saturate(0.6);
+    }
+
+    /* Variaciones de escalonado tipo "armado en cascada" */
+    .scroll-assemble[data-stagger="1"] { transition-delay: 40ms; }
+    .scroll-assemble[data-stagger="2"] { transition-delay: 80ms; }
+    .scroll-assemble[data-stagger="3"] { transition-delay: 120ms; }
+    .scroll-assemble[data-stagger="4"] { transition-delay: 160ms; }
+}
