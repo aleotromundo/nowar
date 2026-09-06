@@ -674,6 +674,55 @@
             }
 
             initRailDragScroll();
+            initAutoMovingCarousels();
+        }
+
+        let autoCarouselAnimationFrame = null;
+        let activeAutoCarousels = [];
+
+        function initAutoMovingCarousels() {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+            const rails = document.querySelectorAll('.library-rail');
+            rails.forEach((rail, index) => {
+                if (rail.dataset.autoCarouselInitialized) return;
+                rail.dataset.autoCarouselInitialized = 'true';
+                rail.classList.add('auto-carousel');
+
+                let isPaused = false;
+                let speed = (index % 2 === 0 ? 0.35 : 0.45);
+                let direction = 1;
+
+                const pause = () => { isPaused = true; rail.classList.add('auto-paused'); };
+                const resume = () => { setTimeout(() => { isPaused = false; rail.classList.remove('auto-paused'); }, 800); };
+
+                rail.addEventListener('mouseenter', pause);
+                rail.addEventListener('mouseleave', resume);
+                rail.addEventListener('touchstart', pause, { passive: true });
+                rail.addEventListener('touchend', resume, { passive: true });
+                rail.addEventListener('mousedown', pause);
+                rail.addEventListener('mouseup', resume);
+
+                activeAutoCarousels.push({
+                    el: rail,
+                    get isPaused() { return isPaused || rail.classList.contains('is-dragging'); },
+                    step() {
+                        if (this.isPaused) return;
+                        rail.scrollLeft += speed;
+                        if (rail._appendBatch && rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 140) {
+                            rail._appendBatch();
+                        }
+                    }
+                });
+            });
+
+            if (!autoCarouselAnimationFrame && activeAutoCarousels.length) {
+                const loop = () => {
+                    activeAutoCarousels.forEach(c => c.step());
+                    autoCarouselAnimationFrame = requestAnimationFrame(loop);
+                };
+                autoCarouselAnimationFrame = requestAnimationFrame(loop);
+            }
         }
 
         let currentList = [];
@@ -3248,20 +3297,23 @@
             const batchSize = 5;
             let rendered = 0;
             const appendBatch = () => {
-                const nextItems = visibleItems.slice(rendered, rendered + batchSize);
-                if (!nextItems.length) return false;
+                let nextItems = visibleItems.slice(rendered, rendered + batchSize);
+                if (!nextItems.length) {
+                    nextItems = visibleItems.slice(0, batchSize);
+                }
                 nextItems.forEach((item, offset) => {
-                    const index = rendered + offset;
+                    const index = (rendered + offset) % visibleItems.length;
                     const card = isPlaylist ? buildPlaylistCard(item, index) : buildMediaCard(item, index);
                     card.classList.add('library-card');
                     rail.appendChild(card);
                 });
                 rendered += nextItems.length;
-                return rendered < visibleItems.length;
+                return true;
             };
+            rail._appendBatch = appendBatch;
             appendBatch();
             rail.addEventListener('scroll', () => {
-                const closeToEnd = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 56;
+                const closeToEnd = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 120;
                 if (closeToEnd) appendBatch();
             }, { passive: true });
             if (options.showControls) {
@@ -3274,7 +3326,7 @@
             }
             section.appendChild(rail);
             container.appendChild(section);
-            setTimeout(initRailDragScroll, 20);
+            setTimeout(() => { initRailDragScroll(); initAutoMovingCarousels(); }, 20);
         }
 
         function renderGrid(list, title, icon) {

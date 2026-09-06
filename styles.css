@@ -1491,3 +1491,11 @@ html { scroll-behavior: smooth; }
     .scroll-assemble[data-stagger="3"] { transition-delay: 120ms; }
     .scroll-assemble[data-stagger="4"] { transition-delay: 160ms; }
 }
+
+/* Carruseles Autodeslizables (Movimiento Continuo Suave) */
+.library-rail.auto-carousel {
+    will-change: scroll-position;
+}
+.library-rail.auto-paused {
+    scroll-behavior: smooth !important;
+}
