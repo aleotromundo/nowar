@@ -5196,7 +5196,8 @@
             if (!button) return;
             const song = currentQueueSong();
             const isVideo = isVisualVideo(song);
-            const minimized = isVideo && !isVisible;
+            // El botón flotante solo debe mostrarse si hay un video en reproducción activa y no está visible en pantalla.
+            const minimized = isVideo && Boolean(isPlaying) && !isVisible;
             const copy = button.querySelector('.video-stage-toggle-copy');
             const reason = videoStageAutoHiddenReason;
             button.hidden = !minimized;
@@ -5439,13 +5440,20 @@
             videoStageObserver = new IntersectionObserver(entries => {
                 const entry = entries[0];
                 const song = currentQueueSong();
-                if (!entry || !isVisualVideo(song) || videoStageMinimized || !stage.classList.contains('visible')) return;
+                if (!entry || !isVisualVideo(song)) return;
                 const rect = entry.boundingClientRect;
-                const scrolledOut = rect.top < -15 || rect.bottom < 120 || entry.intersectionRatio < 0.85;
-                if (scrolledOut) {
-                    setVideoStageMinimized(true, { autoReason: 'out-of-view' });
+                if (!videoStageMinimized && stage.classList.contains('visible')) {
+                    const scrolledOut = (rect.top < -15 || rect.bottom < 120 || entry.intersectionRatio < 0.85) && rect.height > 0;
+                    if (scrolledOut) {
+                        setVideoStageMinimized(true, { autoReason: 'out-of-view' });
+                    }
+                } else if (videoStageMinimized && videoStageAutoHiddenReason === 'out-of-view') {
+                    const scrolledIn = rect.top >= -10 && rect.bottom > 200 && entry.intersectionRatio > 0.65;
+                    if (scrolledIn) {
+                        setVideoStageMinimized(false);
+                    }
                 }
-            }, { root: null, threshold: [0, 0.15, 0.5, 0.75, 0.85, 1.0], rootMargin: '0px 0px 0px 0px' });
+            }, { root: null, threshold: [0, 0.15, 0.5, 0.65, 0.75, 0.85, 1.0], rootMargin: '0px 0px 0px 0px' });
             videoStageObserver.observe(stage);
         }
 
@@ -5854,6 +5862,7 @@
             document.getElementById('playIcon').style.display = isPlaying ? 'none' : 'inline';
             document.getElementById('pauseIcon').style.display = isPlaying ? 'inline' : 'none';
             document.getElementById('playerCover')?.classList.toggle('is-spinning', !!isPlaying);
+            updateVideoStageToggle(!videoStageMinimized);
         }
 
         // --- SPINNER DE CARGA DE PISTA ---
