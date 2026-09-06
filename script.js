@@ -2838,8 +2838,7 @@
 
         function minimizeActiveVideoForNavigation() {
             const song = currentQueueSong();
-            const stage = document.getElementById('videoStage');
-            if (isVisualVideo(song) && stage?.classList.contains('visible')) setVideoStageMinimized(true, { autoReason: 'navigation' });
+            if (isVisualVideo(song)) setVideoStageMinimized(true, { autoReason: 'navigation' });
         }
 
         async function showSection(section, options = {}) {
@@ -2847,6 +2846,12 @@
             minimizeActiveVideoForNavigation();
             activeBrowseMode = section;
             activateNavigation(section);
+            const dynamicContainer = document.getElementById('dynamicSections');
+            if (dynamicContainer) {
+                dynamicContainer.classList.remove('nowarfy-fade-enter');
+                void dynamicContainer.offsetWidth;
+                dynamicContainer.classList.add('nowarfy-fade-enter');
+            }
             if (section === 'favorites') {
                 document.getElementById('dynamicSections').innerHTML = '';
                 document.getElementById('loader').style.display = 'none';
@@ -3108,6 +3113,7 @@
         }
 
         async function openPlaylist(playlist, options = {}) {
+            minimizeActiveVideoForNavigation();
             if (playlist?.url) {
                 void reserveDiscoveredCandidates([{ ...playlist, type: 'yt', resourceKind: 'youtube#playlist', isPlaylist: true }], {
                     context: 'playlist_open',
@@ -5434,17 +5440,12 @@
                 const entry = entries[0];
                 const song = currentQueueSong();
                 if (!entry || !isVisualVideo(song) || videoStageMinimized || !stage.classList.contains('visible')) return;
-                if (entry.intersectionRatio < 0.28) {
-                    window.setTimeout(() => {
-                        const rect = stage.getBoundingClientRect();
-                        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-                        const visibleEnough = rect.bottom > viewportHeight * 0.28 && rect.top < viewportHeight * 0.72;
-                        if (stage.classList.contains('visible') && !videoStageMinimized && isVisualVideo(currentQueueSong()) && !visibleEnough) {
-                            setVideoStageMinimized(true, { autoReason: 'out-of-view' });
-                        }
-                    }, 180);
+                const rect = entry.boundingClientRect;
+                const scrolledOut = rect.top < -15 || rect.bottom < 120 || entry.intersectionRatio < 0.85;
+                if (scrolledOut) {
+                    setVideoStageMinimized(true, { autoReason: 'out-of-view' });
                 }
-            }, { root: null, threshold: [0, 0.28, 0.7], rootMargin: '0px 0px -4% 0px' });
+            }, { root: null, threshold: [0, 0.15, 0.5, 0.75, 0.85, 1.0], rootMargin: '0px 0px 0px 0px' });
             videoStageObserver.observe(stage);
         }
 

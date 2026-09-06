@@ -801,8 +801,8 @@
         #videoStageToggleBtn.video-minimized::after { animation-delay: 1.2s; }
         #videoStageToggleBtn.video-minimized i { font-size: .92rem; }
         #videoStageToggleBtn .video-stage-toggle-copy { display: none; }
-        #videoStageToggleBtn.video-minimized .video-stage-toggle-copy { display: grid; gap: 1px; text-align: left; }
-        .player-utils #videoStageToggleBtn .video-stage-toggle-copy { display: none !important; }
+        #videoStageToggleBtn.video-minimized .video-stage-toggle-copy { display: grid !important; gap: 1px; text-align: left; }
+        .player-utils #videoStageToggleBtn:not(.video-minimized) .video-stage-toggle-copy { display: none !important; }
         #videoStageToggleBtn.video-minimized .video-stage-toggle-copy small { color: rgba(7,16,22,.7); font-size: .58rem; font-weight: 800; }
         #videoStageToggleBtn.video-minimized .video-mini-indicator { position: absolute; right: 12px; top: -5px; display: block; width: 9px; height: 9px; border: 2px solid #15162a; border-radius: 50%; background: #ff6d85; box-shadow: 0 0 0 3px rgba(255,109,133,.2); }
         @keyframes mini-video-attention { 0%, 55%, 100% { box-shadow: 0 15px 28px rgba(0,0,0,.28), 0 0 0 5px rgba(94,234,212,.1); } 72% { box-shadow: 0 15px 28px rgba(0,0,0,.28), 0 0 0 12px rgba(94,234,212,0); } }
@@ -1498,4 +1498,33 @@ html { scroll-behavior: smooth; }
 }
 .library-rail.auto-paused {
     scroll-behavior: smooth !important;
+}
+
+/* ============================================================
+   EFECTO FADE IN & FADE OUT EN BORDES Y SECCIONES
+   ============================================================ */
+
+/* Mascarilla de gradiente para difuminar bordes de carruseles (Fade In al entrar, Fade Out al salir) */
+.library-rail,
+.taste-rail {
+    mask-image: linear-gradient(to right, transparent 0%, black 28px, black calc(100% - 32px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 28px, black calc(100% - 32px), transparent 100%);
+}
+
+/* Transición suave de Fade In & Fade Out para contenedores y diálogos */
+.nowarfy-fade-enter {
+    animation: nowarfyFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.nowarfy-fade-exit {
+    animation: nowarfyFadeOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes nowarfyFadeIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); filter: blur(4px); }
+    to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+}
+
+@keyframes nowarfyFadeOut {
+    from { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+    to { opacity: 0; transform: translateY(-12px) scale(0.98); filter: blur(4px); }
 }
