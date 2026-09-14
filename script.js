@@ -5,9 +5,11 @@ function navigateWithTransition(updateDOMCallback) {
         updateDOMCallback();
         return;
     }
-    document.startViewTransition(() => {
+    const transition = document.startViewTransition(() => {
         updateDOMCallback();
     });
+    transition.ready.catch(() => {});
+    transition.finished.catch(() => {});
 }
 
 // --- CONFIGURACIÓN ---
