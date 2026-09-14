@@ -16,9 +16,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Hoja de estilos externa -->
+
     <link rel="stylesheet" href="styles.css">
+
 </head>
 <body class="mode-youtoo">
 
@@ -26,20 +26,9 @@
     <div class="main-container">
         <!-- SIDEBAR -->
         <aside class="sidebar" aria-label="Navegación principal de Nowarfy">
-            <div class="logo">
-                <span class="brand-nowarfi">
-                    <img class="brand-nowarfi-mark" src="assets/nowarfy-logo-red-solid.png" alt=""> Nowarfy<sup class="brand-registered">®</sup>
-                </span>
-                <button type="button" class="brand-youtoo" onclick="hardResetNowarfy(event)" aria-label="Reiniciar y actualizar Nowarfy" title="Reiniciar y actualizar Nowarfy">
-                    <span class="brand-lockup">
-                        <img class="brand-lockup-mark" src="assets/nowarfy-logo-red-solid.png" alt="">
-                        <span class="brand-lockup-text"><strong>Nowarfy</strong><span>YouToo</span><sup class="brand-registered">®</sup></span>
-                    </span>
-                </button>
-            </div>
+            <div class="logo"><span class="brand-nowarfi"><img class="brand-nowarfi-mark" src="assets/nowarfy-logo-red-solid.png" alt=""> Nowarfy<sup class="brand-registered">®</sup></span><button type="button" class="brand-youtoo" onclick="hardResetNowarfy(event)" aria-label="Reiniciar y actualizar Nowarfy" title="Reiniciar y actualizar Nowarfy"><span class="brand-lockup"><img class="brand-lockup-mark" src="assets/nowarfy-logo-red-solid.png" alt=""><span class="brand-lockup-text"><strong>Nowarfy</strong><span>YouToo</span><sup class="brand-registered">®</sup></span></span></button></div>
             <button type="button" class="nowarfy-mobile-action nowarfy-mobile-menu-toggle" id="nowarfyMobileMenuToggle" onclick="toggleNowarfyMobileNav()" aria-label="Abrir menú" aria-expanded="false"><i class="fas fa-bars"></i><span class="nowarfy-mobile-action-text">Menú</span></button>
             <button type="button" class="nowarfy-mobile-action nowarfy-mobile-account-toggle" onclick="openNowarfyAuth()" aria-label="Abrir cuenta"><i class="fas fa-user"></i><span class="nowarfy-mobile-action-text">Cuenta</span></button>
-            
             <div class="nowarfy-nav-groups">
                 <section class="nowarfy-nav-group" aria-label="Descubrir">
                     <span class="nowarfy-nav-label">Descubrir</span>
@@ -68,12 +57,7 @@
                     </ul>
                 </section>
             </div>
-            <div class="nowarfy-side-status">
-                <strong><i class="fas fa-circle"></i> Datos en este dispositivo</strong>
-                <span id="authDeviceStatus">La cuenta y sincronización se activarán solo si las elegís.</span>
-                <button type="button" id="nowarfyAuthButton" class="nowarfy-account-btn" onclick="openNowarfyAuth()"><i class="fas fa-user"></i> Usar cuenta o continuar anónimo</button>
-                <button type="button" id="pwaInstallBtn" class="nowarfy-install-btn" hidden><i class="fas fa-download"></i> Instalar Nowarfy</button>
-            </div>
+            <div class="nowarfy-side-status"><strong><i class="fas fa-circle"></i> Datos en este dispositivo</strong><span id="authDeviceStatus">La cuenta y sincronización se activarán solo si las elegís.</span><button type="button" id="nowarfyAuthButton" class="nowarfy-account-btn" onclick="openNowarfyAuth()"><i class="fas fa-user"></i> Usar cuenta o continuar anónimo</button><button type="button" id="pwaInstallBtn" class="nowarfy-install-btn" hidden><i class="fas fa-download"></i> Instalar Nowarfy</button></div>
             <button type="button" id="nowarfyQrButton" class="nowarfy-qr-launch" onclick="openNowarfyQr()" aria-haspopup="dialog" aria-controls="nowarfyQrModal" aria-label="Mostrar código QR para abrir Nowarfy">
                 <img src="assets/nowarfy-qr.png" alt="">
                 <span class="nowarfy-qr-copy"><strong>Compartí Nowarfy</strong><small>Mostrar código QR</small></span>
@@ -94,72 +78,21 @@
                 <div class="taste-chips" id="tasteChips"></div>
             </nav>
 
+
             <section class="video-stage" id="videoStage" aria-live="polite" aria-label="Reproductor de video">
                 <div class="video-stage-layout">
-                    <div class="video-frame">
-                        <img class="video-frame-poster" id="videoFramePoster" alt="" aria-hidden="true" hidden>
-                        <div id="yt-player-container"></div>
-                        <video id="freeVideoPlayer" controls playsinline preload="metadata" hidden></video>
-                        <div class="video-embed-fallback" id="videoEmbedFallback" role="alert" hidden>
-                            <div class="video-embed-fallback-card">
-                                <span class="video-embed-fallback-badge"><i class="fab fa-youtube"></i> Reproducción oficial</span>
-                                <h3 id="videoEmbedFallbackTitle">Este video necesita YouTube</h3>
-                                <p id="videoEmbedFallbackMessage">El creador no permite mostrarlo dentro de Nowarfy. Podés abrirlo en YouTube sin perder esta Playlist.</p>
-                                <div class="video-embed-fallback-actions">
-                                    <button type="button" id="videoEmbedPopupBtn" onclick="openYouTubeCompactWindow()"><i class="fas fa-up-right-and-down-left-from-center"></i> Abrir flotante</button>
-                                    <a id="videoEmbedOpenBtn" class="video-embed-fallback-secondary" href="#" target="_blank" rel="noopener noreferrer"><i class="fas fa-arrow-up-right-from-square"></i> Ver en YouTube</a>
-                                </div>
-                                <small class="video-embed-fallback-footnote">La ventana compacta depende de la configuración de Chrome; Nowarfy queda abierto en la PWA.</small>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="video-frame"><img class="video-frame-poster" id="videoFramePoster" alt="" aria-hidden="true" hidden><div id="yt-player-container"></div><video id="freeVideoPlayer" controls playsinline preload="metadata" hidden></video><div class="video-embed-fallback" id="videoEmbedFallback" role="alert" hidden><div class="video-embed-fallback-card"><span class="video-embed-fallback-badge"><i class="fab fa-youtube"></i> Reproducción oficial</span><h3 id="videoEmbedFallbackTitle">Este video necesita YouTube</h3><p id="videoEmbedFallbackMessage">El creador no permite mostrarlo dentro de Nowarfy. Podés abrirlo en YouTube sin perder esta Playlist.</p><div class="video-embed-fallback-actions"><button type="button" id="videoEmbedPopupBtn" onclick="openYouTubeCompactWindow()"><i class="fas fa-up-right-and-down-left-from-center"></i> Abrir flotante</button><a id="videoEmbedOpenBtn" class="video-embed-fallback-secondary" href="#" target="_blank" rel="noopener noreferrer"><i class="fas fa-arrow-up-right-from-square"></i> Ver en YouTube</a></div><small class="video-embed-fallback-footnote">La ventana compacta depende de la configuración de Chrome; Nowarfy queda abierto en la PWA.</small></div></div></div>
                     <div class="video-stage-info">
-                        <div>
-                            <p class="video-stage-kicker">Reproduciendo desde YouTube</p>
-                            <h2 class="video-stage-title" id="videoStageTitle">Elegí un video</h2>
-                            <p class="video-stage-artist" id="videoStageArtist"></p>
-                            <div class="video-stage-meta" id="videoStageMeta"></div>
-                            <div class="video-stage-description-wrap">
-                                <div class="video-stage-description-label">
-                                    <span>Descripción</span>
-                                    <button type="button" class="lyrics-toggle" id="lyricsToggleBtn" onclick="toggleLyricsPanel()" aria-expanded="false" hidden><i class="fas fa-music"></i> Ver letra</button>
-                                </div>
-                                <p class="video-stage-description" id="videoStageDescription"></p>
-                                <section class="lyrics-panel" id="lyricsPanel" aria-label="Letra de la canción" hidden>
-                                    <div class="lyrics-toolbar">
-                                        <span class="lyrics-toolbar-status" id="lyricsToolbarStatus">Letra verificada</span>
-                                        <div class="lyrics-toolbar-controls">
-                                            <button type="button" class="lyrics-zoom-btn" onclick="changeLyricsZoom(-0.1)" aria-label="Reducir tamaño de letra" title="Reducir tamaño"><i class="fas fa-minus"></i></button>
-                                            <span class="lyrics-zoom-value" id="lyricsZoomValue">100%</span>
-                                            <button type="button" class="lyrics-zoom-btn" onclick="changeLyricsZoom(0.1)" aria-label="Aumentar tamaño de letra" title="Aumentar tamaño"><i class="fas fa-plus"></i></button>
-                                            <button type="button" class="lyrics-zoom-btn" onclick="resetLyricsZoom()" aria-label="Restablecer tamaño de letra" title="Restablecer tamaño"><i class="fas fa-rotate-left"></i></button>
-                                        </div>
-                                    </div>
-                                    <div class="lyrics-scroll" id="lyricsScroll" tabindex="0"><pre class="lyrics-content" id="lyricsContent"></pre></div>
-                                    <div class="lyrics-source"><span id="lyricsSourceLabel">Coincidencia corroborada por artista, título y duración.</span><a id="lyricsSourceLink" href="https://lrclib.net/" target="_blank" rel="noopener noreferrer">Fuente</a></div>
-                                </section>
-                            </div>
-                        </div>
-                        <div>
-                            <p class="video-stage-note">Datos extraídos de la ficha pública del video. Algunos videos pueden estar restringidos por su creador, región o YouTube.</p>
-                            <div class="video-stage-actions">
-                                <button type="button" class="video-stage-channel" id="videoStageChannelBtn" onclick="openVideoStageChannel()" hidden><i class="fas fa-satellite-dish"></i> Ver canal</button>
-                                <button type="button" class="video-stage-close video-stage-close-primary" onclick="hideVideoStage(false, { manual: true })" aria-label="Ocultar video y conservar solo el audio"><i class="fas fa-eye-slash"></i><span>Ocultar video</span><small>ahorrar carga visual</small></button>
-                            </div>
-                        </div>
+                        <div><p class="video-stage-kicker">Reproduciendo desde YouTube</p><h2 class="video-stage-title" id="videoStageTitle">Elegí un video</h2><p class="video-stage-artist" id="videoStageArtist"></p><div class="video-stage-meta" id="videoStageMeta"></div><div class="video-stage-description-wrap"><div class="video-stage-description-label"><span>Descripción</span><button type="button" class="lyrics-toggle" id="lyricsToggleBtn" onclick="toggleLyricsPanel()" aria-expanded="false" hidden><i class="fas fa-music"></i> Ver letra</button></div><p class="video-stage-description" id="videoStageDescription"></p>            <section class="lyrics-panel" id="lyricsPanel" aria-label="Letra de la canción" hidden><div class="lyrics-toolbar"><span class="lyrics-toolbar-status" id="lyricsToolbarStatus">Letra verificada</span><div class="lyrics-toolbar-controls"><button type="button" class="lyrics-zoom-btn" onclick="changeLyricsZoom(-0.1)" aria-label="Reducir tamaño de letra" title="Reducir tamaño"><i class="fas fa-minus"></i></button><span class="lyrics-zoom-value" id="lyricsZoomValue">100%</span><button type="button" class="lyrics-zoom-btn" onclick="changeLyricsZoom(0.1)" aria-label="Aumentar tamaño de letra" title="Aumentar tamaño"><i class="fas fa-plus"></i></button><button type="button" class="lyrics-zoom-btn" onclick="resetLyricsZoom()" aria-label="Restablecer tamaño de letra" title="Restablecer tamaño"><i class="fas fa-rotate-left"></i></button></div></div><div class="lyrics-scroll" id="lyricsScroll" tabindex="0"><pre class="lyrics-content" id="lyricsContent"></pre></div><div class="lyrics-source"><span id="lyricsSourceLabel">Coincidencia corroborada por artista, título y duración.</span><a id="lyricsSourceLink" href="https://lrclib.net/" target="_blank" rel="noopener noreferrer">Fuente</a></div></section></div></div>
+                        <div><p class="video-stage-note">Datos extraídos de la ficha pública del video. Algunos videos pueden estar restringidos por su creador, región o YouTube.</p><div class="video-stage-actions"><button type="button" class="video-stage-channel" id="videoStageChannelBtn" onclick="openVideoStageChannel()" hidden><i class="fas fa-satellite-dish"></i> Ver canal</button><button type="button" class="video-stage-close video-stage-close-primary" onclick="hideVideoStage(false, { manual: true })" aria-label="Ocultar video y conservar solo el audio"><i class="fas fa-eye-slash"></i><span>Ocultar video</span><small>ahorrar carga visual</small></button></div></div>
                     </div>
                 </div>
                 <div class="video-suggestions" id="videoSuggestions" aria-label="Más videos sugeridos">
-                    <div class="video-suggestions-header">
-                        <h3>Más videos para seguir viendo</h3>
-                        <div class="video-suggestions-tools">
-                            <span id="videoSuggestionsContext"></span>
-                            <button type="button" class="video-autoplay-toggle" id="videoAutoplayToggle" onclick="toggleVideoAutoplay()" aria-pressed="true"><i class="fas fa-forward"></i> Autoplay</button>
-                        </div>
-                    </div>
+                    <div class="video-suggestions-header"><h3>Más videos para seguir viendo</h3><div class="video-suggestions-tools"><span id="videoSuggestionsContext"></span><button type="button" class="video-autoplay-toggle" id="videoAutoplayToggle" onclick="toggleVideoAutoplay()" aria-pressed="true"><i class="fas fa-forward"></i> Autoplay</button></div></div>
                     <div class="video-suggestions-list" id="videoSuggestionsList"></div>
                 </div>
             </section>
+
 
             <div id="loader" class="loader-wrap">
                 <div class="nowarfy-orbit-loader"></div>
@@ -243,13 +176,7 @@
         <div class="queue-drop-trash" id="queueTrash"><i class="fas fa-trash"></i> Soltá aquí para quitarla de la Playlist</div>
     </div>
 
-    <div class="nowarfy-handoff-prompt" id="nowarfyHandoffPrompt" hidden role="status" aria-live="polite">
-        <div>
-            <strong>El audio llegó a este dispositivo</strong>
-            <small>Por la política de autoplay, tocá “Desbloquear audio” una vez. Después, este dispositivo seguirá reproduciendo y los demás conservarán el control remoto.</small>
-        </div>
-        <button type="button" aria-label="Desbloquear audio en este dispositivo" onclick="unlockNowarfyHandoff()"><i class="fas fa-volume-high"></i> Desbloquear audio</button>
-    </div>
+    <div class="nowarfy-handoff-prompt" id="nowarfyHandoffPrompt" hidden role="status" aria-live="polite"><div><strong>El audio llegó a este dispositivo</strong><small>Por la política de autoplay, tocá “Desbloquear audio” una vez. Después, este dispositivo seguirá reproduciendo y los demás conservarán el control remoto.</small></div><button type="button" aria-label="Desbloquear audio en este dispositivo" onclick="unlockNowarfyHandoff()"><i class="fas fa-volume-high"></i> Desbloquear audio</button></div>
 
     <div class="nowarfy-auth-modal" id="nowarfyAuthModal" role="dialog" aria-modal="true" aria-labelledby="nowarfyAuthTitle" hidden onclick="if (event.target === this) closeNowarfyAuth()">
         <div class="nowarfy-auth-dialog">
@@ -262,26 +189,11 @@
                     <input id="authEmailInput" type="email" autocomplete="email" placeholder="vos@ejemplo.com">
                     <label for="authPasswordInput">Contraseña</label>
                     <input id="authPasswordInput" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres">
-                    <div class="nowarfy-auth-actions">
-                        <button type="button" onclick="submitNowarfyAuth('signin')">Iniciar sesión</button>
-                        <button type="button" class="primary" onclick="submitNowarfyAuth('signup')">Crear cuenta</button>
-                    </div>
+                    <div class="nowarfy-auth-actions"><button type="button" onclick="submitNowarfyAuth('signin')">Iniciar sesión</button><button type="button" class="primary" onclick="submitNowarfyAuth('signup')">Crear cuenta</button></div>
                     <button type="button" class="nowarfy-auth-magic" onclick="submitNowarfyAuth('magic')"><i class="fas fa-wand-magic-sparkles"></i> Enviarme un enlace mágico</button>
                 </div>
             </div>
-            <div id="nowarfyAuthUserPanel" class="nowarfy-auth-account" hidden>
-                <strong id="nowarfyAuthUserEmail"></strong>
-                <span>Sesión iniciada en este dispositivo. El reproductor y sus controles se sincronizan con los demás dispositivos de la misma cuenta.</span>
-                <small id="nowarfyRemoteStatus">Conectando dispositivos…</small>
-                <button type="button" id="nowarfyDevicePickerBtn" onclick="toggleNowarfyDevicePicker()"><i class="fas fa-mobile-screen-button"></i> Elegir dispositivo de reproducción <span id="nowarfyDeviceCount">(0)</span></button>
-                <div id="nowarfyDevicePicker" class="nowarfy-device-picker" hidden>
-                    <div class="nowarfy-device-picker-title"><span>Dispositivos conectados</span><small id="nowarfyDevicePickerHint">Actualizando…</small></div>
-                    <div id="nowarfyDeviceList" class="nowarfy-device-list"></div>
-                </div>
-                <button type="button" id="nowarfyClaimPlayerBtn" onclick="claimNowarfyPlayer()"><i class="fas fa-broadcast-tower"></i> Reproducir en este dispositivo</button>
-                <button type="button" onclick="switchNowarfyUser()"><i class="fas fa-user-gear"></i> Cambiar de usuario</button>
-                <button type="button" onclick="signOutNowarfy()"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</button>
-            </div>
+            <div id="nowarfyAuthUserPanel" class="nowarfy-auth-account" hidden><strong id="nowarfyAuthUserEmail"></strong><span>Sesión iniciada en este dispositivo. El reproductor y sus controles se sincronizan con los demás dispositivos de la misma cuenta.</span><small id="nowarfyRemoteStatus">Conectando dispositivos…</small><button type="button" id="nowarfyDevicePickerBtn" onclick="toggleNowarfyDevicePicker()"><i class="fas fa-mobile-screen-button"></i> Elegir dispositivo de reproducción <span id="nowarfyDeviceCount">(0)</span></button><div id="nowarfyDevicePicker" class="nowarfy-device-picker" hidden><div class="nowarfy-device-picker-title"><span>Dispositivos conectados</span><small id="nowarfyDevicePickerHint">Actualizando…</small></div><div id="nowarfyDeviceList" class="nowarfy-device-list"></div></div><button type="button" id="nowarfyClaimPlayerBtn" onclick="claimNowarfyPlayer()"><i class="fas fa-broadcast-tower"></i> Reproducir en este dispositivo</button><button type="button" onclick="switchNowarfyUser()"><i class="fas fa-user-gear"></i> Cambiar de usuario</button><button type="button" onclick="signOutNowarfy()"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</button></div>
             <div class="nowarfy-auth-status" id="nowarfyAuthStatus" aria-live="polite"></div>
         </div>
     </div>
@@ -298,10 +210,11 @@
 
     <audio id="audio-element" preload="metadata"></audio>
     <audio id="audio-element-next" preload="metadata" aria-hidden="true"></audio>
+    <!-- Motor de persistencia Audio Keep-Alive (anclaje multimedia casi inaudible) -->
     <audio id="silent-audio-loop" loop preload="auto" src="assets/nowarfy-audio-anchor.wav" aria-hidden="true"></audio>
     <div class="toast-container" id="toastContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
+    <script src="scriptx.js"></script>
 </body>
 </html>
