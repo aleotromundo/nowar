@@ -27,6 +27,9 @@ let nowarfyAuthInitialised = false;
 let nowarfyAuthInitPromise = null;
 let nowarfyRemoteChannel = null;
 let nowarfyRemoteBroadcastReady = false;
+// BroadcastChannel para comunicación ultra-rápida entre tabs del mismo navegador
+let nowarfyBroadcastChannel = null;
+let nowarfyBroadcastChannelReady = false;
 const nowarfyRemoteSeenCommandIds = new Map();
 let nowarfyRemoteSession = null;
 let nowarfyRemoteShadowSong = null;
@@ -294,6 +297,29 @@ async function setupNowarfyRemoteControl() {
                 }
             }
         }
+        // Inicializar BroadcastChannel para comunicación entre tabs del mismo navegador
+        if (nowarfyBroadcastChannel) nowarfyBroadcastChannel.close();
+        nowarfyBroadcastChannel = new BroadcastChannel('nowarfy-remote-control');
+        nowarfyBroadcastChannel.onmessage = (event) => {
+            const message = event.data || {};
+            if (message.senderDeviceId === nowarfyRemoteDeviceId) return;
+            if (message.type === 'remote-command') {
+                const command = message.command || {};
+                if (!command.type || (command.targetDeviceId && command.targetDeviceId !== nowarfyRemoteDeviceId)) return;
+                if (message.commandId && nowarfyRemoteSeenCommandIds.has(message.commandId)) return;
+                if (message.commandId) {
+                    nowarfyRemoteSeenCommandIds.set(message.commandId, Date.now());
+                    for (const [id, timestamp] of nowarfyRemoteSeenCommandIds) if (Date.now() - timestamp > 60000) nowarfyRemoteSeenCommandIds.delete(id);
+                }
+                if (nowarfyRemoteIsPlayer) void executeNowarfyRemoteCommand(command);
+                else nowarfyPendingRemoteCommands.push(command);
+            } else if (message.type === 'remote-state') {
+                if (message.senderDeviceId === nowarfyRemoteDeviceId || nowarfyRemoteIsPlayer || !message.state) return;
+                updateRemoteControlsFromState(message.state);
+            }
+        };
+        nowarfyBroadcastChannelReady = true;
+
         if (nowarfyRemoteChannel) await nowarfySupabase.removeChannel(nowarfyRemoteChannel);
         nowarfyRemoteChannel = nowarfySupabase.channel(`nowarfy-remote-${nowarfyAuthUser.id}`)
             .on('broadcast', { event: 'remote-command' }, packet => {
@@ -377,7 +403,7 @@ function toggleNowarfyDevicePicker() {
     picker.hidden = !picker.hidden;
     if (!picker.hidden) void refreshNowarfyRemoteDevices();
 }
-async function teardownNowarfyRemoteControl() { if (nowarfyRemoteStateTimer) clearInterval(nowarfyRemoteStateTimer); if (nowarfyDeviceRefreshTimer) clearInterval(nowarfyDeviceRefreshTimer); nowarfyRemoteStateTimer = null; nowarfyDeviceRefreshTimer = null; if (nowarfyRemoteShadowTimer) clearInterval(nowarfyRemoteShadowTimer); nowarfyRemoteShadowTimer = null; nowarfyRemoteDevices = []; nowarfyRemoteBroadcastReady = false; nowarfyRemoteSeenCommandIds.clear(); if (nowarfyRemoteChannel && nowarfySupabase) await nowarfySupabase.removeChannel(nowarfyRemoteChannel); nowarfyRemoteChannel = null; nowarfyRemoteSession = null; nowarfyRemoteShadowSong = null; nowarfyRemoteShadowState = null; nowarfyRemoteDeviceId = null; nowarfyRemoteIsPlayer = false; }
+async function teardownNowarfyRemoteControl() { if (nowarfyRemoteStateTimer) clearInterval(nowarfyRemoteStateTimer); if (nowarfyDeviceRefreshTimer) clearInterval(nowarfyDeviceRefreshTimer); nowarfyRemoteStateTimer = null; nowarfyDeviceRefreshTimer = null; if (nowarfyRemoteShadowTimer) clearInterval(nowarfyRemoteShadowTimer); nowarfyRemoteShadowTimer = null; nowarfyRemoteDevices = []; nowarfyRemoteBroadcastReady = false; nowarfyBroadcastChannelReady = false; nowarfyRemoteSeenCommandIds.clear(); if (nowarfyBroadcastChannel) { nowarfyBroadcastChannel.close(); nowarfyBroadcastChannel = null; } if (nowarfyRemoteChannel && nowarfySupabase) await nowarfySupabase.removeChannel(nowarfyRemoteChannel); nowarfyRemoteChannel = null; nowarfyRemoteSession = null; nowarfyRemoteShadowSong = null; nowarfyRemoteShadowState = null; nowarfyRemoteDeviceId = null; nowarfyRemoteIsPlayer = false; }
 async function claimNowarfyPlayer() { return selectNowarfyPlaybackDevice(nowarfyRemoteDeviceId); }
 async function selectNowarfyPlaybackDevice(deviceId) {
     if (nowarfyClaimInFlight) return;
@@ -428,6 +454,10 @@ async function releaseNowarfyPlayer() { if (!nowarfySupabase || !nowarfyRemoteSe
 async function publishNowarfyRemoteState() {
     if (!nowarfySupabase || !nowarfyRemoteSession || !nowarfyRemoteIsPlayer) return;
     const state = remoteStateSnapshot();
+    // Enviar primero por BroadcastChannel para respuesta instantánea en tabs del mismo navegador
+    if (nowarfyBroadcastChannelReady && nowarfyBroadcastChannel) {
+        try { nowarfyBroadcastChannel.postMessage({ type: 'remote-state', senderDeviceId: nowarfyRemoteDeviceId, state }); } catch (_) {}
+    }
     if (nowarfyRemoteBroadcastReady && nowarfyRemoteChannel) {
         try { await nowarfyRemoteChannel.send({ type: 'broadcast', event: 'remote-state', payload: { senderDeviceId: nowarfyRemoteDeviceId, state } }); } catch (_) {}
     }
@@ -485,11 +515,18 @@ async function sendNowarfyCommand(type, value = null) {
     const command = { type, value, commandId };
     const isRealtimeCommand = ['volume', 'seekPercent', 'seekDelta'].includes(type);
     let broadcastSent = false;
+    // Enviar primero por BroadcastChannel para respuesta instantánea en tabs del mismo navegador
+    if (nowarfyBroadcastChannelReady && nowarfyBroadcastChannel) {
+        try {
+            nowarfyBroadcastChannel.postMessage({ type: 'remote-command', senderDeviceId: nowarfyRemoteDeviceId, commandId, command });
+            broadcastSent = true;
+        } catch (_) { broadcastSent = false; }
+    }
     if (nowarfyRemoteBroadcastReady && nowarfyRemoteChannel) {
         try {
             const response = await nowarfyRemoteChannel.send({ type: 'broadcast', event: 'remote-command', payload: { commandId, senderDeviceId: nowarfyRemoteDeviceId, command } });
-            broadcastSent = response?.status === 'ok' || response?.status === 'success';
-        } catch (_) { broadcastSent = false; }
+            broadcastSent = broadcastSent || response?.status === 'ok' || response?.status === 'success';
+        } catch (_) { }
     }
     if (isRealtimeCommand && broadcastSent) return;
     const result = await nowarfySupabase.from('youtoo_remote_commands').insert({ session_id: nowarfyRemoteSession.id, user_id: nowarfyAuthUser.id, device_id: nowarfyRemoteDeviceId, command });
