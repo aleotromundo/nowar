@@ -1,9 +1,16 @@
 import { createAppState, persistAppState } from './state.js';
 
-// Primer punto de entrada modular. Todavía no reemplaza script.js:
-// permite validar el estado compartido sin alterar el arranque existente.
+// Bootstrap modular aislado: todavía no reemplaza script.js.
 const appState = createAppState();
+const persist = () => persistAppState(appState);
+
 window.NowarfyModules = Object.freeze({
   appState,
-  persistAppState: () => persistAppState(appState)
+  persistAppState: persist
 });
+
+// Persistencia defensiva del estado modular sin interferir con el reproductor legado.
+window.addEventListener('pagehide', persist, { passive: true });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') persist();
+}, { passive: true });
