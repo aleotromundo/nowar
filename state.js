@@ -17,12 +17,12 @@ function readJson(key, fallback) {
 }
 
 export function createAppState() {
+  const favorites = readJson(STORAGE_KEYS.favorites, []);
+  const queue = readJson(STORAGE_KEYS.queue, []);
   return {
     storageKeys: STORAGE_KEYS,
-    favorites: Array.isArray(readJson(STORAGE_KEYS.favorites, []))
-      ? readJson(STORAGE_KEYS.favorites, []) : [],
-    queue: Array.isArray(readJson(STORAGE_KEYS.queue, []))
-      ? readJson(STORAGE_KEYS.queue, []) : [],
+    favorites: Array.isArray(favorites) ? favorites : [],
+    queue: Array.isArray(queue) ? queue : [],
     queueIdCounter: Number(localStorage.getItem(STORAGE_KEYS.queueId) || 0) || 0,
     queueRound: Number(localStorage.getItem(STORAGE_KEYS.queueRound) || 0) || 0,
     currentIndex: -1,
