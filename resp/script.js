@@ -533,6 +533,21 @@ async function executeNowarfyRemoteCommand(command) {
         }
         return;
     }
+    if (type === 'playSong') {
+        const song = command.value;
+        if (song && song.url) {
+            setRadioQueueMode();
+            const q = withQid(song);
+            queue = [q];
+            queueSeenKeys = new Set([songKey(q)]);
+            queueRound = 0;
+            persistQueue();
+            renderQueue();
+            playQueueAt(0, {});
+            growQueueIfNeeded(true);
+        }
+        return;
+    }
     if (type === 'toggle') togglePlay();
     else if (type === 'next') nextSong(true);
     else if (type === 'prev') prevSong();
@@ -3840,6 +3855,11 @@ function advancePrebuiltPlaylist(targetQid) {
 }
 
 function selectSong(song, sourceIdx) {
+    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) {
+        void sendNowarfyCommand('playSong', song);
+        void reserveDiscoveredCandidates([song], { context: 'radio', seed: song });
+        return;
+    }
     setRadioQueueMode();
     const q = withQid(song);
     queue = [q];
