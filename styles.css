@@ -973,9 +973,12 @@
         body.mode-youtoo .nowarfy-nav-group .nav-links { margin: 0; padding: 0; }
         body.mode-youtoo .nowarfy-nav-group .nav-links li { min-height: 39px; margin-bottom: 2px; }
         .nowarfy-nav-separator { height: 1px; margin: 1px 10px 10px; background: rgba(190,188,255,.12); }
-        .nowarfy-side-status { flex: 0 0 auto; margin: 2px 9px 0; padding: 11px 10px; border: 1px solid rgba(94,234,212,.16); border-radius: 11px; background: rgba(94,234,212,.045); color: #adaec4; font-size: .68rem; line-height: 1.4; }
-        .nowarfy-side-status strong { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; color: #dcfff8; font-size: .7rem; }
-        .nowarfy-side-status i { color: #5eead4; font-size: .56rem; }
+        .nowarfy-side-status { flex: 0 0 auto; margin: 2px 9px 0; padding: 11px 10px; border: 1px solid rgba(239,68,68,.22); border-radius: 11px; background: rgba(239,68,68,.055); color: #adaec4; font-size: .68rem; line-height: 1.4; transition: border-color .2s ease, background .2s ease; }
+        .nowarfy-side-status strong { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; color: #ffe2e2; font-size: .7rem; }
+        .nowarfy-side-status i { color: #ef4444; font-size: .56rem; }
+        .nowarfy-side-status[data-state="online"], .nowarfy-side-status[data-state="player"] { border-color: rgba(94,234,212,.25); background: rgba(94,234,212,.045); }
+        .nowarfy-side-status[data-state="online"] strong, .nowarfy-side-status[data-state="player"] strong { color: #dcfff8; }
+        .nowarfy-side-status .connection-dot-online, .nowarfy-side-status .connection-dot-player { color: #5eead4; }
         body.mode-youtoo .sidebar::after { display: none; }
         .nowarfy-install-btn { width: 100%; margin-top: 12px; padding: 10px 12px; border: 1px solid rgba(94,234,212,.35); border-radius: 9px; background: rgba(94,234,212,.10); color: #d7fff8; font: 800 .72rem 'Manrope', sans-serif; cursor: pointer; transition: transform .18s var(--ease), background .18s var(--ease); }
         .nowarfy-install-btn:hover { background: rgba(94,234,212,.18); transform: translateY(-1px); }

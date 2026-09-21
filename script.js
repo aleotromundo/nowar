@@ -51,6 +51,45 @@ function authStatus(message, isError = false) {
     const target = document.getElementById('nowarfyAuthStatus');
     if (target) { target.textContent = message || ''; target.style.color = isError ? '#ffb5bd' : '#b9e9d5'; }
 }
+function updateNowarfyConnectionStatus() {
+    const panel = document.getElementById('nowarfySideStatus');
+    const dot = document.getElementById('nowarfyConnectionDot');
+    const label = document.getElementById('nowarfyConnectionLabel');
+    if (!panel) return;
+    const connected = !!nowarfyAuthUser && !!nowarfyRemoteSession && !!nowarfyRemoteBroadcastReady;
+    const player = connected && nowarfyRemoteIsPlayer;
+    const state = player ? 'player' : connected ? 'online' : 'offline';
+    panel.dataset.state = state;
+    if (dot) dot.className = `fas fa-circle connection-dot-${state}`;
+    if (label) label.textContent = player ? 'Reproductor conectado' : connected ? 'Sincronización conectada' : 'Sin sincronización';
+}
+function buildNowarfyPairingUrl() {
+    const url = new URL(window.location.href);
+    url.hash = '';
+    url.search = '';
+    url.searchParams.set('pair', 'nowarfy');
+    if (nowarfyRemoteSession?.id) url.searchParams.set('session', nowarfyRemoteSession.id);
+    url.searchParams.set('source', nowarfyRemoteDeviceKey);
+    return url.toString();
+}
+function refreshNowarfyPairingQr() {
+    const link = buildNowarfyPairingUrl();
+    const image = document.getElementById('nowarfyQrImage');
+    const preview = document.getElementById('nowarfyQrPreview');
+    const anchor = document.getElementById('nowarfyQrLink');
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=12&data=${encodeURIComponent(link)}`;
+    if (image) { image.src = qrUrl; image.alt = `Código QR para vincular ${nowarfyAuthUser ? 'otro dispositivo a tu cuenta' : 'un dispositivo con Nowarfy'}`; }
+    if (preview) preview.src = qrUrl;
+    if (anchor) anchor.href = link;
+}
+function handleNowarfyPairingLink() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('pair') !== 'nowarfy') return;
+    localStorage.setItem('nowarfy_pairing_pending', JSON.stringify({ sessionId: params.get('session') || '', source: params.get('source') || '', createdAt: Date.now() }));
+    const description = document.getElementById('nowarfyQrDescription');
+    if (description) description.textContent = nowarfyAuthUser ? 'Este dispositivo quedó listo para sincronizarse. Abrí Cuenta para elegirlo como reproductor.' : 'Este dispositivo quedó listo para vincularse. Iniciá sesión con la misma cuenta del reproductor.';
+    if (!nowarfyAuthUser) window.setTimeout(() => openNowarfyAuth(), 350);
+}
 function updateNowarfyAuthUI() {
     const button = document.getElementById('nowarfyAuthButton');
     const deviceStatus = document.getElementById('authDeviceStatus');
@@ -81,6 +120,8 @@ function updateNowarfyAuthUI() {
         if (guest) guest.hidden = false;
         if (userPanel) userPanel.hidden = true;
     }
+    updateNowarfyConnectionStatus();
+    refreshNowarfyPairingQr();
 }
 async function initNowarfyAuth() {
     if (nowarfySupabase) return nowarfySupabase;
@@ -227,7 +268,7 @@ async function switchNowarfyUser() {
     openNowarfyAuth();
 }
 
-function remoteStatus(message) { const el = document.getElementById('nowarfyRemoteStatus'); if (el) el.textContent = message; }
+function remoteStatus(message) { const el = document.getElementById('nowarfyRemoteStatus'); if (el) el.textContent = message; updateNowarfyConnectionStatus(); }
 function currentRemotePosition() {
     try {
         const song = currentQueueSong?.();
@@ -6496,6 +6537,7 @@ function makeDraggable(element) {
     }
 }
 
+handleNowarfyPairingLink();
 void initNowarfyAuth();
 setTimeout(() => {
     initTouchSwipeGestures();

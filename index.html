@@ -68,15 +68,15 @@
                     </ul>
                 </section>
             </div>
-            <div class="nowarfy-side-status">
-                <strong><i class="fas fa-circle"></i> Datos en este dispositivo</strong>
+            <div class="nowarfy-side-status" id="nowarfySideStatus" data-state="offline">
+                <strong><i class="fas fa-circle" id="nowarfyConnectionDot"></i> <span id="nowarfyConnectionLabel">Datos en este dispositivo</span></strong>
                 <span id="authDeviceStatus">La cuenta y sincronización se activarán solo si las elegís.</span>
                 <button type="button" id="nowarfyAuthButton" class="nowarfy-account-btn" onclick="openNowarfyAuth()"><i class="fas fa-user"></i> Usar cuenta o continuar anónimo</button>
                 <button type="button" id="pwaInstallBtn" class="nowarfy-install-btn" hidden><i class="fas fa-download"></i> Instalar Nowarfy</button>
             </div>
-            <button type="button" id="nowarfyQrButton" class="nowarfy-qr-launch" onclick="openNowarfyQr()" aria-haspopup="dialog" aria-controls="nowarfyQrModal" aria-label="Mostrar código QR para abrir Nowarfy">
-                <img src="assets/nowarfy-qr.png" alt="">
-                <span class="nowarfy-qr-copy"><strong>Compartí Nowarfy</strong><small>Mostrar código QR</small></span>
+            <button type="button" id="nowarfyQrButton" class="nowarfy-qr-launch" onclick="openNowarfyQr()" aria-haspopup="dialog" aria-controls="nowarfyQrModal" aria-label="Vincular otro dispositivo con código QR">
+                <img id="nowarfyQrPreview" src="assets/nowarfy-qr.png" alt="">
+                <span class="nowarfy-qr-copy"><strong>Vincular dispositivo</strong><small>Pairing por QR</small></span>
                 <i class="fas fa-qrcode" aria-hidden="true"></i>
             </button>
         </aside>
@@ -286,10 +286,10 @@
     <div class="nowarfy-qr-modal" id="nowarfyQrModal" role="dialog" aria-modal="true" aria-labelledby="nowarfyQrTitle" hidden onclick="if (event.target === this) closeNowarfyQr()">
         <div class="nowarfy-qr-dialog">
             <button type="button" class="nowarfy-qr-close" onclick="closeNowarfyQr()" aria-label="Cerrar código QR"><i class="fas fa-xmark"></i></button>
-            <h2 id="nowarfyQrTitle">Abrí Nowarfy en tu celular</h2>
-            <p>Escaneá este código para ir directo a la página principal.</p>
-            <img src="assets/nowarfy-qr.png" alt="Código QR para abrir la página principal de Nowarfy">
-            <a class="nowarfy-qr-link" href="https://nowarfy.vercel.app/" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square"></i> Abrir Nowarfy</a>
+            <h2 id="nowarfyQrTitle">Vinculá otro dispositivo</h2>
+            <p id="nowarfyQrDescription">Escaneá este código en tu celular. Se abrirá Nowarfy y podrás iniciar sesión para sincronizarlo con este reproductor.</p>
+            <img id="nowarfyQrImage" src="assets/nowarfy-qr.png" alt="Código QR para vincular otro dispositivo con Nowarfy">
+            <a class="nowarfy-qr-link" id="nowarfyQrLink" href="" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square"></i> Abrir enlace de pairing</a>
         </div>
     </div>
 
