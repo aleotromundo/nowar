@@ -17,11 +17,11 @@ La aplicación es HTML/CSS/JavaScript sin build step. `script.js` concentra apro
 
 ## Trabajo aplicado en esta iteración
 
-Se aplicó OPT-102: las imágenes de tarjetas, logos, QR y portada del reproductor declaran dimensiones y usan `decoding="async"`, manteniendo `loading="lazy"` en contenido fuera de la ruta inicial. Esto reduce el riesgo de CLS y trabajo de decodificación prioritario.
+Se aplicaron OPT-102 y OPT-105: las imágenes de tarjetas, logos, QR y portada del reproductor declaran dimensiones y usan `decoding="async"`, manteniendo `loading="lazy"` en contenido fuera de la ruta inicial. Esto reduce el riesgo de CLS y trabajo de decodificación prioritario. El gestor de visibilidad pausa el progreso visual, la clasificación, la rotación de artwork, el refresco de dispositivos y el shadow remoto cuando la pestaña queda oculta. El heartbeat del dispositivo que actúa como reproductor continúa activo para no romper la sesión remota; al volver a la pestaña se recrean los timers necesarios sin duplicarlos.
 
 OPT-101 queda preparado para una siguiente modificación porque `assets/youtoo-mark-compact.png` no tiene referencias activas en el frontend actual; convertirlo sin sustituir una referencia real no reduciría el peso transferido.
 
-OPT-105 y OPT-106 quedan especificadas para el siguiente commit, después de introducir pruebas de regresión sobre reproducción, cola, pairing y ciclo de vida. La política prevista detendrá timers no críticos con `visibilitychange` y agrupará las escrituras de cola en una ventana de 350 ms, forzando un `flush` en `pagehide`, `freeze` y ocultación.
+OPT-106 queda especificada para el siguiente commit, después de introducir pruebas de regresión sobre reproducción, cola, pairing y ciclo de vida. La política prevista agrupará las escrituras de cola en una ventana de 350 ms, forzando un `flush` en `pagehide`, `freeze` y ocultación.
 
 ## Validación
 
@@ -29,7 +29,7 @@ Ejecutar `node --check script.js`, `git diff --check`, verificar el Service Work
 
 ## Próximo paso
 
-Implementar OPT-105 y OPT-106 con cambios pequeños y medibles; luego abordar OPT-103 y OPT-104 mediante una lista explícita de rails prioritarios y `IntersectionObserver`, sin diferir bienvenida, acciones rápidas ni la primera recomendación.
+Implementar OPT-106 con cambios pequeños y medibles; luego abordar OPT-103 y OPT-104 mediante una lista explícita de rails prioritarios y `IntersectionObserver`, sin diferir bienvenida, acciones rápidas ni la primera recomendación.
 
 ## Referencias
 
