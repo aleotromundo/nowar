@@ -1,0 +1,13 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://openrouter.ai/api",
+    "ANTHROPIC_AUTH_TOKEN": "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",
+    "ANTHROPIC_MODEL": "nvidia/nemotron-3-super-120b-a12b:free"
+  },
+  "permissions": {
+    "allow": [
+      "PowerShell(zip -h 2>&1)",
+      "PowerShell(head -5)"
+    ]
+  }
+}
