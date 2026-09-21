@@ -2489,6 +2489,35 @@ function renderHomeQuickActions() {
     container.appendChild(actions);
 }
 
+function renderDeferredHomeRail(list, title, icon, isPlaylist = false, options = {}) {
+    const items = (list || []).filter(item => itemsWithArtwork([item]).length && (!isPlaylist || hasUsablePlaylistItems(item)));
+    if (!items.length) return;
+    const container = document.getElementById('dynamicSections');
+    const placeholder = document.createElement('section');
+    placeholder.className = `library-rail-section home-deferred-rail ${options.className || ''}`.trim();
+    placeholder.setAttribute('aria-busy', 'true');
+    placeholder.innerHTML = `<div class="library-rail-title">${icon} <span>${escapeHtml(title)}</span><span class="library-rail-hint">Preparando contenido…</span></div>`;
+    container.appendChild(placeholder);
+
+    let loaded = false;
+    let observer = null;
+    const load = () => {
+        if (loaded || !placeholder.isConnected) return;
+        loaded = true;
+        observer?.disconnect();
+        renderLibraryRail(items, title, icon, isPlaylist, { ...options, mountBefore: placeholder });
+        placeholder.remove();
+    };
+    if (!window.IntersectionObserver) {
+        load();
+        return;
+    }
+    observer = new IntersectionObserver(entries => {
+        if (entries.some(entry => entry.isIntersecting)) load();
+    }, { rootMargin: '320px 0px' });
+    observer.observe(placeholder);
+}
+
 function renderHomeFeed() {
     const taste = readTaste();
     navigateWithTransition(() => {
@@ -2501,19 +2530,6 @@ function renderHomeFeed() {
         renderHomeQuickActions();
         if (lastViewed) used.add(songKey(lastViewed));
 
-        const recentArtists = [...new Set(taste.plays.map(item => String(item.artist || '').trim()).filter(Boolean))].slice(0, 10);
-        if (recentArtists.length) {
-            const artistItems = recentArtists.map(artist => {
-                const lastPlay = taste.plays.find(p => String(p.artist || '').trim() === artist);
-                return { title: artist, artist: 'Artista escuchado recientemente', img: lastPlay?.img || 'assets/nowarfy-icon-512.png', url: artist, type: 'search_trigger', query: artist };
-            });
-            renderLibraryRail(artistItems, 'Tus artistas recientes', "<i class='fas fa-microphone-lines'></i>", false, { hint: 'Basado en tu historial · tocá para buscar más', showControls: true, className: 'home-artists-rail' });
-        }
-
-        const recentVideos = uniqueMediaByUrl(taste.plays.map(normalizeTasteTrack).filter(item => item && (item.type === 'yt' || item.type === 'freevideo')), 3);
-        if (recentVideos.length) renderLibraryRail(recentVideos, 'Últimos videos reproducidos', "<i class='fas fa-clock-rotate-left'></i>", false, { hint: 'Búsquedas y playlists · los 3 más recientes', showControls: true, className: 'home-mobile-recent-rail' });
-        const resume = takeNovelItems(taste.plays.map(normalizeTasteTrack).filter(Boolean), used, 8);
-        if (resume.length) renderLibraryRail(resume, 'Seguí desde donde quedaste', "<i class='fas fa-clock-rotate-left'></i>", false, { hint: 'Tu actividad reciente · sin repetir en otras sesiones', showControls: true, className: 'home-resume-rail' });
         const recommended = takeNovelItems(homeRecommended.filter(item => !isNonMusicalVideo(item)), used, 8);
         if (recommended.length) renderLibraryRail(recommended, taste.personalization && getTasteSeed() ? 'Recomendado para vos' : 'Para empezar ahora', "<i class='fas fa-wand-magic-sparkles'></i>", false, { hint: taste.personalization && getTasteSeed() ? 'Según tu actividad local · selección nueva' : 'Selección inicial · contenido no repetido', showControls: true, className: 'home-recommended-rail' });
         const edition = getFeaturedEdition(musicalVideoPool(homeVideos));
@@ -2526,12 +2542,25 @@ function renderHomeFeed() {
                 showControls: true
             });
         }
+        const recentArtists = [...new Set(taste.plays.map(item => String(item.artist || '').trim()).filter(Boolean))].slice(0, 10);
+        if (recentArtists.length) {
+            const artistItems = recentArtists.map(artist => {
+                const lastPlay = taste.plays.find(p => String(p.artist || '').trim() === artist);
+                return { title: artist, artist: 'Artista escuchado recientemente', img: lastPlay?.img || 'assets/nowarfy-icon-512.png', url: artist, type: 'search_trigger', query: artist };
+            });
+            renderDeferredHomeRail(artistItems, 'Tus artistas recientes', "<i class='fas fa-microphone-lines'></i>", false, { hint: 'Basado en tu historial · tocá para buscar más', showControls: true, className: 'home-artists-rail' });
+        }
+
+        const recentVideos = uniqueMediaByUrl(taste.plays.map(normalizeTasteTrack).filter(item => item && (item.type === 'yt' || item.type === 'freevideo')), 3);
+        if (recentVideos.length) renderDeferredHomeRail(recentVideos, 'Últimos videos reproducidos', "<i class='fas fa-clock-rotate-left'></i>", false, { hint: 'Búsquedas y playlists · los 3 más recientes', showControls: true, className: 'home-mobile-recent-rail' });
+        const resume = takeNovelItems(taste.plays.map(normalizeTasteTrack).filter(Boolean), used, 8);
+        if (resume.length) renderDeferredHomeRail(resume, 'Seguí desde donde quedaste', "<i class='fas fa-clock-rotate-left'></i>", false, { hint: 'Tu actividad reciente · sin repetir en otras sesiones', showControls: true, className: 'home-resume-rail' });
         const musicVideos = takeNovelItems(musicalVideoPool(homeMusicVideos), used, 8);
-        if (musicVideos.length >= 3) renderLibraryRail(musicVideos, 'Música para escuchar', "<i class='fab fa-youtube'></i>", false, { hint: 'Videoclips nuevos · sin repetir las sesiones anteriores', showControls: true });
+        if (musicVideos.length >= 3) renderDeferredHomeRail(musicVideos, 'Música para escuchar', "<i class='fab fa-youtube'></i>", false, { hint: 'Videoclips nuevos · sin repetir las sesiones anteriores', showControls: true });
         const playlists = takeNovelItems(homePlaylists.filter(hasUsablePlaylistItems), used, 12);
-        if (playlists.length >= 2) renderLibraryRail(playlists, 'Listas y álbumes', "<i class='fas fa-layer-group'></i>", true, { hint: 'Colecciones diferentes para seguir explorando', showControls: true });
+        if (playlists.length >= 2) renderDeferredHomeRail(playlists, 'Listas y álbumes', "<i class='fas fa-layer-group'></i>", true, { hint: 'Colecciones diferentes para seguir explorando', showControls: true });
         const freeMusic = takeNovelItems(homeMusic, used, 12);
-        if (freeMusic.length >= 2) renderLibraryRail(freeMusic, 'Música libre disponible', "<i class='fas fa-headphones'></i>", false, { hint: 'Audio con carátula y licencia · sin repetir videos', showControls: true });
+        if (freeMusic.length >= 2) renderDeferredHomeRail(freeMusic, 'Música libre disponible', "<i class='fas fa-headphones'></i>", false, { hint: 'Audio con carátula y licencia · sin repetir videos', showControls: true });
         if (!resume.length && !recommended.length && !featured.length && !musicVideos.length && !playlists.length && !freeMusic.length) renderEmptyState('No hay opciones disponibles ahora', 'Probá recargar dentro de unos segundos o buscá un artista.');
         setTimeout(() => { initScrollAssemblyEngine(); observeScrollAssembly(); }, 40);
     });
@@ -3507,7 +3536,8 @@ function renderLibraryRail(list, title, icon, isPlaylist = false, options = {}) 
         });
     }
     section.appendChild(rail);
-    container.appendChild(section);
+    if (options.mountBefore?.parentNode === container) container.insertBefore(section, options.mountBefore);
+    else container.appendChild(section);
     setTimeout(() => { initRailDragScroll(); initAutoMovingCarousels(); }, 20);
 }
 

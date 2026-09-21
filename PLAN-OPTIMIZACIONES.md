@@ -17,7 +17,7 @@ La aplicación es HTML/CSS/JavaScript sin build step. `script.js` concentra apro
 
 ## Trabajo aplicado en esta iteración
 
-Se aplicaron OPT-102 y OPT-105: las imágenes de tarjetas, logos, QR y portada del reproductor declaran dimensiones y usan `decoding="async"`, manteniendo `loading="lazy"` en contenido fuera de la ruta inicial. Esto reduce el riesgo de CLS y trabajo de decodificación prioritario. El gestor de visibilidad pausa el progreso visual, la clasificación, la rotación de artwork, el refresco de dispositivos y el shadow remoto cuando la pestaña queda oculta. El heartbeat del dispositivo que actúa como reproductor continúa activo para no romper la sesión remota; al volver a la pestaña se recrean los timers necesarios sin duplicarlos.
+Se aplicaron OPT-102, OPT-103, OPT-104 y OPT-105: las imágenes de tarjetas, logos, QR y portada del reproductor declaran dimensiones y usan `decoding="async"`, manteniendo `loading="lazy"` en contenido fuera de la ruta inicial. Inicio monta primero bienvenida, acciones rápidas, recomendación y destacados; los rails secundarios usan placeholders con altura estable y se montan una sola vez con `IntersectionObserver` y `rootMargin` de 320 px. El gestor de visibilidad pausa el progreso visual, la clasificación, la rotación de artwork, el refresco de dispositivos y el shadow remoto cuando la pestaña queda oculta. El heartbeat del dispositivo que actúa como reproductor continúa activo para no romper la sesión remota; al volver a la pestaña se recrean los timers necesarios sin duplicarlos.
 
 OPT-101 queda preparado para una siguiente modificación porque `assets/youtoo-mark-compact.png` no tiene referencias activas en el frontend actual; convertirlo sin sustituir una referencia real no reduciría el peso transferido.
 
@@ -29,7 +29,7 @@ Ejecutar `node --check script.js`, `git diff --check`, verificar el Service Work
 
 ## Próximo paso
 
-Luego abordar OPT-103 y OPT-104 mediante una lista explícita de rails prioritarios y `IntersectionObserver`, sin diferir bienvenida, acciones rápidas ni la primera recomendación.
+Medir en producción el impacto de la carga inicial y abordar OPT-101 solo si el asset tiene referencias activas. Después implementar OPT-107 y OPT-108 con cancelación de búsquedas y TTL de catálogos.
 
 ## Referencias
 
