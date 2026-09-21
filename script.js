@@ -2,6 +2,7 @@
 // el contrato global existente con index.html, sus handlers inline y el Service Worker.
 (function loadNowarfyModules() {
     const modules = [
+        'storage.js',
         'core.js',
         'state-and-taste.js',
         'catalog.js',

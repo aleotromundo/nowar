@@ -126,12 +126,14 @@ const silentAudioLoop = document.getElementById('silent-audio-loop');
 
 initVolume();
 initNowarfyHistory();
+void hydrateTasteFromIndexedDB();
 setTimeout(resetView, 0);
 loadYouTubeAPI();
 setupProgressDrag();
 setupBackgroundPlaybackSupport();
 setupKeyboardShortcuts();
 restoreQueueFromStorage();
+void hydrateQueueFromIndexedDB();
 setupQueueTrashDropzone();
 setupVideoStageObserver();
 setupVideoStageVisibilityAwareness();
@@ -264,8 +266,32 @@ function readTaste() {
 }
 
 function writeTaste(taste) {
-    localStorage.setItem(TASTE_STORAGE_KEY, JSON.stringify({ ...taste, version: 3, updatedAt: Date.now() }));
+    const payload = { ...taste, version: 3, updatedAt: Date.now() };
+    localStorage.setItem(TASTE_STORAGE_KEY, JSON.stringify(payload));
+    if (window.nowarfyStorage) void window.nowarfyStorage.set(TASTE_STORAGE_KEY, payload);
     scheduleNowarfyTasteSync();
+}
+
+async function hydrateTasteFromIndexedDB() {
+    if (!window.nowarfyStorage?.supported?.()) return;
+    const legacySnapshot = localStorage.getItem(TASTE_STORAGE_KEY);
+    const [stored, storedFavorites] = await Promise.all([
+        window.nowarfyStorage.get(TASTE_STORAGE_KEY, null),
+        window.nowarfyStorage.get('nowarfy_favs', null)
+    ]);
+    if (!stored || typeof stored !== 'object') return;
+    // Si hubo una escritura mientras abríamos IndexedDB, esa escritura local gana y
+    // queda respaldada por writeTaste en la siguiente operación.
+    if (localStorage.getItem(TASTE_STORAGE_KEY) !== legacySnapshot) return;
+    try {
+        localStorage.setItem(TASTE_STORAGE_KEY, JSON.stringify(stored));
+        if (Array.isArray(storedFavorites)) {
+            favorites = storedFavorites;
+            localStorage.setItem('nowarfy_favs', JSON.stringify(favorites));
+        }
+        renderTasteChips(searchQuery);
+        if (activeBrowseMode === 'history') renderPlaybackHistory();
+    } catch (_) {}
 }
 
 function scheduleNowarfyTasteSync() {
@@ -486,6 +512,7 @@ function setPersonalization(enabled) {
 
 function clearTasteData() {
     localStorage.removeItem(TASTE_STORAGE_KEY);
+    if (window.nowarfyStorage) void window.nowarfyStorage.remove(TASTE_STORAGE_KEY);
     homeFeedLoaded = false;
     renderTasteChips();
     renderPersonalizedNote();
@@ -522,4 +549,3 @@ function renderTasteData() {
         document.getElementById('knowledgeBaseBtn').onclick = renderKnowledgeBase;
     });
 }
-

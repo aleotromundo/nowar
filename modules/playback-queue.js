@@ -886,12 +886,24 @@ function readVideoResumeSession() {
 
 let nowarfyQueuePersistTimer = null;
 function persistQueueNow() {
+    const queueSnapshot = queue.slice();
+    const qidSnapshot = currentPlayingQid == null ? '' : String(currentPlayingQid);
+    const roundSnapshot = String(queueRound);
     try {
-        localStorage.setItem('nowarfy_queue', JSON.stringify(queue));
-        localStorage.setItem('nowarfy_queue_qid', currentPlayingQid == null ? '' : String(currentPlayingQid));
-        localStorage.setItem('nowarfy_queue_round', String(queueRound));
+        localStorage.setItem('nowarfy_queue', JSON.stringify(queueSnapshot));
+        localStorage.setItem('nowarfy_queue_qid', qidSnapshot);
+        localStorage.setItem('nowarfy_queue_round', roundSnapshot);
         persistQueueMode();
     } catch (e) {}
+    if (window.nowarfyStorage) {
+        void Promise.all([
+            window.nowarfyStorage.set('nowarfy_queue', queueSnapshot),
+            window.nowarfyStorage.set('nowarfy_queue_qid', qidSnapshot),
+            window.nowarfyStorage.set('nowarfy_queue_round', roundSnapshot),
+            window.nowarfyStorage.set(QUEUE_MODE_STORAGE_KEY, queuePlaybackMode),
+            window.nowarfyStorage.set(QUEUE_PLAYLIST_STORAGE_KEY, queuePlaylistContext)
+        ]);
+    }
 }
 function persistQueue() {
     clearTimeout(nowarfyQueuePersistTimer);
@@ -937,6 +949,37 @@ function restoreQueueFromStorage() {
             pendingVideoResumeSession = resume;
         }
     } catch (e) {}
+}
+
+async function hydrateQueueFromIndexedDB() {
+    if (!window.nowarfyStorage?.supported?.()) return;
+    const values = await Promise.all([
+        window.nowarfyStorage.get('nowarfy_queue', null),
+        window.nowarfyStorage.get('nowarfy_queue_qid', ''),
+        window.nowarfyStorage.get('nowarfy_queue_round', '0'),
+        window.nowarfyStorage.get(QUEUE_MODE_STORAGE_KEY, 'radio'),
+        window.nowarfyStorage.get(QUEUE_PLAYLIST_STORAGE_KEY, null)
+    ]);
+    const [storedQueue, storedQid, storedRound, storedMode, storedContext] = values;
+    if (!Array.isArray(storedQueue) || !storedQueue.length) return;
+    const nextMode = storedMode === 'prebuilt_playlist' && storedContext?.playlistId ? 'prebuilt_playlist' : 'radio';
+    const nextQueue = nextMode === 'prebuilt_playlist'
+        ? storedQueue.filter(item => item?.type === 'yt' && item?.url)
+        : storedQueue.filter(isRadioMusicTrack);
+    if (!nextQueue.length) return;
+    queuePlaybackMode = nextMode;
+    queuePlaylistContext = nextMode === 'prebuilt_playlist' ? storedContext : null;
+    queue = nextQueue;
+    queueSeenKeys = new Set(queue.map(songKey));
+    queueIdCounter = queue.reduce((max, song) => Math.max(max, Number(song?._qid) || 0), 0);
+    queueRound = Number(storedRound) || 0;
+    const qid = storedQid === '' || storedQid == null ? null : Number(storedQid);
+    const idx = queue.findIndex(song => song._qid === qid);
+    if (idx < 0) return;
+    currentIndex = idx;
+    currentPlayingQid = qid;
+    updateNowPlaying(queue[idx]);
+    renderQueue();
 }
 
 function toggleQueuePanel() {
@@ -1257,4 +1300,3 @@ function queueAutomaticAdvance(reason = 'ended') {
     if (document.visibilityState === 'hidden') Promise.resolve().then(advance);
     else automaticAdvanceTimer = window.setTimeout(advance, 180);
 }
-

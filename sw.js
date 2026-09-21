@@ -1,10 +1,11 @@
-const CACHE_NAME = 'nowarfy-shell-v43';
+const CACHE_NAME = 'nowarfy-shell-v44';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/styles.css',
   '/styles-secondary.css',
   '/script.js',
+  '/modules/storage.js',
   '/modules/core.js',
   '/modules/state-and-taste.js',
   '/modules/catalog.js',

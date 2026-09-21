@@ -40,6 +40,7 @@ function toggleFavoriteSong(song, control = null) {
         showToast('Añadido a favoritos', 'fa-heart');
     }
     localStorage.setItem('nowarfy_favs', JSON.stringify(favorites));
+    if (window.nowarfyStorage) void window.nowarfyStorage.set('nowarfy_favs', favorites);
     scheduleNowarfyTasteSync();
     syncFavoriteControl(control, song);
     updateFavButton(currentQueueSong());
