@@ -932,6 +932,8 @@ let currentMood = null;
 let searchTimeout = null;
 let activeSearchPagination = null;
 let searchMoreObserver = null;
+let activeSearchController = null;
+let activeSearchRequestId = 0;
 let knowledgeMoreObserver = null;
 let ytPlayer = null;
 let ytStartupTimer = null;
@@ -1908,10 +1910,10 @@ async function fetchYouTubeSearch(query, resourceTypes, opts = {}) {
             const videoFilters = resourceTypes === 'video' ? '&videoEmbeddable=true&videoSyndicated=true' : '';
             const pageParam = pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '';
             const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=${resourceTypes}&maxResults=${maxResults}&q=${encodeURIComponent(query)}${channelParam}${videoFilters}${pageParam}&key=${YOUTUBE_API_KEY}`;
-            response = await fetch(url);
+            response = await fetch(url, opts.signal ? { signal: opts.signal } : undefined);
         } else {
             const pageParam = pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '';
-            response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube&resourceTypes=${resourceTypes}${channelParam}&maxResults=${maxResults}${pageParam}`);
+            response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube&resourceTypes=${resourceTypes}${channelParam}&maxResults=${maxResults}${pageParam}`, opts.signal ? { signal: opts.signal } : undefined);
         }
 
         const data = await response.json();
@@ -1930,6 +1932,7 @@ async function fetchYouTubeSearch(query, resourceTypes, opts = {}) {
         mapped.pageInfo = data.pageInfo || null;
         return mapped;
     } catch (e) {
+        if (e?.name === 'AbortError') return [];
         reserveSaveQueryState({ queryKey, source: 'youtube', query, styleKey, seedKey: opts.seed?.artist || null, status: 'error', retryAfter: new Date(Date.now() + 5 * 60 * 1000).toISOString(), metadata: { resourceTypes, channelId: opts.channelId || null, pageToken: pageToken || null, error: String(e?.message || e) } });
         return [];
     }
@@ -2066,7 +2069,7 @@ function renderSearchMoreControl() {
 }
 async function loadMoreSearchResults() {
     const state = activeSearchPagination;
-    if (!state || state.loading || state.query !== searchQuery) return;
+    if (!state || state.loading || state.query !== searchQuery || state.requestId !== activeSearchRequestId) return;
     if (!state.youtubeNextPageToken && !state.openverseHasMore) return;
     state.loading = true;
     const button = document.getElementById('searchMoreButton');
@@ -2074,13 +2077,13 @@ async function loadMoreSearchResults() {
     try {
         const [youtubeResult, openverseResult] = await Promise.allSettled([
             state.youtubeNextPageToken
-                ? fetchYouTubeSearch(state.query, channelFilter ? 'video,playlist' : 'video,playlist,channel', { channelId: channelFilter?.id, maxResults: 50, pageToken: state.youtubeNextPageToken, reserveContext: 'manual' })
+                ? fetchYouTubeSearch(state.query, channelFilter ? 'video,playlist' : 'video,playlist,channel', { channelId: channelFilter?.id, maxResults: 50, pageToken: state.youtubeNextPageToken, reserveContext: 'manual', signal: activeSearchController?.signal })
                 : Promise.resolve([]),
             state.openverseHasMore
-                ? fetchOpenverseTracks(state.openverseQuery, 20, { page: state.openversePage + 1, reserveContext: 'manual', seed: { artist: state.query, title: state.query } })
+                ? fetchOpenverseTracks(state.openverseQuery, 20, { page: state.openversePage + 1, reserveContext: 'manual', seed: { artist: state.query, title: state.query }, signal: activeSearchController?.signal })
                 : Promise.resolve([])
         ]);
-        if (state.query !== searchQuery || activeSearchPagination !== state) return;
+        if (state.query !== searchQuery || activeSearchPagination !== state || state.requestId !== activeSearchRequestId) return;
         const nextYouTube = youtubeResult.status === 'fulfilled' ? youtubeResult.value || [] : [];
         const nextOpenverse = openverseResult.status === 'fulfilled' ? openverseResult.value || [] : [];
         state.youtubeResults = mergeSearchResults([...state.youtubeResults, ...nextYouTube]);
@@ -2096,6 +2099,9 @@ async function loadMoreSearchResults() {
     }
 }
 async function performSmartSearch(query, options = {}) {
+    activeSearchController?.abort();
+    activeSearchController = new AbortController();
+    const requestId = ++activeSearchRequestId;
     pushNowarfyHistory('search', {
         query: String(query || ''),
         channelId: channelFilter?.id || '',
@@ -2107,7 +2113,7 @@ async function performSmartSearch(query, options = {}) {
     if (!channelFilter) rememberSearch(query);
     activeBrowseMode = 'search';
     searchMoreObserver?.disconnect();
-    activeSearchPagination = { query, youtubeResults: [], youtubeNextPageToken: '', openverseResults: [], openverseQuery: channelFilter ? query : `${query} music`, openversePage: 1, openverseHasMore: false, loading: false };
+    activeSearchPagination = { requestId, query, youtubeResults: [], youtubeNextPageToken: '', openverseResults: [], openverseQuery: channelFilter ? query : `${query} music`, openversePage: 1, openverseHasMore: false, loading: false };
     currentMood = null;
     document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
 
@@ -2118,6 +2124,7 @@ async function performSmartSearch(query, options = {}) {
 
     try {
         const localCandidates = await reserveSearchCandidates(query, { limit: 20 });
+        if (requestId !== activeSearchRequestId) return;
         const knownPool = [...(queue || []), ...(currentList || []), ...(homeVideos || []), ...(homeMusicVideos || []), ...(homeMusic || [])];
         const queryNeedle = String(query || '').toLowerCase().trim();
         const sessionCandidates = knownPool.filter(song => {
@@ -2135,10 +2142,11 @@ async function performSmartSearch(query, options = {}) {
             cachedSearchIsSufficient
                 ? Promise.resolve([])
                 : (channelFilter
-                    ? fetchYouTubeSearch(query, 'video,playlist', { channelId: channelFilter.id, maxResults: 50 })
-                    : fetchYouTubeSearch(query, 'video,playlist,channel', { maxResults: 50 })),
-            fetchOpenverseTracks(openverseQuery, 20, { page: 1, reserveContext: 'manual', seed: { artist: query, title: query } })
+                    ? fetchYouTubeSearch(query, 'video,playlist', { channelId: channelFilter.id, maxResults: 50, signal: activeSearchController.signal })
+                    : fetchYouTubeSearch(query, 'video,playlist,channel', { maxResults: 50, signal: activeSearchController.signal })),
+            fetchOpenverseTracks(openverseQuery, 20, { page: 1, reserveContext: 'manual', seed: { artist: query, title: query }, signal: activeSearchController.signal })
         ]);
+        if (requestId !== activeSearchRequestId) return;
         const fresh = youtubeResult.status === 'fulfilled' ? youtubeResult.value || [] : [];
         const openverseTracks = openverseResult.status === 'fulfilled' ? openverseResult.value || [] : [];
         const merged = mergeSearchResults([...localSongs, ...fresh]);
@@ -2158,12 +2166,13 @@ async function performSmartSearch(query, options = {}) {
             else if (!(await recoverWithRockMetal())) renderEmptyState(`Sin resultados para "${query}"`, 'No encontramos coincidencias ni propuestas musicales disponibles ahora.');
         }
     } catch (e) {
+        if (e?.name === 'AbortError' || requestId !== activeSearchRequestId) return;
         console.warn('No se pudo completar la búsqueda solicitada', e);
         if (channelFilter || !(await recoverWithRockMetal())) {
             renderEmptyState(`Sin resultados para "${query}"`, 'No encontramos coincidencias ni propuestas de rock y metal disponibles ahora.');
         }
     } finally {
-        if (loader.style.display === 'flex') loader.style.display = 'none';
+        if (requestId === activeSearchRequestId && loader.style.display === 'flex') loader.style.display = 'none';
     }
 }
 
@@ -2186,7 +2195,7 @@ function clearChannelFilter() {
 
 async function fetchOpenverseTracks(query, limit = 20, options = {}) {
     const page = Math.max(1, Number(options.page || 1));
-    const response = await fetch(`/api/search?type=openverse&query=${encodeURIComponent(query)}&page=${page}&maxResults=${Math.min(Math.max(limit, 1), 20)}`);
+    const response = await fetch(`/api/search?type=openverse&query=${encodeURIComponent(query)}&page=${page}&maxResults=${Math.min(Math.max(limit, 1), 20)}`, options.signal ? { signal: options.signal } : undefined);
     const data = await response.json();
     if (!response.ok || !data.results?.length) return [];
     const allowedAudioTypes = new Set(['mp3', 'mp32', 'ogg', 'opus', 'm4a', 'aac', 'wav', 'flac']);
@@ -2391,6 +2400,10 @@ async function loadHomeCatalogSources() {
 }
 
 async function resetView(options = {}) {
+    activeSearchController?.abort();
+    activeSearchController = null;
+    activeSearchRequestId += 1;
+    activeSearchPagination = null;
     pushNowarfyHistory('home');
     closeNowarfyMobileNav();
     minimizeActiveVideoForNavigation();
