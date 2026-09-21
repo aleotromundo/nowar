@@ -5,7 +5,10 @@ js_content = Path('script.js').read_text(encoding='utf-8')
 
 # Extraer la función loadHomeCatalogSources de forma exacta
 start = js_content.index('async function loadHomeCatalogSources() {')
-end = js_content.index('// La portada reutiliza caché/reserva local;', start)
+# Fin de la función: siguiente declaración de función de nivel superior (no depende de comentarios).
+import re
+_next = re.search(r'\n(?:async )?function \w+', js_content[start + 10:])
+end = start + 10 + _next.start() if _next else len(js_content)
 startup = js_content[start:end]
 
 checks = {

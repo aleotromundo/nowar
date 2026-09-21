@@ -1105,10 +1105,15 @@ function contentMetaLabel(item) {
     return item?.license ? `Audio libre · ${item.license}` : 'Audio';
 }
 
+// Escapa texto para usarlo tanto en nodos de texto como dentro de atributos entre comillas.
+// (textContent->innerHTML no escapa " ni ', lo que permitia salirse de un atributo.)
 function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = normalizeSourceText(str);
-    return div.innerHTML;
+    return normalizeSourceText(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 function hasValidArtwork(item) {
@@ -1773,7 +1778,7 @@ function renderChannelCatalog() {
         const uploadsTotal = state.uploads?.pageInfo?.totalResults ?? channel.statistics?.videoCount;
         container.innerHTML = `
             <section class="channel-profile" aria-label="Perfil del canal ${escapeHtml(channelTitle)}">
-                <img class="channel-profile-avatar" src="${thumb?.url || ''}" alt="" onerror="this.style.visibility='hidden'">
+                <img class="channel-profile-avatar" src="${escapeHtml(thumb?.url || '')}" alt="" onerror="this.style.visibility='hidden'">
                 <div class="channel-profile-content">
                     <p class="channel-profile-kicker"><i class="fab fa-youtube"></i> Canal público de YouTube</p>
                     <h2>${escapeHtml(channelTitle)}</h2>
