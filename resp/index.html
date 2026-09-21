@@ -15,9 +15,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/nowarfy-apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Hoja de estilos externa -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="mode-youtoo">
@@ -81,6 +82,7 @@
             </button>
         </aside>
 
+        <!-- CONTENIDO -->
         <div class="content-area">
             <div class="search-container">
                 <div class="search-wrap">
@@ -168,6 +170,7 @@
         </div>
     </div>
 
+    <!-- PLAYER BAR (FIJA ABAJO) -->
     <div class="player-bar" id="playerBar">
         <div class="drag-handle"><i class="fas fa-grip-lines"></i></div>
         <button type="button" class="floating-restore-btn" id="floatingRestoreBtn" onclick="toggleFloatingMode()" title="Volver a la vista normal">
@@ -224,6 +227,7 @@
         </div>
     </div>
 
+    <!-- PANEL DE COLA DE REPRODUCCIÓN -->
     <div class="queue-overlay" id="queueOverlay" onclick="closeQueuePanel()"></div>
     <div class="queue-panel" id="queuePanel">
         <div class="queue-panel-header">
@@ -270,7 +274,7 @@
                 <strong id="nowarfyAuthUserEmail"></strong>
                 <span>Sesión iniciada en este dispositivo. El reproductor y sus controles se sincronizan con los demás dispositivos de la misma cuenta.</span>
                 <small id="nowarfyRemoteStatus">Conectando dispositivos…</small>
-                <button type="button" id="nowarfyDevicePickerBtn" onclick="toggleNowarfyDevicePicker()"><i class="fas fa-mobile-screen-button"></i> Elegir dispositivo de reproducción <span id="nowarfyDevicePickerBadge">0</span></button>
+                <button type="button" id="nowarfyDevicePickerBtn" onclick="toggleNowarfyDevicePicker()"><i class="fas fa-mobile-screen-button"></i> Elegir dispositivo de reproducción <span id="nowarfyDeviceCount">(0)</span></button>
                 <div id="nowarfyDevicePicker" class="nowarfy-device-picker" hidden>
                     <div class="nowarfy-device-picker-title"><span>Dispositivos conectados</span><small id="nowarfyDevicePickerHint">Actualizando…</small></div>
                     <div id="nowarfyDeviceList" class="nowarfy-device-list"></div>
@@ -299,7 +303,6 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="/app.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
