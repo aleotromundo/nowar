@@ -152,6 +152,7 @@
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 22px; }
         .library-rail-section { margin-top: 30px; }
+        .home-deferred-rail { min-height: 164px; }
         .library-rail-title { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 1.35rem; font-weight: 850; letter-spacing: -.015em; }
         .library-rail-title i { color: var(--accent); font-size: .95rem; }
         .library-rail-hint { margin-left: auto; color: var(--text-gray); font-size: .72rem; font-weight: 700; }
