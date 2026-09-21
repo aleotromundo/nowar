@@ -41,6 +41,8 @@ let nowarfyClaimInFlight = false;
 let nowarfyRemoteDevices = [];
 let nowarfyDeviceRefreshTimer = null;
 let nowarfyRemoteStateTimer = null;
+let nowarfyPageHidden = document.visibilityState === 'hidden';
+let nowarfyProgressSource = null;
 let nowarfyAudioUnlocked = false;
 let nowarfyPendingHandoff = null;
 let nowarfyPendingRemoteCommands = [];
@@ -404,10 +406,7 @@ async function setupNowarfyRemoteControl() {
                 showToast('Dispositivo vinculado. Ya aparece en tu lista de reproducción remota.', 'fa-link');
             }
         } catch (_) {}
-        if (nowarfyDeviceRefreshTimer) clearInterval(nowarfyDeviceRefreshTimer);
-        nowarfyDeviceRefreshTimer = setInterval(() => { void refreshNowarfyRemoteDevices(); }, 5000);
-        if (nowarfyRemoteStateTimer) clearInterval(nowarfyRemoteStateTimer);
-        nowarfyRemoteStateTimer = setInterval(() => { void touchNowarfyRemoteDevice(); if (nowarfyRemoteIsPlayer) void publishNowarfyRemoteState(); }, 3000);
+        syncNowarfyRemoteTimers();
         updateRemoteShadowTimer();
     } catch (error) { remoteStatus('Control remoto no disponible todavía; la reproducción local sigue funcionando.'); }
 }
@@ -515,7 +514,22 @@ async function publishNowarfyRemoteState() {
 function updateRemoteShadowTimer() {
     if (nowarfyRemoteShadowTimer) clearInterval(nowarfyRemoteShadowTimer);
     nowarfyRemoteShadowTimer = null;
-    if (nowarfyRemoteSession && !nowarfyRemoteIsPlayer) nowarfyRemoteShadowTimer = setInterval(updateRemoteShadowProgress, 500);
+    if (nowarfyRemoteSession && !nowarfyRemoteIsPlayer && !nowarfyPageHidden) nowarfyRemoteShadowTimer = setInterval(updateRemoteShadowProgress, 500);
+}
+function syncNowarfyRemoteTimers() {
+    if (nowarfyDeviceRefreshTimer) clearInterval(nowarfyDeviceRefreshTimer);
+    if (nowarfyRemoteStateTimer) clearInterval(nowarfyRemoteStateTimer);
+    nowarfyDeviceRefreshTimer = null;
+    nowarfyRemoteStateTimer = null;
+    if (!nowarfyRemoteSession) return;
+    if (!nowarfyPageHidden) nowarfyDeviceRefreshTimer = setInterval(() => { void refreshNowarfyRemoteDevices(); }, 5000);
+    // El reproductor activo debe conservar su heartbeat aunque su pestaña esté oculta.
+    if (!nowarfyPageHidden || nowarfyRemoteIsPlayer) {
+        nowarfyRemoteStateTimer = setInterval(() => {
+            void touchNowarfyRemoteDevice();
+            if (nowarfyRemoteIsPlayer) void publishNowarfyRemoteState();
+        }, 3000);
+    }
 }
 function updateRemoteShadowProgress() {
     if (nowarfyRemoteIsPlayer || !nowarfyRemoteShadowState) return;
@@ -2312,9 +2326,10 @@ function reviewVideoClassification() {
         item.metadata = { ...(item.metadata || {}), contentGroup: group };
     });
 }
-function scheduleVideoClassificationReview() {
-    if (videoClassificationReviewTimer) return;
-    videoClassificationReviewTimer = window.setInterval(reviewVideoClassification, 5 * 60 * 1000);
+function scheduleVideoClassificationReview() { syncVideoClassificationReviewTimer(); }
+function syncVideoClassificationReviewTimer() {
+    if (videoClassificationReviewTimer) clearInterval(videoClassificationReviewTimer);
+    videoClassificationReviewTimer = nowarfyPageHidden ? null : window.setInterval(reviewVideoClassification, 5 * 60 * 1000);
 }
 
 function normalizeTasteTrack(item) {
@@ -3551,7 +3566,7 @@ function refreshAmbientArtworkFromCatalog() {
     if (!candidates.length) return;
     ambientArtworkIndex = Math.abs(featuredHash(candidates.map(item => item.url).join('|'))) % candidates.length;
     setAmbientArtwork(candidates[ambientArtworkIndex]);
-    if (!ambientArtworkRotationTimer) ambientArtworkRotationTimer = setInterval(rotateAmbientArtwork, 14000);
+    if (!ambientArtworkRotationTimer && !nowarfyPageHidden) ambientArtworkRotationTimer = setInterval(rotateAmbientArtwork, 14000);
 }
 
 // --- RESERVA LOCAL DE CANDIDATOS (IndexedDB + fallback localStorage) ---
@@ -5901,8 +5916,10 @@ function stopAll(options = {}) {
 
 function startProgress(source) {
     if (progressInterval) clearInterval(progressInterval);
+    nowarfyProgressSource = source;
+    if (nowarfyPageHidden) { progressInterval = null; return; }
     progressInterval = setInterval(() => {
-        if (isSeeking) return;
+        if (nowarfyPageHidden || isSeeking) return;
         let curr, dur;
         if (source === ytPlayer) {
             curr = source.getCurrentTime();
@@ -6428,9 +6445,28 @@ function setupPlaybackContinuity() {
     });
 }
 
+function handleNowarfyVisibilityChange() {
+    nowarfyPageHidden = document.visibilityState === 'hidden';
+    syncVideoClassificationReviewTimer();
+    syncNowarfyRemoteTimers();
+    updateRemoteShadowTimer();
+    if (nowarfyPageHidden) {
+        if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
+        if (ambientArtworkRotationTimer) { clearInterval(ambientArtworkRotationTimer); ambientArtworkRotationTimer = null; }
+        persistVideoResumeSession(true);
+    } else {
+        refreshAmbientArtworkFromCatalog();
+        if (nowarfyProgressSource && isPlaying) startProgress(nowarfyProgressSource);
+        updateRemoteShadowProgress();
+    }
+}
+
 function setupBackgroundPersistence() {
     const save = () => { persistQueue(); persistVideoResumeSession(true); updatePlaybackState(); if (nowarfyRemoteIsPlayer) void publishNowarfyRemoteState(); };
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
+    document.addEventListener('visibilitychange', () => {
+        handleNowarfyVisibilityChange();
+        if (nowarfyPageHidden) save();
+    });
     window.addEventListener('pagehide', save);
     window.addEventListener('freeze', save);
 }
