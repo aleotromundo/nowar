@@ -1895,12 +1895,19 @@ function markYouTubeQuotaUnavailable() {
 
 async function fetchYouTubeSearch(query, resourceTypes, opts = {}) {
     if (Date.now() < youtubeQuotaBlockedUntil) return [];
-
     const channelParam = opts.channelId ? `&channelId=${encodeURIComponent(opts.channelId)}` : '';
     const maxResults = opts.maxResults || 20;
     const styleKey = opts.styleKey || inferArtistStyle(query, []);
     const pageToken = String(opts.pageToken || '').trim();
     const queryKey = reserveQueryKey('youtube', query, styleKey, resourceTypes, opts.channelId || '');
+    const cacheKey = catalogCacheKey('youtube', { query: String(query || '').trim().toLowerCase(), resourceTypes, channelId: opts.channelId || '', maxResults, pageToken });
+    const cached = readRemoteCatalogCache(cacheKey, CATALOG_CACHE_TTL_MS.youtube);
+    if (cached && Array.isArray(cached.items)) {
+        const restored = cached.items.slice();
+        restored.nextPageToken = String(cached.nextPageToken || '');
+        restored.pageInfo = cached.pageInfo || null;
+        return restored;
+    }
     try {
         const previous = await reserveGetQueryState({ source: 'youtube', query, styleKey, queryKey });
         const retryAt = previous?.retry_after ? Date.parse(previous.retry_after) : 0;
@@ -1930,6 +1937,7 @@ async function fetchYouTubeSearch(query, resourceTypes, opts = {}) {
         void reserveDiscoveredCandidates(mapped, { context: opts.reserveContext || 'manual', seed: opts.seed || null, queryContext: `${query} ${resourceTypes}`.trim().toLowerCase() });
         mapped.nextPageToken = nextPageToken;
         mapped.pageInfo = data.pageInfo || null;
+        writeRemoteCatalogCache(cacheKey, { items: mapped, nextPageToken, pageInfo: data.pageInfo || null });
         return mapped;
     } catch (e) {
         if (e?.name === 'AbortError') return [];
@@ -1968,6 +1976,13 @@ async function fetchYouTubeLegacy(query, maxResults = 20) {
 const ROCK_METAL_DISCOVERY_QUERY = 'rock metal official music';
 const CONTENT_CATALOG_CACHE_KEY = 'nowarfy_catalog_cache_v1';
 const CONTENT_CATALOG_CACHE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+const REMOTE_CATALOG_CACHE_KEY = 'nowarfy_remote_catalog_cache_v1';
+const REMOTE_CATALOG_CACHE_MAX_ITEMS = 80;
+const CATALOG_CACHE_TTL_MS = Object.freeze({
+    youtube: 5 * 60 * 1000,
+    openverse: 15 * 60 * 1000,
+    commons: 30 * 60 * 1000
+});
 const OPENVERSE_RADIO_CACHE_KEY = 'nowarfy_openverse_radio_cache_v1';
 const OPENVERSE_RADIO_CACHE_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
 const EMERGENCY_VIDEO_CATALOG = [
@@ -2010,7 +2025,34 @@ const FREE_VIDEO_COLLECTIONS = [
     { title: 'Archivo musical libre', icon: 'fa-film', query: 'rock music', description: 'Documentos y clips musicales de dominio público o Creative Commons.' }
 ];
 const directCollectionCache = new Map();
-const freeMediaCollectionCache = new Map();
+const remoteCatalogCache = new Map();
+function catalogCacheKey(source, params = {}) {
+    return `${source}:${JSON.stringify(params, Object.keys(params).sort())}`;
+}
+function readRemoteCatalogCache(key, ttl) {
+    const now = Date.now();
+    const memoryEntry = remoteCatalogCache.get(key);
+    if (memoryEntry && now - memoryEntry.savedAt <= ttl) return memoryEntry.data;
+    try {
+        const store = JSON.parse(localStorage.getItem(REMOTE_CATALOG_CACHE_KEY) || '{}');
+        const entry = store[key];
+        if (!entry || now - Number(entry.savedAt || 0) > ttl) return null;
+        remoteCatalogCache.set(key, entry);
+        return entry.data;
+    } catch (_) { return null; }
+}
+function writeRemoteCatalogCache(key, data) {
+    const entry = { savedAt: Date.now(), data };
+    remoteCatalogCache.set(key, entry);
+    try {
+        const store = JSON.parse(localStorage.getItem(REMOTE_CATALOG_CACHE_KEY) || '{}');
+        store[key] = entry;
+        const freshEntries = Object.entries(store)
+            .sort(([, a], [, b]) => Number(b?.savedAt || 0) - Number(a?.savedAt || 0))
+            .slice(0, REMOTE_CATALOG_CACHE_MAX_ITEMS);
+        localStorage.setItem(REMOTE_CATALOG_CACHE_KEY, JSON.stringify(Object.fromEntries(freshEntries)));
+    } catch (_) {}
+}
 
 async function recoverWithRockMetal() {
     const recovery = await fetchYouTubeSearch(ROCK_METAL_DISCOVERY_QUERY, 'video,playlist,channel', { maxResults: 20 });
@@ -2195,7 +2237,16 @@ function clearChannelFilter() {
 
 async function fetchOpenverseTracks(query, limit = 20, options = {}) {
     const page = Math.max(1, Number(options.page || 1));
-    const response = await fetch(`/api/search?type=openverse&query=${encodeURIComponent(query)}&page=${page}&maxResults=${Math.min(Math.max(limit, 1), 20)}`, options.signal ? { signal: options.signal } : undefined);
+    const boundedLimit = Math.min(Math.max(limit, 1), 20);
+    const cacheKey = catalogCacheKey('openverse', { query: String(query || '').trim().toLowerCase(), page, limit: boundedLimit, radioOnly: Boolean(options.radioOnly) });
+    const cached = readRemoteCatalogCache(cacheKey, CATALOG_CACHE_TTL_MS.openverse);
+    if (cached && Array.isArray(cached.items)) {
+        const restored = cached.items.slice();
+        restored.nextPage = cached.nextPage || null;
+        restored.page = page;
+        return restored;
+    }
+    const response = await fetch(`/api/search?type=openverse&query=${encodeURIComponent(query)}&page=${page}&maxResults=${boundedLimit}`, options.signal ? { signal: options.signal } : undefined);
     const data = await response.json();
     if (!response.ok || !data.results?.length) return [];
     const allowedAudioTypes = new Set(['mp3', 'mp32', 'ogg', 'opus', 'm4a', 'aac', 'wav', 'flac']);
@@ -2228,13 +2279,16 @@ async function fetchOpenverseTracks(query, limit = 20, options = {}) {
     void reserveDiscoveredCandidates(mappedTracks, { context: options.reserveContext || 'manual', seed: options.seed || null, queryContext: `${query} openverse`.trim().toLowerCase() });
     mappedTracks.nextPage = data.pagination?.next || null;
     mappedTracks.page = page;
+    writeRemoteCatalogCache(cacheKey, { items: mappedTracks, nextPage: mappedTracks.nextPage });
     return mappedTracks;
 }
 
 async function fetchCommonsVideos(query, limit = 12) {
-    const cacheKey = `commons:${String(query || '').toLowerCase().trim()}`;
-    if (freeMediaCollectionCache.has(cacheKey)) return freeMediaCollectionCache.get(cacheKey);
-    const response = await fetch(`/api/search?type=commonsVideo&query=${encodeURIComponent(query)}&maxResults=${Math.min(Math.max(limit, 1), 20)}`);
+    const boundedLimit = Math.min(Math.max(limit, 1), 20);
+    const cacheKey = catalogCacheKey('commons', { query: String(query || '').trim().toLowerCase(), limit: boundedLimit });
+    const cached = readRemoteCatalogCache(cacheKey, CATALOG_CACHE_TTL_MS.commons);
+    if (Array.isArray(cached)) return cached.slice();
+    const response = await fetch(`/api/search?type=commonsVideo&query=${encodeURIComponent(query)}&maxResults=${boundedLimit}`);
     const data = await response.json();
     if (!response.ok || !Array.isArray(data.results)) return [];
     const mapped = data.results
@@ -2246,15 +2300,12 @@ async function fetchCommonsVideos(query, limit = 12) {
             sourceUrl: item.sourceUrl || '', description: normalizeSourceText(item.description || ''),
             channelTitle: 'Wikimedia Commons'
         }));
-    freeMediaCollectionCache.set(cacheKey, mapped);
+    writeRemoteCatalogCache(cacheKey, mapped);
     return mapped;
 }
 
 async function fetchFreeMusicCollection(collection) {
-    const cacheKey = `openverse:${collection.query}`;
-    if (freeMediaCollectionCache.has(cacheKey)) return freeMediaCollectionCache.get(cacheKey);
     const tracks = await fetchOpenverseTracks(collection.query, 20, { radioOnly: true, reserveContext: 'radio' });
-    freeMediaCollectionCache.set(cacheKey, tracks);
     return tracks;
 }
 

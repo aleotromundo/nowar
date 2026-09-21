@@ -29,7 +29,7 @@ Ejecutar `node --check script.js`, `git diff --check`, verificar el Service Work
 
 ## Próximo paso
 
-Medir en producción el impacto de la carga inicial y abordar OPT-101 solo si el asset tiene referencias activas. Después implementar OPT-108 con TTL de catálogos.
+Medir en producción el impacto de la carga inicial y abordar OPT-101 solo si el asset tiene referencias activas. OPT-108 quedó implementada con caché en memoria para la sesión y persistencia breve en `localStorage`: YouTube usa 5 minutos, Openverse 15 minutos y Wikimedia Commons 30 minutos. Las claves incluyen los parámetros que modifican la respuesta, incluyendo la página y el token de paginación, y solo se guardan respuestas exitosas.
 
 ## Referencias
 
