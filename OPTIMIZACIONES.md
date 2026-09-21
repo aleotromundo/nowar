@@ -16,7 +16,7 @@ La prioridad **P0** corresponde a mejoras de impacto alto y bajo riesgo. **P1** 
 
 | Estado | Cantidad | Significado |
 |---|---:|---|
-| Aplicada | 11 | Ya está implementada en el repositorio. |
+| Aplicada | 12 | Ya está implementada en el repositorio. |
 | En validación | 1 | Está implementada y necesita medición real. |
 | Planificada | 8 | Está registrada para una siguiente iteración. |
 | Descartada | 0 | No hay propuestas descartadas actualmente. |
@@ -49,7 +49,7 @@ La prioridad **P0** corresponde a mejoras de impacto alto y bajo riesgo. **P1** 
 | OPT-109 | P1 | Dividir `script.js` por responsabilidades | Reduce parseo inicial y mejora mantenibilidad | `modules/core.js`, `state-and-taste.js`, `catalog.js`, `reserve.js`, `playback-queue.js`, `lyrics-video.js` y `player-pwa.js` | Aplicada |
 | OPT-110 | P1 | Separar CSS crítico del CSS de vistas secundarias | Reduce bloqueo de render | `styles.css` crítico de 87 KB y `styles-secondary.css` no bloqueante de 48 KB, con precarga y fallback `noscript` | Aplicada |
 | OPT-111 | P2 | Mover historial y colas grandes a IndexedDB | Evita límites y costos de `localStorage` | `modules/storage.js`, hidratación asíncrona de cola y taste, fallback reversible a `localStorage` | Diseñar migración compatible |
-| OPT-112 | P2 | Virtualizar la Playlist cuando crezca | Mantiene estable el DOM con colas largas | Renderizar solo las filas cercanas al viewport | OPT-111 |
+| OPT-112 | P2 | Virtualizar la Playlist cuando crezca | Mantiene estable el DOM con colas largas | `renderVirtualQueue()` monta solo las filas cercanas al viewport a partir de 100 elementos | OPT-111 |
 
 ## Roadmap recomendado
 
@@ -93,6 +93,7 @@ Cada optimización debe verificarse con una comparación antes/después. Como m�
 | 2026-09-21 | Implementación de OPT-109: división de `script.js` en siete módulos de responsabilidades, con bootstrap compatible con handlers inline y precache del Service Worker | Manus AI |
 | 2026-09-21 | Implementación de OPT-110: separación del CSS crítico y secundario, carga no bloqueante, headers de caché y precache del Service Worker | Manus AI |
 | 2026-09-21 | Implementación de OPT-111: capa IndexedDB versionada, migración no destructiva de cola, historial, favoritos y sesión de reproducción; restauración inmediata desde `localStorage` e hidratación asíncrona | Manus AI |
+| 2026-09-21 | Implementación de OPT-112: virtualización de la Playlist a partir de 100 filas, con overscan, spacer de altura estable y eventos de arrastre/reordenamiento preservados | Manus AI |
 | 2026-09-20 | Creación del índice y consolidación de optimizaciones existentes y propuestas | Manus AI |
 
 ## Referencias

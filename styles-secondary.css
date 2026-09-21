@@ -436,6 +436,9 @@ html { scroll-behavior: smooth; }
 
 
         .queue-list { flex: 1; overflow-y: auto; padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+        .queue-list-virtual { display: block; position: relative; }
+        .queue-virtual-spacer { position: relative; width: 100%; }
+        .queue-virtual-row { position: absolute; left: 0; right: 0; height: 60px; box-sizing: border-box; }
 
         .queue-empty { text-align: center; padding: 50px 20px; color: var(--text-dim); }
 

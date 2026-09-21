@@ -1046,6 +1046,90 @@ function setupQueueTrashDropzone() {
     });
 }
 
+const QUEUE_VIRTUAL_THRESHOLD = 100;
+const QUEUE_VIRTUAL_ROW_HEIGHT = 60;
+const QUEUE_VIRTUAL_GAP = 6;
+const QUEUE_VIRTUAL_STRIDE = QUEUE_VIRTUAL_ROW_HEIGHT + QUEUE_VIRTUAL_GAP;
+const QUEUE_VIRTUAL_OVERSCAN = 6;
+
+function createQueueRow(song, idx, virtual = false) {
+    const row = document.createElement('div');
+    const isPlayingRow = song._qid === currentPlayingQid;
+    row.className = `queue-row-item${isPlayingRow ? ' playing' : ''}${virtual ? ' queue-virtual-row' : ''}`;
+    row.draggable = true;
+    row.dataset.qid = String(song._qid);
+    if (virtual) row.style.top = `${idx * QUEUE_VIRTUAL_STRIDE}px`;
+    row.innerHTML = `
+        <i class="fas fa-grip-lines queue-drag-handle" title="Arrastrar para reordenar o quitar"></i>
+        <img src="${escapeHtml(song.img || '')}" class="queue-row-img" loading="lazy" alt="" onerror="this.closest('.queue-row-item')?.remove();">
+        <div class="queue-row-info">
+            <div class="queue-row-title">${escapeHtml(song.title)}</div>
+            <div class="queue-row-artist">${escapeHtml(song.artist)}</div>
+        </div>
+        ${isPlayingRow ? '<i class="fas fa-volume-up queue-playing-icon" title="Sonando ahora"></i>' : ''}
+        <button type="button" class="queue-row-remove" title="Quitar de Playlist" aria-label="Quitar de Playlist"><i class="fas fa-xmark"></i></button>`;
+    row.addEventListener('click', (e) => {
+        if (e.target.closest('.queue-row-remove') || e.target.closest('.queue-drag-handle')) return;
+        playQueueAt(idx);
+    });
+    row.querySelector('.queue-row-remove').addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeFromQueue(song._qid);
+    });
+    row.addEventListener('dragstart', (e) => {
+        dragSrcQid = song._qid;
+        row.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', String(song._qid)); } catch (err) {}
+        document.getElementById('queueTrash').classList.add('show');
+    });
+    row.addEventListener('dragend', () => {
+        row.classList.remove('dragging');
+        document.querySelectorAll('.queue-row-item.drag-over-top, .queue-row-item.drag-over-bottom').forEach(r => r.classList.remove('drag-over-top', 'drag-over-bottom'));
+        document.getElementById('queueTrash').classList.remove('show', 'drag-hover');
+        dragSrcQid = null;
+    });
+    row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (dragSrcQid == null || dragSrcQid === song._qid) return;
+        const rect = row.getBoundingClientRect();
+        const before = (e.clientY - rect.top) < rect.height / 2;
+        row.classList.toggle('drag-over-top', before);
+        row.classList.toggle('drag-over-bottom', !before);
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over-top', 'drag-over-bottom'));
+    row.addEventListener('drop', (e) => {
+        e.preventDefault();
+        row.classList.remove('drag-over-top', 'drag-over-bottom');
+        if (dragSrcQid == null || dragSrcQid === song._qid) return;
+        const rect = row.getBoundingClientRect();
+        const before = (e.clientY - rect.top) < rect.height / 2;
+        reorderQueue(dragSrcQid, song._qid, before);
+    });
+    return row;
+}
+
+function renderVirtualQueue(list) {
+    const previousRender = list._nowarfyVirtualRender;
+    if (previousRender) list.removeEventListener('scroll', previousRender);
+    list.innerHTML = '';
+    list.classList.add('queue-list-virtual');
+    const spacer = document.createElement('div');
+    spacer.className = 'queue-virtual-spacer';
+    spacer.style.height = `${Math.max(0, queue.length * QUEUE_VIRTUAL_STRIDE - QUEUE_VIRTUAL_GAP)}px`;
+    list.appendChild(spacer);
+    const renderVisible = () => {
+        const scrollTop = list.scrollTop;
+        const viewportHeight = list.clientHeight || 560;
+        const start = Math.max(0, Math.floor(scrollTop / QUEUE_VIRTUAL_STRIDE) - QUEUE_VIRTUAL_OVERSCAN);
+        const end = Math.min(queue.length, Math.ceil((scrollTop + viewportHeight) / QUEUE_VIRTUAL_STRIDE) + QUEUE_VIRTUAL_OVERSCAN);
+        spacer.replaceChildren(...queue.slice(start, end).map((song, offset) => createQueueRow(song, start + offset, true)));
+    };
+    list._nowarfyVirtualRender = renderVisible;
+    list.addEventListener('scroll', renderVisible, { passive: true });
+    renderVisible();
+}
+
 function renderQueue() {
     renderContinuousPlaybackControls();
     currentIndex = queue.findIndex(s => s._qid === currentPlayingQid);
@@ -1062,6 +1146,10 @@ function renderQueue() {
         ? `${queue.length} canción${queue.length === 1 ? '' : 'es'} · ${queueModeLabel} · ${continuousPlayback ? 'reproducción continua' : 'se detiene al terminar'}`
         : `La Playlist está vacía · ${continuousPlayback ? 'continua lista' : 'una pista por vez'}`;
 
+    const previousRender = list._nowarfyVirtualRender;
+    if (previousRender) list.removeEventListener('scroll', previousRender);
+    list._nowarfyVirtualRender = null;
+    list.classList.remove('queue-list-virtual');
     list.innerHTML = '';
     if (queue.length === 0) {
         list.innerHTML = `<div class="queue-empty"><i class="fas fa-compact-disc"></i><p>Elegí una canción para armar tu Playlist automática: 20 del mismo artista y después más de artistas similares.</p></div>`;
@@ -1069,63 +1157,8 @@ function renderQueue() {
         return;
     }
 
-    queue.forEach((song, idx) => {
-        const row = document.createElement('div');
-        const isPlayingRow = song._qid === currentPlayingQid;
-        row.className = 'queue-row-item' + (isPlayingRow ? ' playing' : '');
-        row.draggable = true;
-        row.dataset.qid = String(song._qid);
-        row.innerHTML = `
-            <i class="fas fa-grip-lines queue-drag-handle" title="Arrastrar para reordenar o quitar"></i>
-            <img src="${escapeHtml(song.img || '')}" class="queue-row-img" loading="lazy" alt="" onerror="this.closest('.queue-row').remove();">
-            <div class="queue-row-info">
-                <div class="queue-row-title">${escapeHtml(song.title)}</div>
-                <div class="queue-row-artist">${escapeHtml(song.artist)}</div>
-            </div>
-            ${isPlayingRow ? '<i class="fas fa-volume-up queue-playing-icon" title="Sonando ahora"></i>' : ''}
-            <button type="button" class="queue-row-remove" title="Quitar de Playlist" aria-label="Quitar de Playlist"><i class="fas fa-xmark"></i></button>`;
-
-        row.addEventListener('click', (e) => {
-            if (e.target.closest('.queue-row-remove') || e.target.closest('.queue-drag-handle')) return;
-            playQueueAt(idx);
-        });
-        row.querySelector('.queue-row-remove').addEventListener('click', (e) => {
-            e.stopPropagation();
-            removeFromQueue(song._qid);
-        });
-        row.addEventListener('dragstart', (e) => {
-            dragSrcQid = song._qid;
-            row.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            try { e.dataTransfer.setData('text/plain', String(song._qid)); } catch (err) {}
-            document.getElementById('queueTrash').classList.add('show');
-        });
-        row.addEventListener('dragend', () => {
-            row.classList.remove('dragging');
-            document.querySelectorAll('.queue-row-item.drag-over-top, .queue-row-item.drag-over-bottom').forEach(r => r.classList.remove('drag-over-top', 'drag-over-bottom'));
-            document.getElementById('queueTrash').classList.remove('show', 'drag-hover');
-            dragSrcQid = null;
-        });
-        row.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            if (dragSrcQid == null || dragSrcQid === song._qid) return;
-            const rect = row.getBoundingClientRect();
-            const before = (e.clientY - rect.top) < rect.height / 2;
-            row.classList.toggle('drag-over-top', before);
-            row.classList.toggle('drag-over-bottom', !before);
-        });
-        row.addEventListener('dragleave', () => row.classList.remove('drag-over-top', 'drag-over-bottom'));
-        row.addEventListener('drop', (e) => {
-            e.preventDefault();
-            row.classList.remove('drag-over-top', 'drag-over-bottom');
-            if (dragSrcQid == null || dragSrcQid === song._qid) return;
-            const rect = row.getBoundingClientRect();
-            const before = (e.clientY - rect.top) < rect.height / 2;
-            reorderQueue(dragSrcQid, song._qid, before);
-        });
-
-        list.appendChild(row);
-    });
+    if (queue.length >= QUEUE_VIRTUAL_THRESHOLD) renderVirtualQueue(list);
+    else queue.forEach((song, idx) => list.appendChild(createQueueRow(song, idx)));
 }
 
 function getVideoSuggestions(song) {
