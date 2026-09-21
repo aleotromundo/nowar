@@ -41,42 +41,25 @@
             <button type="button" class="nowarfy-mobile-action nowarfy-mobile-account-toggle" onclick="openNowarfyAuth()" aria-label="Abrir cuenta"><i class="fas fa-user"></i><span class="nowarfy-mobile-action-text">Cuenta</span></button>
             
             <div class="nowarfy-nav-groups">
-                <section class="nowarfy-nav-group" aria-label="Descubrir">
-                    <span class="nowarfy-nav-label">Descubrir</span>
+                <section class="nowarfy-nav-group" aria-label="Navegación principal">
+                    <span class="nowarfy-nav-label">Navegar</span>
                     <ul class="nav-links">
                         <li data-nav="home" onclick="resetView()" class="active"><i class="fas fa-house"></i> <span>Inicio</span></li>
                         <li data-nav="explore" onclick="showSection('explore')"><i class="fas fa-compass"></i> <span>Explorar</span></li>
-                        <li data-nav="channels" onclick="showSection('channels')"><i class="fas fa-satellite-dish"></i> <span>Canales</span></li>
-                        <li data-nav="playlists" onclick="showSection('playlists')"><i class="fas fa-list-ul"></i> <span>Listas</span></li>
-                        <li data-nav="videos" onclick="showSection('videos')"><i class="fas fa-clapperboard"></i> <span>Videos</span></li>
-                        <li data-nav="music" onclick="showSection('music')"><i class="fas fa-headphones"></i> <span>Música</span></li>
-                    </ul>
-                </section>
-                <section class="nowarfy-nav-group" aria-label="Tu biblioteca">
-                    <span class="nowarfy-nav-label">Tu biblioteca</span>
-                    <ul class="nav-links">
-                        <li data-nav="favorites" onclick="showSection('favorites')"><i class="fas fa-heart"></i> <span>Favoritos</span></li>
-                        <li data-nav="history" onclick="showSection('history')"><i class="fas fa-clock-rotate-left"></i> <span>Historial</span></li>
-                    </ul>
-                </section>
-                <section class="nowarfy-nav-group" aria-label="Tu experiencia">
-                    <span class="nowarfy-nav-label">Tu experiencia</span>
-                    <ul class="nav-links">
-                        <li data-nav="queue" onclick="openQueueFromSidebar()"><i class="fas fa-list-music"></i> <span>Playlist</span></li>
-                        <li data-nav="player" onclick="showFloatingPlayer()"><i class="fas fa-up-right-and-down-left-from-center"></i> <span>Reproductor</span></li>
-                        <li data-nav="taste" onclick="showSection('taste')"><i class="fas fa-shield-halved"></i> <span>Tus datos</span></li>
+                        <li data-nav="library" onclick="showSection('library')"><i class="fas fa-book-open"></i> <span>Biblioteca</span></li>
+                        <li data-nav="player" onclick="showFloatingPlayer()"><i class="fas fa-play-circle"></i> <span>Reproductor</span></li>
                     </ul>
                 </section>
             </div>
-            <div class="nowarfy-side-status">
-                <strong><i class="fas fa-circle"></i> Datos en este dispositivo</strong>
+            <div class="nowarfy-side-status" id="nowarfySideStatus" data-state="offline">
+                <strong><i class="fas fa-circle" id="nowarfyConnectionDot"></i> <span id="nowarfyConnectionLabel">Datos en este dispositivo</span></strong>
                 <span id="authDeviceStatus">La cuenta y sincronización se activarán solo si las elegís.</span>
                 <button type="button" id="nowarfyAuthButton" class="nowarfy-account-btn" onclick="openNowarfyAuth()"><i class="fas fa-user"></i> Usar cuenta o continuar anónimo</button>
                 <button type="button" id="pwaInstallBtn" class="nowarfy-install-btn" hidden><i class="fas fa-download"></i> Instalar Nowarfy</button>
             </div>
-            <button type="button" id="nowarfyQrButton" class="nowarfy-qr-launch" onclick="openNowarfyQr()" aria-haspopup="dialog" aria-controls="nowarfyQrModal" aria-label="Mostrar código QR para abrir Nowarfy">
-                <img src="assets/nowarfy-qr.png" alt="">
-                <span class="nowarfy-qr-copy"><strong>Compartí Nowarfy</strong><small>Mostrar código QR</small></span>
+            <button type="button" id="nowarfyQrButton" class="nowarfy-qr-launch" onclick="openNowarfyQr()" aria-haspopup="dialog" aria-controls="nowarfyQrModal" aria-label="Vincular otro dispositivo con código QR">
+                <img id="nowarfyQrPreview" src="assets/nowarfy-qr.png" alt="">
+                <span class="nowarfy-qr-copy"><strong>Vincular dispositivo</strong><small>Pairing por QR</small></span>
                 <i class="fas fa-qrcode" aria-hidden="true"></i>
             </button>
         </aside>
@@ -286,10 +269,10 @@
     <div class="nowarfy-qr-modal" id="nowarfyQrModal" role="dialog" aria-modal="true" aria-labelledby="nowarfyQrTitle" hidden onclick="if (event.target === this) closeNowarfyQr()">
         <div class="nowarfy-qr-dialog">
             <button type="button" class="nowarfy-qr-close" onclick="closeNowarfyQr()" aria-label="Cerrar código QR"><i class="fas fa-xmark"></i></button>
-            <h2 id="nowarfyQrTitle">Abrí Nowarfy en tu celular</h2>
-            <p>Escaneá este código para ir directo a la página principal.</p>
-            <img src="assets/nowarfy-qr.png" alt="Código QR para abrir la página principal de Nowarfy">
-            <a class="nowarfy-qr-link" href="https://nowarfy.vercel.app/" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square"></i> Abrir Nowarfy</a>
+            <h2 id="nowarfyQrTitle">Vinculá otro dispositivo</h2>
+            <p id="nowarfyQrDescription">Escaneá este código en tu celular. Se abrirá Nowarfy y podrás iniciar sesión para sincronizarlo con este reproductor.</p>
+            <img id="nowarfyQrImage" src="assets/nowarfy-qr.png" alt="Código QR para vincular otro dispositivo con Nowarfy">
+            <a class="nowarfy-qr-link" id="nowarfyQrLink" href="" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square"></i> Abrir enlace de pairing</a>
         </div>
     </div>
 

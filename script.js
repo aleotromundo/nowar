@@ -51,6 +51,45 @@ function authStatus(message, isError = false) {
     const target = document.getElementById('nowarfyAuthStatus');
     if (target) { target.textContent = message || ''; target.style.color = isError ? '#ffb5bd' : '#b9e9d5'; }
 }
+function updateNowarfyConnectionStatus() {
+    const panel = document.getElementById('nowarfySideStatus');
+    const dot = document.getElementById('nowarfyConnectionDot');
+    const label = document.getElementById('nowarfyConnectionLabel');
+    if (!panel) return;
+    const connected = !!nowarfyAuthUser && !!nowarfyRemoteSession && !!nowarfyRemoteBroadcastReady;
+    const player = connected && nowarfyRemoteIsPlayer;
+    const state = player ? 'player' : connected ? 'online' : 'offline';
+    panel.dataset.state = state;
+    if (dot) dot.className = `fas fa-circle connection-dot-${state}`;
+    if (label) label.textContent = player ? 'Reproductor conectado' : connected ? 'Sincronización conectada' : 'Sin sincronización';
+}
+function buildNowarfyPairingUrl() {
+    const url = new URL(window.location.href);
+    url.hash = '';
+    url.search = '';
+    url.searchParams.set('pair', 'nowarfy');
+    if (nowarfyRemoteSession?.id) url.searchParams.set('session', nowarfyRemoteSession.id);
+    url.searchParams.set('source', nowarfyRemoteDeviceKey);
+    return url.toString();
+}
+function refreshNowarfyPairingQr() {
+    const link = buildNowarfyPairingUrl();
+    const image = document.getElementById('nowarfyQrImage');
+    const preview = document.getElementById('nowarfyQrPreview');
+    const anchor = document.getElementById('nowarfyQrLink');
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=12&data=${encodeURIComponent(link)}`;
+    if (image) { image.src = qrUrl; image.alt = `Código QR para vincular ${nowarfyAuthUser ? 'otro dispositivo a tu cuenta' : 'un dispositivo con Nowarfy'}`; }
+    if (preview) preview.src = qrUrl;
+    if (anchor) anchor.href = link;
+}
+function handleNowarfyPairingLink() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('pair') !== 'nowarfy') return;
+    localStorage.setItem('nowarfy_pairing_pending', JSON.stringify({ sessionId: params.get('session') || '', source: params.get('source') || '', createdAt: Date.now() }));
+    const description = document.getElementById('nowarfyQrDescription');
+    if (description) description.textContent = nowarfyAuthUser ? 'Este dispositivo quedó listo para sincronizarse. Abrí Cuenta para elegirlo como reproductor.' : 'Este dispositivo quedó listo para vincularse. Iniciá sesión con la misma cuenta del reproductor.';
+    if (!nowarfyAuthUser) window.setTimeout(() => openNowarfyAuth(), 350);
+}
 function updateNowarfyAuthUI() {
     const button = document.getElementById('nowarfyAuthButton');
     const deviceStatus = document.getElementById('authDeviceStatus');
@@ -81,6 +120,8 @@ function updateNowarfyAuthUI() {
         if (guest) guest.hidden = false;
         if (userPanel) userPanel.hidden = true;
     }
+    updateNowarfyConnectionStatus();
+    refreshNowarfyPairingQr();
 }
 async function initNowarfyAuth() {
     if (nowarfySupabase) return nowarfySupabase;
@@ -227,7 +268,7 @@ async function switchNowarfyUser() {
     openNowarfyAuth();
 }
 
-function remoteStatus(message) { const el = document.getElementById('nowarfyRemoteStatus'); if (el) el.textContent = message; }
+function remoteStatus(message) { const el = document.getElementById('nowarfyRemoteStatus'); if (el) el.textContent = message; updateNowarfyConnectionStatus(); }
 function currentRemotePosition() {
     try {
         const song = currentQueueSong?.();
@@ -356,6 +397,13 @@ async function setupNowarfyRemoteControl() {
             .subscribe(status => { nowarfyRemoteBroadcastReady = status === 'SUBSCRIBED'; if (status === 'SUBSCRIBED') { updateNowarfyAuthUI(); remoteStatus(nowarfyRemoteIsPlayer ? 'Este dispositivo es el reproductor activo.' : 'Control remoto conectado; elegí otro dispositivo como reproductor.'); } });
         if (!nowarfyRemoteIsPlayer && nowarfyRemoteSession?.state) updateRemoteControlsFromState(nowarfyRemoteSession.state);
         await refreshNowarfyRemoteDevices();
+        try {
+            const pendingPairing = JSON.parse(localStorage.getItem('nowarfy_pairing_pending') || 'null');
+            if (pendingPairing && Date.now() - Number(pendingPairing.createdAt || 0) < 15 * 60 * 1000) {
+                localStorage.removeItem('nowarfy_pairing_pending');
+                showToast('Dispositivo vinculado. Ya aparece en tu lista de reproducción remota.', 'fa-link');
+            }
+        } catch (_) {}
         if (nowarfyDeviceRefreshTimer) clearInterval(nowarfyDeviceRefreshTimer);
         nowarfyDeviceRefreshTimer = setInterval(() => { void refreshNowarfyRemoteDevices(); }, 5000);
         if (nowarfyRemoteStateTimer) clearInterval(nowarfyRemoteStateTimer);
@@ -2411,6 +2459,16 @@ function renderHomeWelcome(lastViewed) {
     container.appendChild(welcome);
 }
 
+function renderHomeQuickActions() {
+    const container = document.getElementById('dynamicSections');
+    const actions = document.createElement('div');
+    actions.className = 'home-quick-actions';
+    actions.innerHTML = `<button type="button" class="home-quick-action" onclick="searchInput.focus()"><i class="fas fa-magnifying-glass"></i><span><strong>Buscar música</strong><small>Encontrá un artista o canción</small></span></button>
+        <button type="button" class="home-quick-action" onclick="openQueueFromSidebar()"><i class="fas fa-list-music"></i><span><strong>Ver playlist</strong><small>Revisá lo que sigue</small></span></button>
+        <button type="button" class="home-quick-action" onclick="openNowarfyQr()"><i class="fas fa-qrcode"></i><span><strong>Vincular dispositivo</strong><small>Usá el pairing QR</small></span></button>`;
+    container.appendChild(actions);
+}
+
 function renderHomeFeed() {
     const taste = readTaste();
     navigateWithTransition(() => {
@@ -2420,6 +2478,7 @@ function renderHomeFeed() {
         const used = new Set();
         const lastViewed = normalizeTasteTrack(taste.plays[0]);
         renderHomeWelcome(lastViewed);
+        renderHomeQuickActions();
         if (lastViewed) used.add(songKey(lastViewed));
 
         const recentArtists = [...new Set(taste.plays.map(item => String(item.artist || '').trim()).filter(Boolean))].slice(0, 10);
@@ -2534,7 +2593,8 @@ window.addEventListener('popstate', event => {
 function activateNavigation(section) {
     closeNowarfyMobileNav();
     document.querySelectorAll('.nav-links li').forEach(item => item.classList.remove('active'));
-    document.querySelector(`[data-nav="${section}"]`)?.classList.add('active');
+    const primarySection = ['favorites', 'history', 'taste', 'playlists', 'queue'].includes(section) ? 'library' : section;
+    document.querySelector(`[data-nav="${primarySection}"]`)?.classList.add('active');
 }
 
 async function ensureHomeCatalog() {
@@ -2816,6 +2876,34 @@ function renderGlobalChannelLibrary() {
 function renderExploreCollections() {
     navigateWithTransition(() => {
         renderDiscoveryCards('Explorar', 'Elegí una colección para ejecutar una búsqueda real y ver resultados nuevos, sin reciclar los mismos videos de Inicio.', EXPLORE_COLLECTIONS);
+        const container = document.getElementById('dynamicSections');
+        const filters = document.createElement('div');
+        filters.className = 'section-filter-row';
+        filters.innerHTML = `<span class="section-filter-label">Ver también</span>
+            <button type="button" class="section-filter-btn is-active" onclick="showSection('explore')"><i class="fas fa-compass"></i> Todo</button>
+            <button type="button" class="section-filter-btn" onclick="showSection('music')"><i class="fas fa-headphones"></i> Música</button>
+            <button type="button" class="section-filter-btn" onclick="showSection('videos')"><i class="fas fa-clapperboard"></i> Videos</button>
+            <button type="button" class="section-filter-btn" onclick="showSection('channels')"><i class="fas fa-satellite-dish"></i> Canales</button>
+            <button type="button" class="section-filter-btn" onclick="showSection('playlists')"><i class="fas fa-list-ul"></i> Listas</button>`;
+        container.insertBefore(filters, container.children[1] || null);
+    });
+}
+
+function renderLibraryHub() {
+    navigateWithTransition(() => {
+        const container = document.getElementById('dynamicSections');
+        container.innerHTML = `<div class="section-title"><i class="fas fa-book-open"></i> Biblioteca</div>
+            <p class="discovery-intro">Todo lo que guardaste, escuchaste o estás preparando, en un solo lugar.</p>
+            <div class="library-hub-grid">
+                <button type="button" class="library-hub-card" data-library-target="favorites"><i class="fas fa-heart"></i><strong>Favoritos</strong><span>Tus canciones guardadas</span></button>
+                <button type="button" class="library-hub-card" data-library-target="history"><i class="fas fa-clock-rotate-left"></i><strong>Historial</strong><span>Volvé a lo que escuchaste</span></button>
+                <button type="button" class="library-hub-card" data-library-target="playlists"><i class="fas fa-list-ul"></i><strong>Listas</strong><span>Álbumes y playlists</span></button>
+                <button type="button" class="library-hub-card" data-library-target="queue"><i class="fas fa-list-music"></i><strong>Playlist actual</strong><span>Lo que sigue reproduciéndose</span></button>
+                <button type="button" class="library-hub-card" data-library-target="taste"><i class="fas fa-shield-halved"></i><strong>Tus datos</strong><span>Privacidad y personalización</span></button>
+            </div>`;
+        container.querySelectorAll('[data-library-target]').forEach(card => {
+            card.addEventListener('click', () => card.dataset.libraryTarget === 'queue' ? openQueueFromSidebar() : showSection(card.dataset.libraryTarget));
+        });
     });
 }
 
@@ -2914,6 +3002,7 @@ async function showSection(section, options = {}) {
     activeBrowseMode = section;
     activateNavigation(section);
     
+    if (section === 'library') { renderLibraryHub(); return; }
     if (section === 'favorites') {
         navigateWithTransition(() => {
             document.getElementById('dynamicSections').innerHTML = '';
@@ -6496,6 +6585,7 @@ function makeDraggable(element) {
     }
 }
 
+handleNowarfyPairingLink();
 void initNowarfyAuth();
 setTimeout(() => {
     initTouchSwipeGestures();
