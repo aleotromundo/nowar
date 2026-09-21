@@ -608,6 +608,52 @@ async function executeNowarfyRemoteCommand(command) {
         }
         return;
     }
+    if (type === 'playSong') {
+        // Comando para reproducir una canción específica desde otro dispositivo
+        const song = command.song;
+        const startIndex = Number(command.startIndex) || 0;
+        if (!song?.url) return;
+        
+        // Agregar la canción a la cola si no está
+        const k = songKey(song);
+        let idx = queue.findIndex(s => songKey(s) === k);
+        if (idx < 0) {
+            const q = withQid(song);
+            queueSeenKeys.add(k);
+            queue.push(q);
+            idx = queue.length - 1;
+            persistQueue();
+            renderQueue();
+        }
+        
+        // Reproducir desde el índice especificado (para soporte de playlists)
+        const playIdx = Math.max(0, Math.min(idx + startIndex, queue.length - 1));
+        playQueueAt(playIdx, { sourceIdx: playIdx, resumeSession: { wasPlaying: true } });
+        await publishNowarfyRemoteState();
+        return;
+    }
+    if (type === 'addToQueue') {
+        // Comando para agregar una canción a la cola desde otro dispositivo
+        const song = command.song;
+        if (!song?.url) return;
+        
+        const k = songKey(song);
+        if (queueSeenKeys.has(k)) {
+            showToast('Ya está en la Playlist', 'fa-circle-info');
+            return;
+        }
+        
+        const q = withQid(song);
+        queueSeenKeys.add(k);
+        queue.push(q);
+        void reserveDiscoveredCandidates([song], { context: 'queue', seed: song, queryContext: 'queue' });
+        persistQueue();
+        renderQueue();
+        showToast(`"${song.title}" agregada a la cola`, 'fa-list');
+        if (currentPlayingQid == null) playQueueAt(queue.length - 1);
+        await publishNowarfyRemoteState();
+        return;
+    }
     if (type === 'toggle') togglePlay();
     else if (type === 'next') nextSong(true);
     else if (type === 'prev') prevSong();
@@ -3917,7 +3963,7 @@ function advancePrebuiltPlaylist(targetQid) {
 async function selectSong(song, sourceIdx) {
     // Si estamos en modo control remoto (no somos el reproductor), enviar comando al dispositivo activo
     if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) {
-        await sendRemotePlayCommand(song, sourceIdx);
+        await sendRemotePlaySongCommand(song, 0);
         return;
     }
     
@@ -3933,39 +3979,10 @@ async function selectSong(song, sourceIdx) {
     growQueueIfNeeded(true);
 }
 
-async function sendRemotePlayCommand(song, sourceIdx) {
-    // Enviar canción para reproducir en el dispositivo reproductor
-    const commandId = `${nowarfyRemoteDeviceId || 'device'}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    const state = remoteStateSnapshot();
-    const nextSong = { ...song, _qid: `remote-${Date.now()}` };
-    
-    // Actualizar estado con la nueva canción
-    const nextState = {
-        ...state,
-        resourceId: nextSong.url,
-        title: nextSong.title,
-        artist: nextSong.artist,
-        type: nextSong.type,
-        img: nextSong.img,
-        channelId: nextSong.channelId,
-        currentQid: nextSong._qid,
-        isPlaying: true,
-        position: 0,
-        positionAt: new Date().toISOString(),
-        playlist: [nextSong]
-    };
-    
-    // Optimistic update: mostrar que se está enviando
-    showToast(`Enviando "${song.title}" al reproductor...`, 'fa-mobile-screen-button');
-    
-    // Enviar comando de handoff con la canción
-    await sendNowarfyCommand('handoff', { state: nextState }, false);
-}
-
 async function resumeSongFromWelcome(song, sourceIdx = 0) {
     // Si estamos en modo control remoto, enviar al reproductor
     if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) {
-        await sendRemotePlayCommand(song, sourceIdx);
+        await sendRemotePlaySongCommand(song, sourceIdx);
         return;
     }
     
@@ -4011,19 +4028,46 @@ async function addToQueue(song) {
 
 async function sendRemoteAddToQueueCommand(song) {
     // Enviar canción para agregar a la cola del reproductor
-    const state = remoteStateSnapshot();
-    const nextSong = { ...song, _qid: `remote-${Date.now()}` };
+    const commandId = `${nowarfyRemoteDeviceId || 'device'}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const command = { type: 'addToQueue', song: { ...song, _qid: `remote-${Date.now()}` }, commandId };
     
     // Optimistic update: mostrar que se está enviando
     showToast(`Agregando "${song.title}" a la cola del reproductor...`, 'fa-list');
     
-    // Enviar estado actualizado con la playlist extendida
-    const nextState = {
-        ...state,
-        playlist: [...(state.playlist || []), nextSong]
-    };
+    // Enviar por BroadcastChannel primero
+    if (nowarfyBroadcastChannelReady && nowarfyBroadcastChannel) {
+        try { nowarfyBroadcastChannel.postMessage({ type: 'remote-command', senderDeviceId: nowarfyRemoteDeviceId, commandId, command }); } catch (_) {}
+    }
     
-    await sendNowarfyCommand('handoff', { state: nextState }, false);
+    // Enviar por Supabase Realtime
+    if (nowarfyRemoteBroadcastReady && nowarfyRemoteChannel) {
+        try { await nowarfyRemoteChannel.send({ type: 'broadcast', event: 'remote-command', payload: { commandId, senderDeviceId: nowarfyRemoteDeviceId, command } }); } catch (_) {}
+    }
+    
+    // Fallback a base de datos
+    await nowarfySupabase.from('youtoo_remote_commands').insert({ session_id: nowarfyRemoteSession.id, user_id: nowarfyAuthUser.id, device_id: nowarfyRemoteDeviceId, command });
+}
+
+async function sendRemotePlaySongCommand(song, startIndex = 0) {
+    // Enviar comando para reproducir una canción específica en el reproductor
+    const commandId = `${nowarfyRemoteDeviceId || 'device'}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const command = { type: 'playSong', song: { ...song, _qid: `remote-${Date.now()}` }, startIndex, commandId };
+    
+    // Optimistic update: mostrar que se está enviando
+    showToast(`Reproduciendo "${song.title}" en el reproductor...`, 'fa-play');
+    
+    // Enviar por BroadcastChannel primero para respuesta instantánea
+    if (nowarfyBroadcastChannelReady && nowarfyBroadcastChannel) {
+        try { nowarfyBroadcastChannel.postMessage({ type: 'remote-command', senderDeviceId: nowarfyRemoteDeviceId, commandId, command }); } catch (_) {}
+    }
+    
+    // Enviar por Supabase Realtime
+    if (nowarfyRemoteBroadcastReady && nowarfyRemoteChannel) {
+        try { await nowarfyRemoteChannel.send({ type: 'broadcast', event: 'remote-command', payload: { commandId, senderDeviceId: nowarfyRemoteDeviceId, command } }); } catch (_) {}
+    }
+    
+    // Fallback a base de datos
+    await nowarfySupabase.from('youtoo_remote_commands').insert({ session_id: nowarfyRemoteSession.id, user_id: nowarfyAuthUser.id, device_id: nowarfyRemoteDeviceId, command });
 }
 
 function getCurrentContentLink(song) {
