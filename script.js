@@ -508,9 +508,18 @@ function updateRemoteControlsFromState(state, forceQueue = false) {
     const volume = document.getElementById('volumeSlider');
     if (volume && document.activeElement !== volume && Number.isFinite(Number(state.volume))) { volume.value = Number(state.volume) / 100; volume.style.background = `linear-gradient(to right, var(--accent) ${Number(state.volume)}%, #535353 ${Number(state.volume)}%)`; }
 }
-async function sendNowarfyCommand(type, value = null) {
+async function sendNowarfyCommand(type, value = null, optimisticUpdate = false) {
     if (!nowarfySupabase || !nowarfyAuthUser || !nowarfyRemoteSession) return;
-    if (nowarfyRemoteIsPlayer) { await executeNowarfyRemoteCommand({ type, value }); return; }
+    if (nowarfyRemoteIsPlayer) { 
+        await executeNowarfyRemoteCommand({ type, value }); 
+        return; 
+    }
+    
+    // Optimistic update: actualizar UI localmente antes de confirmar
+    if (optimisticUpdate) {
+        applyOptimisticUpdate(type, value);
+    }
+    
     const commandId = `${nowarfyRemoteDeviceId || 'device'}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const command = { type, value, commandId };
     const isRealtimeCommand = ['volume', 'seekPercent', 'seekDelta'].includes(type);
@@ -531,6 +540,35 @@ async function sendNowarfyCommand(type, value = null) {
     if (isRealtimeCommand && broadcastSent) return;
     const result = await nowarfySupabase.from('youtoo_remote_commands').insert({ session_id: nowarfyRemoteSession.id, user_id: nowarfyAuthUser.id, device_id: nowarfyRemoteDeviceId, command });
     if (result.error && !broadcastSent) remoteStatus('No se pudo enviar el comando remoto.');
+}
+
+function applyOptimisticUpdate(type, value) {
+    // Actualizar UI inmediatamente para mejor percepción de velocidad
+    if (type === 'toggle') {
+        isPlaying = !isPlaying;
+        updateIcon();
+    } else if (type === 'play') {
+        isPlaying = true;
+        updateIcon();
+    } else if (type === 'pause') {
+        isPlaying = false;
+        updateIcon();
+    } else if (type === 'volume') {
+        const volumeSlider = document.getElementById('volumeSlider');
+        if (volumeSlider) {
+            const vol = Math.max(0, Math.min(100, Number(value)));
+            volumeSlider.value = vol / 100;
+            volumeSlider.style.background = `linear-gradient(to right, var(--accent) ${vol}%, #535353 ${vol}%)`;
+        }
+    } else if (type === 'seekPercent') {
+        const progressContainer = document.querySelector('.progress-container');
+        if (progressContainer && nowarfyRemoteShadowState?.duration) {
+            const percent = Math.max(0, Math.min(100, Number(value)));
+            const duration = nowarfyRemoteShadowState.duration;
+            const newPosition = (percent / 100) * duration;
+            updateProgressUI(newPosition, duration);
+        }
+    }
 }
 function showNowarfyHandoffPrompt() { const prompt = document.getElementById('nowarfyHandoffPrompt'); if (prompt) prompt.hidden = false; }
 async function unlockNowarfyHandoff() {
@@ -3876,7 +3914,13 @@ function advancePrebuiltPlaylist(targetQid) {
     return false;
 }
 
-function selectSong(song, sourceIdx) {
+async function selectSong(song, sourceIdx) {
+    // Si estamos en modo control remoto (no somos el reproductor), enviar comando al dispositivo activo
+    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) {
+        await sendRemotePlayCommand(song, sourceIdx);
+        return;
+    }
+    
     setRadioQueueMode();
     const q = withQid(song);
     queue = [q];
@@ -3889,7 +3933,42 @@ function selectSong(song, sourceIdx) {
     growQueueIfNeeded(true);
 }
 
-function resumeSongFromWelcome(song, sourceIdx = 0) {
+async function sendRemotePlayCommand(song, sourceIdx) {
+    // Enviar canción para reproducir en el dispositivo reproductor
+    const commandId = `${nowarfyRemoteDeviceId || 'device'}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const state = remoteStateSnapshot();
+    const nextSong = { ...song, _qid: `remote-${Date.now()}` };
+    
+    // Actualizar estado con la nueva canción
+    const nextState = {
+        ...state,
+        resourceId: nextSong.url,
+        title: nextSong.title,
+        artist: nextSong.artist,
+        type: nextSong.type,
+        img: nextSong.img,
+        channelId: nextSong.channelId,
+        currentQid: nextSong._qid,
+        isPlaying: true,
+        position: 0,
+        positionAt: new Date().toISOString(),
+        playlist: [nextSong]
+    };
+    
+    // Optimistic update: mostrar que se está enviando
+    showToast(`Enviando "${song.title}" al reproductor...`, 'fa-mobile-screen-button');
+    
+    // Enviar comando de handoff con la canción
+    await sendNowarfyCommand('handoff', { state: nextState }, false);
+}
+
+async function resumeSongFromWelcome(song, sourceIdx = 0) {
+    // Si estamos en modo control remoto, enviar al reproductor
+    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) {
+        await sendRemotePlayCommand(song, sourceIdx);
+        return;
+    }
+    
     setRadioQueueMode();
     const resume = readVideoResumeSession();
     const matches = resume && String(resume.resourceId) === String(song?.url) && (!resume.type || resume.type === song?.type);
@@ -3910,9 +3989,16 @@ function resumeSongFromWelcome(song, sourceIdx = 0) {
     growQueueIfNeeded(true);
 }
 
-function addToQueue(song) {
+async function addToQueue(song) {
     const k = songKey(song);
     if (queueSeenKeys.has(k)) { showToast('Ya está en la Playlist', 'fa-circle-info'); return; }
+    
+    // Si estamos en modo control remoto, enviar al reproductor
+    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) {
+        await sendRemoteAddToQueueCommand(song);
+        return;
+    }
+    
     const q = withQid(song);
     queueSeenKeys.add(k);
     queue.push(q);
@@ -3921,6 +4007,23 @@ function addToQueue(song) {
     renderQueue();
     showToast('Añadido a la cola', 'fa-list');
     if (currentPlayingQid == null) playQueueAt(queue.length - 1);
+}
+
+async function sendRemoteAddToQueueCommand(song) {
+    // Enviar canción para agregar a la cola del reproductor
+    const state = remoteStateSnapshot();
+    const nextSong = { ...song, _qid: `remote-${Date.now()}` };
+    
+    // Optimistic update: mostrar que se está enviando
+    showToast(`Agregando "${song.title}" a la cola del reproductor...`, 'fa-list');
+    
+    // Enviar estado actualizado con la playlist extendida
+    const nextState = {
+        ...state,
+        playlist: [...(state.playlist || []), nextSong]
+    };
+    
+    await sendNowarfyCommand('handoff', { state: nextState }, false);
 }
 
 function getCurrentContentLink(song) {
@@ -5546,7 +5649,7 @@ function onYTError(event) {
 }
 
 function togglePlay() {
-    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) { void sendNowarfyCommand('toggle'); return; }
+    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) { void sendNowarfyCommand('toggle', null, true); return; }
     if (externalAudioFocusInterrupted) { showToast('Nowarfy cedió el audio a otra aplicación', 'fa-volume-high'); return; }
     nowarfyAudioUnlocked = true;
     if (currentIndex === -1 || !queue[currentIndex]) return;
@@ -5698,7 +5801,7 @@ function getDuration() {
 }
 
 function commitSeek(pct) {
-    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) { void sendNowarfyCommand('seekPercent', Math.max(0, Math.min(1, Number(pct))) * 100); return; }
+    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) { void sendNowarfyCommand('seekPercent', Math.max(0, Math.min(1, Number(pct))) * 100, true); return; }
     if (currentIndex === -1 || !queue[currentIndex]) return;
     const song = queue[currentIndex];
     if (song.type === 'yt' && ytPlayer) { const d = ytPlayer.getDuration(); if (d) ytPlayer.seekTo(d * pct, true); }
@@ -5826,7 +5929,7 @@ function setVolume(v) {
         const slider = document.getElementById('volumeSlider');
         if (slider) { slider.value = v; slider.style.background = `linear-gradient(to right, var(--accent) ${v * 100}%, #535353 ${v * 100}%)`; }
         localStorage.setItem('nowarfy_vol', v);
-        void sendNowarfyCommand('volume', Math.round(v * 100));
+        void sendNowarfyCommand('volume', Math.round(v * 100), true);
         return;
     }
     if (externalAudioFocusInterrupted) {
