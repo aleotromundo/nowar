@@ -41,30 +41,13 @@
             <button type="button" class="nowarfy-mobile-action nowarfy-mobile-account-toggle" onclick="openNowarfyAuth()" aria-label="Abrir cuenta"><i class="fas fa-user"></i><span class="nowarfy-mobile-action-text">Cuenta</span></button>
             
             <div class="nowarfy-nav-groups">
-                <section class="nowarfy-nav-group" aria-label="Descubrir">
-                    <span class="nowarfy-nav-label">Descubrir</span>
+                <section class="nowarfy-nav-group" aria-label="Navegación principal">
+                    <span class="nowarfy-nav-label">Navegar</span>
                     <ul class="nav-links">
                         <li data-nav="home" onclick="resetView()" class="active"><i class="fas fa-house"></i> <span>Inicio</span></li>
                         <li data-nav="explore" onclick="showSection('explore')"><i class="fas fa-compass"></i> <span>Explorar</span></li>
-                        <li data-nav="channels" onclick="showSection('channels')"><i class="fas fa-satellite-dish"></i> <span>Canales</span></li>
-                        <li data-nav="playlists" onclick="showSection('playlists')"><i class="fas fa-list-ul"></i> <span>Listas</span></li>
-                        <li data-nav="videos" onclick="showSection('videos')"><i class="fas fa-clapperboard"></i> <span>Videos</span></li>
-                        <li data-nav="music" onclick="showSection('music')"><i class="fas fa-headphones"></i> <span>Música</span></li>
-                    </ul>
-                </section>
-                <section class="nowarfy-nav-group" aria-label="Tu biblioteca">
-                    <span class="nowarfy-nav-label">Tu biblioteca</span>
-                    <ul class="nav-links">
-                        <li data-nav="favorites" onclick="showSection('favorites')"><i class="fas fa-heart"></i> <span>Favoritos</span></li>
-                        <li data-nav="history" onclick="showSection('history')"><i class="fas fa-clock-rotate-left"></i> <span>Historial</span></li>
-                    </ul>
-                </section>
-                <section class="nowarfy-nav-group" aria-label="Tu experiencia">
-                    <span class="nowarfy-nav-label">Tu experiencia</span>
-                    <ul class="nav-links">
-                        <li data-nav="queue" onclick="openQueueFromSidebar()"><i class="fas fa-list-music"></i> <span>Playlist</span></li>
-                        <li data-nav="player" onclick="showFloatingPlayer()"><i class="fas fa-up-right-and-down-left-from-center"></i> <span>Reproductor</span></li>
-                        <li data-nav="taste" onclick="showSection('taste')"><i class="fas fa-shield-halved"></i> <span>Tus datos</span></li>
+                        <li data-nav="library" onclick="showSection('library')"><i class="fas fa-book-open"></i> <span>Biblioteca</span></li>
+                        <li data-nav="player" onclick="showFloatingPlayer()"><i class="fas fa-play-circle"></i> <span>Reproductor</span></li>
                     </ul>
                 </section>
             </div>
