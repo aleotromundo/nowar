@@ -1,15 +1,17 @@
 from pathlib import Path
 
 html_content = Path('index.html').read_text(encoding='utf-8')
-js_content = Path('script.js').read_text(encoding='utf-8')
+module_paths = sorted(Path('modules').glob('*.js'))
+js_content = '\n'.join(path.read_text(encoding='utf-8') for path in module_paths)
+catalog_content = Path('modules/catalog.js').read_text(encoding='utf-8')
 
 # Extraer la función loadHomeCatalogSources de forma exacta
-start = js_content.index('async function loadHomeCatalogSources() {')
+start = catalog_content.index('async function loadHomeCatalogSources() {')
 # Fin de la función: siguiente declaración de función de nivel superior (no depende de comentarios).
 import re
-_next = re.search(r'\n(?:async )?function \w+', js_content[start + 10:])
-end = start + 10 + _next.start() if _next else len(js_content)
-startup = js_content[start:end]
+_next = re.search(r'\n(?:async )?function \w+', catalog_content[start + 10:])
+end = start + 10 + _next.start() if _next else len(catalog_content)
+startup = catalog_content[start:end]
 
 checks = {
     'search_input_present': 'id="searchInput"' in html_content,

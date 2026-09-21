@@ -1,9 +1,16 @@
-const CACHE_NAME = 'nowarfy-shell-v41';
+const CACHE_NAME = 'nowarfy-shell-v42';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/styles.css',
   '/script.js',
+  '/modules/core.js',
+  '/modules/state-and-taste.js',
+  '/modules/catalog.js',
+  '/modules/reserve.js',
+  '/modules/playback-queue.js',
+  '/modules/lyrics-video.js',
+  '/modules/player-pwa.js',
   '/manifest.webmanifest',
   '/favicon.ico',
   '/assets/favicon-32.png',
@@ -58,10 +65,10 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // script.js y styles.css: stale-while-revalidate. Se sirven al instante desde cache y se
+  // script.js, los módulos y styles.css: stale-while-revalidate. Se sirven al instante desde cache y se
   // revalidan en segundo plano (sin pasar por la cache HTTP), asi que un deploy nuevo llega
   // en la visita siguiente aunque no se suba CACHE_NAME.
-  if (url.pathname === '/script.js' || url.pathname === '/styles.css') {
+  if (url.pathname === '/script.js' || url.pathname === '/styles.css' || url.pathname.startsWith('/modules/')) {
     event.respondWith((async () => {
       const cached = await caches.match(request);
       const refresh = fetch(request, { cache: 'no-cache' })
