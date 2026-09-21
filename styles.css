@@ -6,9 +6,9 @@
             --text-white: #ffffff;
             --text-gray: #b3b3b3;
             --text-dim: #7a7a7a;
-            --accent: #1db954;
-            --accent-hover: #1ed760;
-            --accent-glow: rgba(29, 185, 84, 0.35);
+            --accent: #ff4757;
+            --accent-hover: #ff6b7a;
+            --accent-glow: rgba(255, 71, 87, 0.35);
             --accent-2: #29b6f6;
             --border-soft: rgba(255, 255, 255, 0.06);
             --player-height: 90px;

@@ -27,6 +27,9 @@ let nowarfyAuthInitialised = false;
 let nowarfyAuthInitPromise = null;
 let nowarfyRemoteChannel = null;
 let nowarfyRemoteBroadcastReady = false;
+// BroadcastChannel para comunicación ultra-rápida entre tabs del mismo navegador
+let nowarfyBroadcastChannel = null;
+let nowarfyBroadcastChannelReady = false;
 const nowarfyRemoteSeenCommandIds = new Map();
 let nowarfyRemoteSession = null;
 let nowarfyRemoteShadowSong = null;
@@ -294,6 +297,29 @@ async function setupNowarfyRemoteControl() {
                 }
             }
         }
+        // Inicializar BroadcastChannel para comunicación entre tabs del mismo navegador
+        if (nowarfyBroadcastChannel) nowarfyBroadcastChannel.close();
+        nowarfyBroadcastChannel = new BroadcastChannel('nowarfy-remote-control');
+        nowarfyBroadcastChannel.onmessage = (event) => {
+            const message = event.data || {};
+            if (message.senderDeviceId === nowarfyRemoteDeviceId) return;
+            if (message.type === 'remote-command') {
+                const command = message.command || {};
+                if (!command.type || (command.targetDeviceId && command.targetDeviceId !== nowarfyRemoteDeviceId)) return;
+                if (message.commandId && nowarfyRemoteSeenCommandIds.has(message.commandId)) return;
+                if (message.commandId) {
+                    nowarfyRemoteSeenCommandIds.set(message.commandId, Date.now());
+                    for (const [id, timestamp] of nowarfyRemoteSeenCommandIds) if (Date.now() - timestamp > 60000) nowarfyRemoteSeenCommandIds.delete(id);
+                }
+                if (nowarfyRemoteIsPlayer) void executeNowarfyRemoteCommand(command);
+                else nowarfyPendingRemoteCommands.push(command);
+            } else if (message.type === 'remote-state') {
+                if (message.senderDeviceId === nowarfyRemoteDeviceId || nowarfyRemoteIsPlayer || !message.state) return;
+                updateRemoteControlsFromState(message.state);
+            }
+        };
+        nowarfyBroadcastChannelReady = true;
+
         if (nowarfyRemoteChannel) await nowarfySupabase.removeChannel(nowarfyRemoteChannel);
         nowarfyRemoteChannel = nowarfySupabase.channel(`nowarfy-remote-${nowarfyAuthUser.id}`)
             .on('broadcast', { event: 'remote-command' }, packet => {
@@ -377,7 +403,7 @@ function toggleNowarfyDevicePicker() {
     picker.hidden = !picker.hidden;
     if (!picker.hidden) void refreshNowarfyRemoteDevices();
 }
-async function teardownNowarfyRemoteControl() { if (nowarfyRemoteStateTimer) clearInterval(nowarfyRemoteStateTimer); if (nowarfyDeviceRefreshTimer) clearInterval(nowarfyDeviceRefreshTimer); nowarfyRemoteStateTimer = null; nowarfyDeviceRefreshTimer = null; if (nowarfyRemoteShadowTimer) clearInterval(nowarfyRemoteShadowTimer); nowarfyRemoteShadowTimer = null; nowarfyRemoteDevices = []; nowarfyRemoteBroadcastReady = false; nowarfyRemoteSeenCommandIds.clear(); if (nowarfyRemoteChannel && nowarfySupabase) await nowarfySupabase.removeChannel(nowarfyRemoteChannel); nowarfyRemoteChannel = null; nowarfyRemoteSession = null; nowarfyRemoteShadowSong = null; nowarfyRemoteShadowState = null; nowarfyRemoteDeviceId = null; nowarfyRemoteIsPlayer = false; }
+async function teardownNowarfyRemoteControl() { if (nowarfyRemoteStateTimer) clearInterval(nowarfyRemoteStateTimer); if (nowarfyDeviceRefreshTimer) clearInterval(nowarfyDeviceRefreshTimer); nowarfyRemoteStateTimer = null; nowarfyDeviceRefreshTimer = null; if (nowarfyRemoteShadowTimer) clearInterval(nowarfyRemoteShadowTimer); nowarfyRemoteShadowTimer = null; nowarfyRemoteDevices = []; nowarfyRemoteBroadcastReady = false; nowarfyBroadcastChannelReady = false; nowarfyRemoteSeenCommandIds.clear(); if (nowarfyBroadcastChannel) { nowarfyBroadcastChannel.close(); nowarfyBroadcastChannel = null; } if (nowarfyRemoteChannel && nowarfySupabase) await nowarfySupabase.removeChannel(nowarfyRemoteChannel); nowarfyRemoteChannel = null; nowarfyRemoteSession = null; nowarfyRemoteShadowSong = null; nowarfyRemoteShadowState = null; nowarfyRemoteDeviceId = null; nowarfyRemoteIsPlayer = false; }
 async function claimNowarfyPlayer() { return selectNowarfyPlaybackDevice(nowarfyRemoteDeviceId); }
 async function selectNowarfyPlaybackDevice(deviceId) {
     if (nowarfyClaimInFlight) return;
@@ -428,6 +454,10 @@ async function releaseNowarfyPlayer() { if (!nowarfySupabase || !nowarfyRemoteSe
 async function publishNowarfyRemoteState() {
     if (!nowarfySupabase || !nowarfyRemoteSession || !nowarfyRemoteIsPlayer) return;
     const state = remoteStateSnapshot();
+    // Enviar primero por BroadcastChannel para respuesta instantánea en tabs del mismo navegador
+    if (nowarfyBroadcastChannelReady && nowarfyBroadcastChannel) {
+        try { nowarfyBroadcastChannel.postMessage({ type: 'remote-state', senderDeviceId: nowarfyRemoteDeviceId, state }); } catch (_) {}
+    }
     if (nowarfyRemoteBroadcastReady && nowarfyRemoteChannel) {
         try { await nowarfyRemoteChannel.send({ type: 'broadcast', event: 'remote-state', payload: { senderDeviceId: nowarfyRemoteDeviceId, state } }); } catch (_) {}
     }
@@ -478,22 +508,67 @@ function updateRemoteControlsFromState(state, forceQueue = false) {
     const volume = document.getElementById('volumeSlider');
     if (volume && document.activeElement !== volume && Number.isFinite(Number(state.volume))) { volume.value = Number(state.volume) / 100; volume.style.background = `linear-gradient(to right, var(--accent) ${Number(state.volume)}%, #535353 ${Number(state.volume)}%)`; }
 }
-async function sendNowarfyCommand(type, value = null) {
+async function sendNowarfyCommand(type, value = null, optimisticUpdate = false) {
     if (!nowarfySupabase || !nowarfyAuthUser || !nowarfyRemoteSession) return;
-    if (nowarfyRemoteIsPlayer) { await executeNowarfyRemoteCommand({ type, value }); return; }
+    if (nowarfyRemoteIsPlayer) { 
+        await executeNowarfyRemoteCommand({ type, value }); 
+        return; 
+    }
+    
+    // Optimistic update: actualizar UI localmente antes de confirmar
+    if (optimisticUpdate) {
+        applyOptimisticUpdate(type, value);
+    }
+    
     const commandId = `${nowarfyRemoteDeviceId || 'device'}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const command = { type, value, commandId };
     const isRealtimeCommand = ['volume', 'seekPercent', 'seekDelta'].includes(type);
     let broadcastSent = false;
+    // Enviar primero por BroadcastChannel para respuesta instantánea en tabs del mismo navegador
+    if (nowarfyBroadcastChannelReady && nowarfyBroadcastChannel) {
+        try {
+            nowarfyBroadcastChannel.postMessage({ type: 'remote-command', senderDeviceId: nowarfyRemoteDeviceId, commandId, command });
+            broadcastSent = true;
+        } catch (_) { broadcastSent = false; }
+    }
     if (nowarfyRemoteBroadcastReady && nowarfyRemoteChannel) {
         try {
             const response = await nowarfyRemoteChannel.send({ type: 'broadcast', event: 'remote-command', payload: { commandId, senderDeviceId: nowarfyRemoteDeviceId, command } });
-            broadcastSent = response?.status === 'ok' || response?.status === 'success';
-        } catch (_) { broadcastSent = false; }
+            broadcastSent = broadcastSent || response?.status === 'ok' || response?.status === 'success';
+        } catch (_) { }
     }
     if (isRealtimeCommand && broadcastSent) return;
     const result = await nowarfySupabase.from('youtoo_remote_commands').insert({ session_id: nowarfyRemoteSession.id, user_id: nowarfyAuthUser.id, device_id: nowarfyRemoteDeviceId, command });
     if (result.error && !broadcastSent) remoteStatus('No se pudo enviar el comando remoto.');
+}
+
+function applyOptimisticUpdate(type, value) {
+    // Actualizar UI inmediatamente para mejor percepción de velocidad
+    if (type === 'toggle') {
+        isPlaying = !isPlaying;
+        updateIcon();
+    } else if (type === 'play') {
+        isPlaying = true;
+        updateIcon();
+    } else if (type === 'pause') {
+        isPlaying = false;
+        updateIcon();
+    } else if (type === 'volume') {
+        const volumeSlider = document.getElementById('volumeSlider');
+        if (volumeSlider) {
+            const vol = Math.max(0, Math.min(100, Number(value)));
+            volumeSlider.value = vol / 100;
+            volumeSlider.style.background = `linear-gradient(to right, var(--accent) ${vol}%, #535353 ${vol}%)`;
+        }
+    } else if (type === 'seekPercent') {
+        const progressContainer = document.querySelector('.progress-container');
+        if (progressContainer && nowarfyRemoteShadowState?.duration) {
+            const percent = Math.max(0, Math.min(100, Number(value)));
+            const duration = nowarfyRemoteShadowState.duration;
+            const newPosition = (percent / 100) * duration;
+            updateProgressUI(newPosition, duration);
+        }
+    }
 }
 function showNowarfyHandoffPrompt() { const prompt = document.getElementById('nowarfyHandoffPrompt'); if (prompt) prompt.hidden = false; }
 async function unlockNowarfyHandoff() {
@@ -534,18 +609,50 @@ async function executeNowarfyRemoteCommand(command) {
         return;
     }
     if (type === 'playSong') {
-        const song = command.value;
-        if (song && song.url) {
-            setRadioQueueMode();
+        // Comando para reproducir una canción específica desde otro dispositivo
+        // Aceptar ambos formatos: el protocolo de la PR y el de main.
+        const song = command.song || command.value;
+        const startIndex = Number(command.startIndex) || 0;
+        if (!song?.url) return;
+        
+        // Agregar la canción a la cola si no está
+        const k = songKey(song);
+        let idx = queue.findIndex(s => songKey(s) === k);
+        if (idx < 0) {
             const q = withQid(song);
-            queue = [q];
-            queueSeenKeys = new Set([songKey(q)]);
-            queueRound = 0;
+            queueSeenKeys.add(k);
+            queue.push(q);
+            idx = queue.length - 1;
             persistQueue();
             renderQueue();
-            playQueueAt(0, {});
-            growQueueIfNeeded(true);
         }
+        
+        // Reproducir desde el índice especificado (para soporte de playlists)
+        const playIdx = Math.max(0, Math.min(idx + startIndex, queue.length - 1));
+        playQueueAt(playIdx, { sourceIdx: playIdx, resumeSession: { wasPlaying: true } });
+        await publishNowarfyRemoteState();
+        return;
+    }
+    if (type === 'addToQueue') {
+        // Comando para agregar una canción a la cola desde otro dispositivo
+        const song = command.song;
+        if (!song?.url) return;
+        
+        const k = songKey(song);
+        if (queueSeenKeys.has(k)) {
+            showToast('Ya está en la Playlist', 'fa-circle-info');
+            return;
+        }
+        
+        const q = withQid(song);
+        queueSeenKeys.add(k);
+        queue.push(q);
+        void reserveDiscoveredCandidates([song], { context: 'queue', seed: song, queryContext: 'queue' });
+        persistQueue();
+        renderQueue();
+        showToast(`"${song.title}" agregada a la cola`, 'fa-list');
+        if (currentPlayingQid == null) playQueueAt(queue.length - 1);
+        await publishNowarfyRemoteState();
         return;
     }
     if (type === 'toggle') togglePlay();
@@ -3854,12 +3961,13 @@ function advancePrebuiltPlaylist(targetQid) {
     return false;
 }
 
-function selectSong(song, sourceIdx) {
+async function selectSong(song, sourceIdx) {
+    // Si estamos en modo control remoto (no somos el reproductor), enviar comando al dispositivo activo
     if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) {
-        void sendNowarfyCommand('playSong', song);
-        void reserveDiscoveredCandidates([song], { context: 'radio', seed: song });
+        await sendRemotePlaySongCommand(song, 0);
         return;
     }
+    
     setRadioQueueMode();
     const q = withQid(song);
     queue = [q];
@@ -3872,7 +3980,13 @@ function selectSong(song, sourceIdx) {
     growQueueIfNeeded(true);
 }
 
-function resumeSongFromWelcome(song, sourceIdx = 0) {
+async function resumeSongFromWelcome(song, sourceIdx = 0) {
+    // Si estamos en modo control remoto, enviar al reproductor
+    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) {
+        await sendRemotePlaySongCommand(song, sourceIdx);
+        return;
+    }
+    
     setRadioQueueMode();
     const resume = readVideoResumeSession();
     const matches = resume && String(resume.resourceId) === String(song?.url) && (!resume.type || resume.type === song?.type);
@@ -3893,9 +4007,16 @@ function resumeSongFromWelcome(song, sourceIdx = 0) {
     growQueueIfNeeded(true);
 }
 
-function addToQueue(song) {
+async function addToQueue(song) {
     const k = songKey(song);
     if (queueSeenKeys.has(k)) { showToast('Ya está en la Playlist', 'fa-circle-info'); return; }
+    
+    // Si estamos en modo control remoto, enviar al reproductor
+    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) {
+        await sendRemoteAddToQueueCommand(song);
+        return;
+    }
+    
     const q = withQid(song);
     queueSeenKeys.add(k);
     queue.push(q);
@@ -3904,6 +4025,50 @@ function addToQueue(song) {
     renderQueue();
     showToast('Añadido a la cola', 'fa-list');
     if (currentPlayingQid == null) playQueueAt(queue.length - 1);
+}
+
+async function sendRemoteAddToQueueCommand(song) {
+    // Enviar canción para agregar a la cola del reproductor
+    const commandId = `${nowarfyRemoteDeviceId || 'device'}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const command = { type: 'addToQueue', song: { ...song, _qid: `remote-${Date.now()}` }, commandId };
+    
+    // Optimistic update: mostrar que se está enviando
+    showToast(`Agregando "${song.title}" a la cola del reproductor...`, 'fa-list');
+    
+    // Enviar por BroadcastChannel primero
+    if (nowarfyBroadcastChannelReady && nowarfyBroadcastChannel) {
+        try { nowarfyBroadcastChannel.postMessage({ type: 'remote-command', senderDeviceId: nowarfyRemoteDeviceId, commandId, command }); } catch (_) {}
+    }
+    
+    // Enviar por Supabase Realtime
+    if (nowarfyRemoteBroadcastReady && nowarfyRemoteChannel) {
+        try { await nowarfyRemoteChannel.send({ type: 'broadcast', event: 'remote-command', payload: { commandId, senderDeviceId: nowarfyRemoteDeviceId, command } }); } catch (_) {}
+    }
+    
+    // Fallback a base de datos
+    await nowarfySupabase.from('youtoo_remote_commands').insert({ session_id: nowarfyRemoteSession.id, user_id: nowarfyAuthUser.id, device_id: nowarfyRemoteDeviceId, command });
+}
+
+async function sendRemotePlaySongCommand(song, startIndex = 0) {
+    // Enviar comando para reproducir una canción específica en el reproductor
+    const commandId = `${nowarfyRemoteDeviceId || 'device'}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const command = { type: 'playSong', song: { ...song, _qid: `remote-${Date.now()}` }, startIndex, commandId };
+    
+    // Optimistic update: mostrar que se está enviando
+    showToast(`Reproduciendo "${song.title}" en el reproductor...`, 'fa-play');
+    
+    // Enviar por BroadcastChannel primero para respuesta instantánea
+    if (nowarfyBroadcastChannelReady && nowarfyBroadcastChannel) {
+        try { nowarfyBroadcastChannel.postMessage({ type: 'remote-command', senderDeviceId: nowarfyRemoteDeviceId, commandId, command }); } catch (_) {}
+    }
+    
+    // Enviar por Supabase Realtime
+    if (nowarfyRemoteBroadcastReady && nowarfyRemoteChannel) {
+        try { await nowarfyRemoteChannel.send({ type: 'broadcast', event: 'remote-command', payload: { commandId, senderDeviceId: nowarfyRemoteDeviceId, command } }); } catch (_) {}
+    }
+    
+    // Fallback a base de datos
+    await nowarfySupabase.from('youtoo_remote_commands').insert({ session_id: nowarfyRemoteSession.id, user_id: nowarfyAuthUser.id, device_id: nowarfyRemoteDeviceId, command });
 }
 
 function getCurrentContentLink(song) {
@@ -5529,7 +5694,7 @@ function onYTError(event) {
 }
 
 function togglePlay() {
-    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) { void sendNowarfyCommand('toggle'); return; }
+    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) { void sendNowarfyCommand('toggle', null, true); return; }
     if (externalAudioFocusInterrupted) { showToast('Nowarfy cedió el audio a otra aplicación', 'fa-volume-high'); return; }
     nowarfyAudioUnlocked = true;
     if (currentIndex === -1 || !queue[currentIndex]) return;
@@ -5681,7 +5846,7 @@ function getDuration() {
 }
 
 function commitSeek(pct) {
-    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) { void sendNowarfyCommand('seekPercent', Math.max(0, Math.min(1, Number(pct))) * 100); return; }
+    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) { void sendNowarfyCommand('seekPercent', Math.max(0, Math.min(1, Number(pct))) * 100, true); return; }
     if (currentIndex === -1 || !queue[currentIndex]) return;
     const song = queue[currentIndex];
     if (song.type === 'yt' && ytPlayer) { const d = ytPlayer.getDuration(); if (d) ytPlayer.seekTo(d * pct, true); }
@@ -5809,7 +5974,7 @@ function setVolume(v) {
         const slider = document.getElementById('volumeSlider');
         if (slider) { slider.value = v; slider.style.background = `linear-gradient(to right, var(--accent) ${v * 100}%, #535353 ${v * 100}%)`; }
         localStorage.setItem('nowarfy_vol', v);
-        void sendNowarfyCommand('volume', Math.round(v * 100));
+        void sendNowarfyCommand('volume', Math.round(v * 100), true);
         return;
     }
     if (externalAudioFocusInterrupted) {
