@@ -3361,7 +3361,7 @@ function buildMediaCard(song, idx) {
         <div class="card-img-wrap">
             ${isVideo && song.type !== 'search_trigger' ? `<span class="video-source-badge"><i class="fas ${isFreeVideo ? 'fa-leaf' : 'fa-play'}"></i> ${isFreeVideo ? 'Libre' : 'Video'}</span><span class="card-duration">${formatContentDuration(song.duration)}</span>` : ''}
             <div class="skeleton"></div>
-            <img src="${escapeHtml(song.img || '')}" class="card-img" loading="lazy"
+            <img src="${escapeHtml(song.img || '')}" class="card-img" width="320" height="180" loading="lazy" decoding="async"
                  onload="this.classList.add('loaded')"
                  onerror="${imageErrorAction}">
             <div class="card-spinner">
@@ -3417,7 +3417,7 @@ function buildPlaylistCard(playlist, idx) {
     div.innerHTML = `
         <div class="card-img-wrap">
             <span class="playlist-source-badge"><i class="fas fa-list"></i> Lista</span>
-            <img src="${escapeHtml(playlist.img || '')}" class="card-img loaded" loading="lazy" alt="" onerror="removeCardForMissingArtwork(this)">
+            <img src="${escapeHtml(playlist.img || '')}" class="card-img loaded" width="320" height="180" loading="lazy" decoding="async" alt="" onerror="removeCardForMissingArtwork(this)">
             <div class="playlist-card-actions" aria-label="Acciones de la lista">
                 <span class="playlist-count-badge" title="Cantidad de videos de la playlist"><i class="fas fa-film"></i> ${hasCount ? `${new Intl.NumberFormat('es-UY').format(count)} videos` : 'Cantidad pendiente'}</span>
                 <button type="button" class="playlist-play-btn" title="Reproducir lista completa" aria-label="Reproducir lista completa"><i class="fas fa-play"></i></button>
