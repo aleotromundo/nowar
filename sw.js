@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nowarfy-shell-v40';
+const CACHE_NAME = 'nowarfy-shell-v41';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -58,11 +58,28 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // JS, CSS, manifest e imágenes son inmutables dentro de cada versión del cache.
-  // Se sirven instantáneamente y el nuevo CACHE_NAME los renueva en cada deploy.
+  // script.js y styles.css: stale-while-revalidate. Se sirven al instante desde cache y se
+  // revalidan en segundo plano (sin pasar por la cache HTTP), asi que un deploy nuevo llega
+  // en la visita siguiente aunque no se suba CACHE_NAME.
+  if (url.pathname === '/script.js' || url.pathname === '/styles.css') {
+    event.respondWith((async () => {
+      const cached = await caches.match(request);
+      const refresh = fetch(request, { cache: 'no-cache' })
+        .then(response => cachePut(request, response))
+        .catch(() => cached);
+      if (cached) {
+        event.waitUntil(refresh);
+        return cached;
+      }
+      return refresh;
+    })());
+    return;
+  }
+
+  // Manifest, favicon e imagenes de /assets: cache-first (los assets llevan cache inmutable).
   event.respondWith(
     caches.match(request).then(cached => cached || fetch(request).then(response => {
-      if (response.ok && (url.pathname === '/manifest.webmanifest' || url.pathname === '/favicon.ico' || url.pathname === '/styles.css' || url.pathname === '/script.js' || url.pathname.startsWith('/assets/'))) {
+      if (response.ok && (url.pathname === '/manifest.webmanifest' || url.pathname === '/favicon.ico' || url.pathname.startsWith('/assets/'))) {
         event.waitUntil(cachePut(request, response));
       }
       return response;

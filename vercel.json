@@ -12,6 +12,15 @@
   ],
   "headers": [
     {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    },
+    {
       "source": "/(styles.css|script.js|manifest.webmanifest|favicon.ico)",
       "headers": [
         {
