@@ -21,7 +21,7 @@ Se aplicaron OPT-102 y OPT-105: las imágenes de tarjetas, logos, QR y portada d
 
 OPT-101 queda preparado para una siguiente modificación porque `assets/youtoo-mark-compact.png` no tiene referencias activas en el frontend actual; convertirlo sin sustituir una referencia real no reduciría el peso transferido.
 
-OPT-106 queda especificada para el siguiente commit, después de introducir pruebas de regresión sobre reproducción, cola, pairing y ciclo de vida. La política prevista agrupará las escrituras de cola en una ventana de 350 ms, forzando un `flush` en `pagehide`, `freeze` y ocultación.
+OPT-106 quedó implementada: la cola separa `persistQueueNow()` de `persistQueue()`, agrupa cambios sucesivos durante 350 ms y usa `flushNowarfyPersistence()` para forzar la escritura inmediata. El flush se ejecuta al ocultar, en `pagehide` y en `freeze`, evitando perder cambios pendientes sin retrasar favoritos, volumen, pairing ni preferencias de usuario.
 
 ## Validación
 
@@ -29,7 +29,7 @@ Ejecutar `node --check script.js`, `git diff --check`, verificar el Service Work
 
 ## Próximo paso
 
-Implementar OPT-106 con cambios pequeños y medibles; luego abordar OPT-103 y OPT-104 mediante una lista explícita de rails prioritarios y `IntersectionObserver`, sin diferir bienvenida, acciones rápidas ni la primera recomendación.
+Luego abordar OPT-103 y OPT-104 mediante una lista explícita de rails prioritarios y `IntersectionObserver`, sin diferir bienvenida, acciones rápidas ni la primera recomendación.
 
 ## Referencias
 
