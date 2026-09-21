@@ -4797,13 +4797,28 @@ function readVideoResumeSession() {
     } catch (e) { return null; }
 }
 
-function persistQueue() {
+let nowarfyQueuePersistTimer = null;
+function persistQueueNow() {
     try {
         localStorage.setItem('nowarfy_queue', JSON.stringify(queue));
         localStorage.setItem('nowarfy_queue_qid', currentPlayingQid == null ? '' : String(currentPlayingQid));
         localStorage.setItem('nowarfy_queue_round', String(queueRound));
         persistQueueMode();
     } catch (e) {}
+}
+function persistQueue() {
+    clearTimeout(nowarfyQueuePersistTimer);
+    nowarfyQueuePersistTimer = window.setTimeout(() => {
+        nowarfyQueuePersistTimer = null;
+        persistQueueNow();
+    }, 350);
+}
+function flushNowarfyPersistence() {
+    clearTimeout(nowarfyQueuePersistTimer);
+    nowarfyQueuePersistTimer = null;
+    persistQueueNow();
+    persistVideoResumeSession(true);
+    updatePlaybackState();
 }
 
 function restoreQueueFromStorage() {
@@ -6462,7 +6477,7 @@ function handleNowarfyVisibilityChange() {
 }
 
 function setupBackgroundPersistence() {
-    const save = () => { persistQueue(); persistVideoResumeSession(true); updatePlaybackState(); if (nowarfyRemoteIsPlayer) void publishNowarfyRemoteState(); };
+    const save = () => { flushNowarfyPersistence(); if (nowarfyRemoteIsPlayer) void publishNowarfyRemoteState(); };
     document.addEventListener('visibilitychange', () => {
         handleNowarfyVisibilityChange();
         if (nowarfyPageHidden) save();
