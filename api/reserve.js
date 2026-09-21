@@ -121,7 +121,6 @@ function queryLookupUrl(req) {
 }
 
 function fromRow(row) {
-  const attribution = Array.isArray(row.youtoo_discovery_attributions) ? row.youtoo_discovery_attributions[0] : null;
   return {
     ...row.metadata,
     candidateKey: row.candidate_key,
@@ -157,7 +156,6 @@ function fromRow(row) {
     useCount: row.use_count,
     discoveredAt: row.discovered_at,
     lastSeenAt: row.last_seen_at,
-    discoveredBy: row.discovered_by || attribution?.discovered_by || '',
     lastUsedAt: row.last_used_at,
     expiresAt: row.expires_at
   };
@@ -229,7 +227,7 @@ function quoteCsv(value) {
 }
 
 function exportCsv(rows) {
-  const columns = ['candidate_key', 'source', 'source_id', 'media_type', 'url', 'title', 'artist', 'style_key', 'radio_eligible', 'license', 'source_url', 'duration_seconds', 'status', 'use_count', 'discovered_at', 'last_used_at', 'discovered_by'];
+  const columns = ['candidate_key', 'source', 'source_id', 'media_type', 'url', 'title', 'artist', 'style_key', 'radio_eligible', 'license', 'source_url', 'duration_seconds', 'status', 'use_count', 'discovered_at', 'last_used_at'];
   return [columns.join(','), ...rows.map(row => columns.map(column => quoteCsv(row[column])).join(','))].join('\r\n');
 }
 
