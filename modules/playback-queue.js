@@ -1143,7 +1143,7 @@ function renderQueue() {
         ? `playlist de YouTube${queuePlaylistContext?.title ? ` · ${queuePlaylistContext.title}` : ''}`
         : 'radio automática';
     if (sub) sub.textContent = queue.length
-        ? `${queue.length} canción${queue.length === 1 ? '' : 'es'} · ${queueModeLabel} · ${continuousPlayback ? 'reproducción continua' : 'se detiene al terminar'}`
+        ? `${queue.length} ${queue.length === 1 ? 'canción' : 'canciones'} · ${queueModeLabel} · ${continuousPlayback ? 'reproducción continua' : 'se detiene al terminar'}`
         : `La Playlist está vacía · ${continuousPlayback ? 'continua lista' : 'una pista por vez'}`;
 
     const previousRender = list._nowarfyVirtualRender;

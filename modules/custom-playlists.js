@@ -12,7 +12,7 @@ function renderCustomPlaylistHomeRail() {
         const card = document.createElement('article');
         card.className = 'custom-playlist-card';
         const artwork = playlist.tracks.find(track => track.img)?.img || '';
-        card.innerHTML = `<button type="button" class="custom-playlist-art" aria-label="Abrir ${escapeHtml(playlist.title)}">${artwork ? `<img src="${escapeHtml(artwork)}" alt="" loading="lazy">` : '<i class="fas fa-list-music"></i>'}</button><div class="custom-playlist-card-copy"><strong>${escapeHtml(playlist.title)}</strong><span>${playlist.tracks.length} canción${playlist.tracks.length === 1 ? '' : 'es'}</span></div><div class="custom-playlist-card-actions"><button type="button" class="custom-playlist-play" aria-label="Reproducir ${escapeHtml(playlist.title)}"><i class="fas fa-play"></i></button></div>`;
+        card.innerHTML = `<button type="button" class="custom-playlist-art" aria-label="Abrir ${escapeHtml(playlist.title)}">${artwork ? `<img src="${escapeHtml(artwork)}" alt="" loading="lazy">` : '<i class="fas fa-list-music"></i>'}</button><div class="custom-playlist-card-copy"><strong>${escapeHtml(playlist.title)}</strong><span>${playlist.tracks.length} ${playlist.tracks.length === 1 ? 'canción' : 'canciones'}</span></div><div class="custom-playlist-card-actions"><button type="button" class="custom-playlist-play" aria-label="Reproducir ${escapeHtml(playlist.title)}"><i class="fas fa-play"></i></button></div>`;
         card.querySelector('.custom-playlist-art').onclick = () => openCustomPlaylist(playlist.id);
         card.querySelector('.custom-playlist-play').onclick = () => playCustomPlaylist(playlist.id);
         grid.appendChild(card);
