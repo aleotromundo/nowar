@@ -1,5 +1,5 @@
-// OPT-109: punto de entrada estable. Los módulos se cargan en orden porque conservan
-// el contrato global existente con index.html, sus handlers inline y el Service Worker.
+// OPT-109: punto de entrada estable. La carga es estrictamente secuencial porque
+// los módulos conservan el contrato global existente con index.html y sus handlers inline.
 (function loadNowarfyModules() {
     const modules = [
         'storage.js',
@@ -13,7 +13,17 @@
         'player-pwa.js'
     ];
     const base = '/modules/';
-    modules.forEach((moduleName) => {
-        document.write(`<script src="${base}${moduleName}"><\/script>`);
-    });
+    const loadNext = (index) => {
+        if (index >= modules.length) {
+            window.nowarfyModulesReady = true;
+            window.dispatchEvent(new Event('nowarfy:modules-ready'));
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = `${base}${modules[index]}`;
+        script.onload = () => loadNext(index + 1);
+        script.onerror = () => console.error(`[Nowarfy] No se pudo cargar ${modules[index]}`);
+        document.head.appendChild(script);
+    };
+    loadNext(0);
 })();

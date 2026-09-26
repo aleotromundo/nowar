@@ -129,31 +129,34 @@ const searchInput = document.getElementById('searchInput');
 const searchClearBtn = document.getElementById('searchClear');
 const silentAudioLoop = document.getElementById('silent-audio-loop');
 
-initVolume();
-initNowarfyHistory();
 void hydrateTasteFromIndexedDB();
+let nowarfyHomeInitialized = false;
 const initializeNowarfyHome = () => {
-    if (typeof resetView === 'function') void resetView();
+    if (nowarfyHomeInitialized || !window.nowarfyModulesReady || typeof resetView !== 'function') return;
+    nowarfyHomeInitialized = true;
+    initNowarfyHistory();
+    initVolume();
+    loadYouTubeAPI();
+    setupProgressDrag();
+    setupBackgroundPlaybackSupport();
+    setupKeyboardShortcuts();
+    restoreQueueFromStorage();
+    void hydrateQueueFromIndexedDB();
+    setupQueueTrashDropzone();
+    setupVideoStageObserver();
+    setupVideoStageVisibilityAwareness();
+    setupBackgroundPersistence();
+    setupPlaybackContinuity();
+    setupInstallableApp();
+    renderQueue();
+    void resetView();
 };
+window.addEventListener('nowarfy:modules-ready', initializeNowarfyHome, { once: true });
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeNowarfyHome, { once: true });
-} else {
+} else if (window.nowarfyModulesReady) {
     queueMicrotask(initializeNowarfyHome);
 }
-loadYouTubeAPI();
-setupProgressDrag();
-setupBackgroundPlaybackSupport();
-setupKeyboardShortcuts();
-restoreQueueFromStorage();
-void hydrateQueueFromIndexedDB();
-setupQueueTrashDropzone();
-setupVideoStageObserver();
-setupVideoStageVisibilityAwareness();
-setupBackgroundPersistence();
-setupPlaybackContinuity();
-setupInstallableApp();
-renderQueue();
-
 window.onerror = function(msg, url, lineNo, columnNo, error) {
     if (msg && msg.includes('postMessage') && msg.includes('youtube')) return true;
     if (msg && msg.includes('Slow network')) return true;
