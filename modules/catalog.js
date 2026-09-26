@@ -1086,8 +1086,7 @@ function takeNovelItems(items, used, limit = 12) {
     }
     return result;
 }
-function renderHomeWelcome(lastViewed) {
-    const container = document.getElementById('dynamicSections');
+function renderHomeWelcome(lastViewed, mount = document.getElementById('dynamicSections')) {
     const welcome = document.createElement('button');
     welcome.type = 'button';
     welcome.className = 'home-welcome';
@@ -1097,7 +1096,8 @@ function renderHomeWelcome(lastViewed) {
     } else {
         welcome.innerHTML = `<span class="home-welcome-copy"><span class="home-welcome-brandline"><span class="home-welcome-logo"><img class="brand-lockup-mark" src="assets/nowarfy-logo-red-solid.png" alt=""><span class="brand-lockup-text"><strong>Nowarfy</strong><span>YouToo</span><sup class="brand-registered">®</sup></span></span><span class="home-welcome-kicker">Bienvenido a Nowarfy · YouToo</span></span><h1>Descubrí música real, sin límites</h1><p>Explorá artistas, canales y fuentes musicales. El reproductor empieza detenido para que vos elijas cuándo comenzar.</p></span>`;
     }
-    container.appendChild(welcome);
+    mount.appendChild(welcome);
+    return welcome;
 }
 
 function renderHomeQuickActions() {
@@ -1122,13 +1122,29 @@ function buildHomeResumeCard(song) {
     return card;
 }
 
-function renderHomeHistoryRail(history, lastViewed) {
-    const items = (history || []).filter(item => item && (!lastViewed || songKey(item) !== songKey(lastViewed)));
-    if (!lastViewed && !items.length) return;
+function renderHomeHistoryRail(history, mountInto = null) {
+    const items = (history || []).filter(Boolean);
+    if (!items.length) return;
+    const before = mountInto?.querySelector?.('.home-history-rail-top');
     renderLibraryRail(items, 'Última actividad', "<i class='fas fa-clock-rotate-left'></i>", false, {
-        hint: 'Continuá y deslizá para ver tu historial', showControls: true, infinite: true, leadingAction: lastViewed,
-        className: 'home-history-rail'
+        hint: 'Deslizá para ver todo tu historial', showControls: true, infinite: true, mountInto,
+        className: 'home-history-rail home-history-rail-top'
     });
+    if (before || mountInto?.querySelector?.('.home-history-rail-top')) return;
+    const section = document.createElement('section');
+    section.className = 'library-rail-section home-history-rail home-history-rail-top';
+    section.innerHTML = `<div class="library-rail-title"><i class="fas fa-clock-rotate-left"></i><span>Última actividad</span><span class="library-rail-hint">Deslizá para ver todo tu historial</span></div>`;
+    const rail = document.createElement('div');
+    rail.className = 'library-rail';
+    items.forEach((item, index) => {
+        const card = buildMediaCard({ ...item, img: hasValidArtwork(item) ? item.img : 'assets/nowarfy-icon-512.png' }, index);
+        card.classList.add('library-card');
+        rail.appendChild(card);
+    });
+    section.appendChild(rail);
+    (mountInto || document.getElementById('dynamicSections')).appendChild(section);
+    initRailDragScroll();
+    initAutoMovingCarousels();
 }
 
 function renderDeferredHomeRail(list, title, icon, isPlaylist = false, options = {}) {
@@ -1175,7 +1191,12 @@ function renderHomeFeed() {
             img: lastPlayed.img || 'assets/nowarfy-icon-512.png',
             artist: lastPlayed.artist || lastPlayed.channelTitle || 'Reproducción reciente'
         } : null);
-        if (!lastViewed) renderHomeWelcome(null);
+        const recentHistory = uniqueMediaByUrl(taste.plays.map(normalizeTasteTrack).filter(Boolean), 24);
+        const homeTopLayout = document.createElement('div');
+        homeTopLayout.className = 'home-top-layout';
+        container.appendChild(homeTopLayout);
+        renderHomeWelcome(lastViewed, homeTopLayout);
+        if (recentHistory.length || lastViewed) renderHomeHistoryRail(recentHistory.length ? recentHistory : [lastViewed], homeTopLayout);
         renderHomeQuickActions();
         renderCustomPlaylistHomeRail();
         if (lastViewed) used.add(songKey(lastViewed));
@@ -1201,16 +1222,7 @@ function renderHomeFeed() {
             renderDeferredHomeRail(artistItems, 'Tus artistas recientes', "<i class='fas fa-microphone-lines'></i>", false, { hint: 'Basado en tu historial · tocá para buscar más', showControls: true, className: 'home-artists-rail' });
         }
 
-        const recentHistory = (typeof mergeRecentTasteEntries === 'function'
-            ? mergeRecentTasteEntries(taste.plays)
-            : taste.plays)
-            .map(normalizeTasteTrack)
-            .filter(Boolean)
-            .slice(0, 8);
-        if (recentHistory.length || lastViewed) {
-            recentHistory.forEach(item => used.add(songKey(item)));
-            renderHomeHistoryRail(recentHistory, lastViewed);
-        }
+        recentHistory.forEach(item => used.add(songKey(item)));
         const resume = takeNovelItems(taste.plays.map(normalizeTasteTrack).filter(Boolean), used, 8);
         if (resume.length) renderDeferredHomeRail(resume, 'Seguí desde donde quedaste', "<i class='fas fa-clock-rotate-left'></i>", false, { hint: 'Tu actividad reciente · sin repetir en otras sesiones', showControls: true, className: 'home-resume-rail' });
         const musicVideos = takeNovelItems(musicalVideoPool(homeMusicVideos), used, 8);
@@ -1219,7 +1231,7 @@ function renderHomeFeed() {
         if (playlists.length >= 2) renderDeferredHomeRail(playlists, 'Listas y álbumes', "<i class='fas fa-layer-group'></i>", true, { hint: 'Colecciones diferentes para seguir explorando', showControls: true });
         const freeMusic = takeNovelItems(homeMusic, used, 12);
         if (freeMusic.length >= 2) renderDeferredHomeRail(freeMusic, 'Música libre disponible', "<i class='fas fa-headphones'></i>", false, { hint: 'Audio con carátula y licencia · sin repetir videos', showControls: true });
-        if (!resume.length && !recommended.length && !featured.length && !musicVideos.length && !playlists.length && !freeMusic.length) renderEmptyState('No hay opciones disponibles ahora', 'Probá recargar dentro de unos segundos o buscá un artista.');
+        if (!recentHistory.length && !lastViewed && !resume.length && !recommended.length && !featured.length && !musicVideos.length && !playlists.length && !freeMusic.length) renderEmptyState('No hay opciones disponibles ahora', 'Probá recargar dentro de unos segundos o buscá un artista.');
         setTimeout(() => { initScrollAssemblyEngine(); observeScrollAssembly(); }, 40);
     });
 }
@@ -2202,7 +2214,8 @@ function renderLibraryRail(list, title, icon, isPlaylist = false, options = {}) 
         });
     }
     section.appendChild(rail);
-    if (options.mountBefore?.parentNode === container) container.insertBefore(section, options.mountBefore);
+    if (options.mountInto?.appendChild) options.mountInto.appendChild(section);
+    else if (options.mountBefore?.parentNode === container) container.insertBefore(section, options.mountBefore);
     else container.appendChild(section);
     setTimeout(() => { initRailDragScroll(); initAutoMovingCarousels(); }, 20);
 }
