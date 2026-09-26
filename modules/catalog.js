@@ -1167,7 +1167,14 @@ function renderHomeFeed() {
         container.innerHTML = '';
         currentList = [];
         const used = new Set();
-        const lastViewed = normalizeTasteTrack(taste.plays[0]);
+        const lastPlayed = taste.plays[0];
+        const lastViewed = normalizeTasteTrack(lastPlayed) || (lastPlayed?.title ? {
+            ...lastPlayed,
+            url: lastPlayed.url || '',
+            type: lastPlayed.type || 'history',
+            img: lastPlayed.img || 'assets/nowarfy-icon-512.png',
+            artist: lastPlayed.artist || lastPlayed.channelTitle || 'Reproducción reciente'
+        } : null);
         if (!lastViewed) renderHomeWelcome(null);
         renderHomeQuickActions();
         renderCustomPlaylistHomeRail();
@@ -1200,7 +1207,7 @@ function renderHomeFeed() {
             .map(normalizeTasteTrack)
             .filter(Boolean)
             .slice(0, 8);
-        if (recentHistory.length) {
+        if (recentHistory.length || lastViewed) {
             recentHistory.forEach(item => used.add(songKey(item)));
             renderHomeHistoryRail(recentHistory, lastViewed);
         }

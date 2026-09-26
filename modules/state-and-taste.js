@@ -299,6 +299,7 @@ async function hydrateTasteFromIndexedDB() {
         }
         renderTasteChips(searchQuery);
         if (activeBrowseMode === 'history') renderPlaybackHistory();
+        else if (activeBrowseMode === 'home' && homeFeedLoaded && typeof renderHomeFeed === 'function') renderHomeFeed();
     } catch (_) {}
 }
 
