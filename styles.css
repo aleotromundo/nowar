@@ -199,9 +199,9 @@
         .home-welcome-art { position: relative; z-index: 1; width: clamp(84px, 10vw, 112px); height: clamp(84px, 10vw, 112px); object-fit: cover; border-radius: 18px; box-shadow: 0 13px 30px rgba(0,0,0,.34), 0 0 0 1px rgba(255,255,255,.08); }
         @media (max-width: 620px) { .home-welcome { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 16px; } .home-welcome::after { right: 0; top: -92px; width: 180px; height: 180px; } .home-welcome-brandline { align-content: flex-start; gap: 8px; margin-bottom: 7px; } .home-welcome-kicker { font-size: .56rem; letter-spacing: .1em; } .home-welcome-art { width: 68px; height: 68px; border-radius: 14px; } .home-welcome h1 { font-size: clamp(1.05rem, 5.1vw, 1.45rem); } .home-welcome p { font-size: .76rem; line-height: 1.4; } }
         @media (max-width: 360px) { .home-welcome { grid-template-columns: 1fr; } .home-welcome-art { justify-self: end; margin-top: 2px; } .home-welcome-brandline { flex-direction: column; align-items: flex-start; gap: 6px; } }
-        .home-recommended-rail .library-rail, .home-resume-rail .library-rail, .home-mobile-recent-rail .library-rail { padding-bottom: 13px; }
-        .home-mobile-recent-rail { display: none; }
-        @media (max-width: 768px) { .home-mobile-recent-rail { display: block; } .home-resume-rail { display: none; } }
+        .home-recommended-rail .library-rail, .home-resume-rail .library-rail, .home-history-rail .library-rail { padding-bottom: 13px; }
+        .home-history-rail { background: radial-gradient(440px 190px at 8% -45%, rgba(94,234,212,.16), transparent 72%), linear-gradient(118deg, rgba(20,45,57,.58), rgba(17,18,35,.78)); }
+        @media (max-width: 768px) { .home-resume-rail { display: none; } }
         @keyframes featured-ambient-flow { 0%, 100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(-32px,34px,0) scale(1.13); } }
         @media (prefers-reduced-motion: reduce) { .featured-rail::before { animation: none; } }
         @media (max-width: 1180px) { .library-rail .library-card { flex-basis: calc((100% - 36px) / 3); } }

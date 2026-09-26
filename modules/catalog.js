@@ -954,7 +954,8 @@ function normalizeTasteTrack(item) {
         ...item,
         resourceKind: item.resourceKind || (item.type === 'yt' ? 'youtube#video' : ''),
         artist: item.artist || item.channelTitle || 'Nowarfy',
-        channelTitle: item.channelTitle || item.artist || ''
+        channelTitle: item.channelTitle || item.artist || '',
+        at: Number.isFinite(Number(item.at)) ? Number(item.at) : 0
     };
 }
 
@@ -1173,8 +1174,18 @@ function renderHomeFeed() {
             renderDeferredHomeRail(artistItems, 'Tus artistas recientes', "<i class='fas fa-microphone-lines'></i>", false, { hint: 'Basado en tu historial · tocá para buscar más', showControls: true, className: 'home-artists-rail' });
         }
 
-        const recentVideos = uniqueMediaByUrl(taste.plays.map(normalizeTasteTrack).filter(item => item && (item.type === 'yt' || item.type === 'freevideo')), 3);
-        if (recentVideos.length) renderDeferredHomeRail(recentVideos, 'Últimos videos reproducidos', "<i class='fas fa-clock-rotate-left'></i>", false, { hint: 'Búsquedas y playlists · los 3 más recientes', showControls: true, className: 'home-mobile-recent-rail' });
+        const recentHistory = (typeof mergeRecentTasteEntries === 'function'
+            ? mergeRecentTasteEntries(taste.plays)
+            : taste.plays)
+            .map(normalizeTasteTrack)
+            .filter(Boolean)
+            .slice(0, 8);
+        if (recentHistory.length) {
+            recentHistory.forEach(item => used.add(songKey(item)));
+            renderDeferredHomeRail(recentHistory, 'Última actividad', "<i class='fas fa-clock-rotate-left'></i>", false, {
+                hint: 'Tu historial más reciente · ordenado por fecha', showControls: true, className: 'home-history-rail'
+            });
+        }
         const resume = takeNovelItems(taste.plays.map(normalizeTasteTrack).filter(Boolean), used, 8);
         if (resume.length) renderDeferredHomeRail(resume, 'Seguí desde donde quedaste', "<i class='fas fa-clock-rotate-left'></i>", false, { hint: 'Tu actividad reciente · sin repetir en otras sesiones', showControls: true, className: 'home-resume-rail' });
         const musicVideos = takeNovelItems(musicalVideoPool(homeMusicVideos), used, 8);

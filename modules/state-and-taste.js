@@ -349,8 +349,7 @@ async function loadNowarfyTaste() {
         }
 
         const localTaste = readTaste();
-        const mergedPlays = [...(localTaste.plays || []), ...(data.plays || [])];
-        const uniquePlays = Array.from(new Map(mergedPlays.map(item => [item.url || `${item.title}|${item.artist}`, item])).values());
+        const uniquePlays = mergeRecentTasteEntries(localTaste.plays, data.plays);
 
         const mergedTaste = {
             ...localTaste,
@@ -387,6 +386,24 @@ function rememberUnique(list, entry, getKey, max = Infinity) {
     const key = getKey(entry);
     const merged = [entry, ...list.filter(item => getKey(item) !== key)];
     return Number.isFinite(max) ? merged.slice(0, max) : merged;
+}
+
+function mergeRecentTasteEntries(...lists) {
+    const entries = lists.flatMap(list => Array.isArray(list) ? list : []);
+    const byKey = new Map();
+    entries.forEach((item, index) => {
+        if (!item || typeof item !== 'object') return;
+        const key = item.url || `${item.title || ''}|${item.artist || ''}`;
+        if (!key) return;
+        const previous = byKey.get(key);
+        if (!previous || Number(item.at || 0) > Number(previous.item.at || 0)) byKey.set(key, { item, index });
+    });
+    return Array.from(byKey.values())
+        .sort((a, b) => {
+            const timeDelta = Number(b.item.at || 0) - Number(a.item.at || 0);
+            return timeDelta || a.index - b.index;
+        })
+        .map(({ item }) => item);
 }
 
 function rememberSearch(query) {
