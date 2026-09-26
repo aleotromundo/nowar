@@ -13,6 +13,7 @@
             --accent-2: #29b6f6;
             --border-soft: rgba(255, 255, 255, 0.06);
             --player-height: 90px;
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
             --ease: cubic-bezier(.2, .8, .2, 1);
         }
 
@@ -27,7 +28,8 @@
             font-family: 'Manrope', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             background-color: var(--bg-black);
             color: var(--text-white);
-            height: 100vh;
+            min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -938,4 +940,72 @@
             body.mode-youtoo .player-center .btn-control, body.mode-youtoo .player-center .btn-play, body.mode-youtoo .player-center #queueToggleBtn, body.mode-youtoo .player-center .continuous-playback-toggle { width: 33px; height: 33px; }
             body.mode-youtoo .player-center .btn-play { width: 37px; height: 37px; }
             body.mode-youtoo .queue-panel { bottom: 146px; }
+        }
+
+        /* MOBILE BASELINE: overrides finales y deliberadamente agrupados para evitar
+           que las reglas responsive anteriores dejen zonas táctiles o alturas
+           diferentes según el orden de carga del CSS. */
+        @media (max-width: 768px) {
+            body.mode-youtoo .content-area {
+                padding-bottom: calc(var(--player-height) + 34px + var(--safe-area-bottom));
+            }
+            body.mode-youtoo .player-bar {
+                padding-bottom: calc(10px + var(--safe-area-bottom));
+            }
+            body.mode-youtoo .queue-panel {
+                bottom: calc(var(--player-height) + var(--safe-area-bottom));
+            }
+            body.mode-youtoo .nowarfy-mobile-action,
+            body.mode-youtoo .nav-links li,
+            body.mode-youtoo .player-center .btn-control,
+            body.mode-youtoo .player-center .btn-play,
+            body.mode-youtoo .player-center #queueToggleBtn,
+            body.mode-youtoo .player-center .continuous-playback-toggle,
+            body.mode-youtoo .player-utils .share-btn,
+            body.mode-youtoo .fav-btn {
+                min-width: 44px;
+                min-height: 44px;
+            }
+            body.mode-youtoo .nav-links li {
+                padding: 9px 12px;
+            }
+            body.mode-youtoo .fav-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                margin-left: 2px;
+            }
+            body.mode-youtoo .search-container,
+            body.mode-youtoo .player-bar,
+            body.mode-youtoo .queue-panel,
+            body.mode-youtoo .nowarfy-nav-groups {
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+            }
+            body.mode-youtoo .search-container { background: rgba(15,16,32,.97); }
+            body.mode-youtoo .player-bar { background: rgba(16,16,31,.98); }
+            body.mode-youtoo .queue-panel,
+            body.mode-youtoo .nowarfy-nav-groups { background: rgba(17,18,35,.99); }
+            .ambient-artwork-background {
+                filter: blur(22px) saturate(1.12);
+                opacity: .24;
+            }
+            body.mode-youtoo::before,
+            body.mode-youtoo::after {
+                filter: blur(28px) saturate(1.08);
+            }
+            .nowarfy-handoff-prompt {
+                bottom: calc(14px + var(--safe-area-bottom));
+            }
+        }
+        @media (prefers-reduced-transparency: reduce) {
+            .search-container,
+            .player-bar,
+            .queue-panel,
+            .nowarfy-nav-groups,
+            .nowarfy-handoff-prompt {
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+                background: rgba(17,18,35,.98);
+            }
         }
