@@ -103,6 +103,7 @@ let lyricsZoom = 1;
 let currentLyrics = null;
 let lyricsLoadingKey = '';
 let videoStageAutoHiddenReason = '';
+const EMPTY_TASTE = Object.freeze({ version: 3, personalization: true, searches: [], plays: [], channels: [], playlists: [] });
 
 const audioEl = document.getElementById('audio-element');
 const nextAudioEl = document.getElementById('audio-element-next');
@@ -127,7 +128,14 @@ const silentAudioLoop = document.getElementById('silent-audio-loop');
 initVolume();
 initNowarfyHistory();
 void hydrateTasteFromIndexedDB();
-setTimeout(resetView, 0);
+const initializeNowarfyHome = () => {
+    if (typeof resetView === 'function') void resetView();
+};
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeNowarfyHome, { once: true });
+} else {
+    queueMicrotask(initializeNowarfyHome);
+}
 loadYouTubeAPI();
 setupProgressDrag();
 setupBackgroundPlaybackSupport();
@@ -248,8 +256,6 @@ const TASTE_STORAGE_KEY = 'youtoo_taste_v1';
 const NOWARFY_TASTE_TABLE = 'nowarfy_user_taste';
 let nowarfyTasteSyncTimer = null;
 let nowarfyTasteSyncInFlight = false;
-
-const EMPTY_TASTE = Object.freeze({ version: 3, personalization: true, searches: [], plays: [], channels: [], playlists: [] });
 
 function readTaste() {
     try {
