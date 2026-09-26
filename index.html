@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Nowarfy · YouToo</title>
     <meta name="theme-color" content="#ef4444">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,7 +19,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     
+    <link rel="preload" href="styles-secondary.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="styles-secondary.css"></noscript>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles-custom-playlists.css">
 </head>
 <body class="mode-youtoo">
 
@@ -29,11 +32,11 @@
         <aside class="sidebar" aria-label="Navegación principal de Nowarfy">
             <div class="logo">
                 <span class="brand-nowarfi">
-                    <img class="brand-nowarfi-mark" src="assets/nowarfy-logo-red-solid.png" alt=""> Nowarfy<sup class="brand-registered">®</sup>
+                    <img class="brand-nowarfi-mark" src="assets/nowarfy-logo-red-solid.png" width="32" height="32" decoding="async" alt=""> Nowarfy<sup class="brand-registered">®</sup>
                 </span>
                 <button type="button" class="brand-youtoo" onclick="hardResetNowarfy(event)" aria-label="Reiniciar y actualizar Nowarfy" title="Reiniciar y actualizar Nowarfy">
                     <span class="brand-lockup">
-                        <img class="brand-lockup-mark" src="assets/nowarfy-logo-red-solid.png" alt="">
+                        <img class="brand-lockup-mark" src="assets/nowarfy-logo-red-solid.png" width="32" height="32" decoding="async" alt="">
                         <span class="brand-lockup-text"><strong>Nowarfy</strong><span>YouToo</span><sup class="brand-registered">®</sup></span>
                     </span>
                 </button>
@@ -42,13 +45,30 @@
             <button type="button" class="nowarfy-mobile-action nowarfy-mobile-account-toggle" onclick="openNowarfyAuth()" aria-label="Abrir cuenta"><i class="fas fa-user"></i><span class="nowarfy-mobile-action-text">Cuenta</span></button>
             
             <div class="nowarfy-nav-groups">
-                <section class="nowarfy-nav-group" aria-label="Navegación principal">
-                    <span class="nowarfy-nav-label">Navegar</span>
+                <section class="nowarfy-nav-group" aria-label="Descubrir">
+                    <span class="nowarfy-nav-label">Descubrir</span>
                     <ul class="nav-links">
                         <li data-nav="home" onclick="resetView()" class="active"><i class="fas fa-house"></i> <span>Inicio</span></li>
                         <li data-nav="explore" onclick="showSection('explore')"><i class="fas fa-compass"></i> <span>Explorar</span></li>
-                        <li data-nav="library" onclick="showSection('library')"><i class="fas fa-book-open"></i> <span>Biblioteca</span></li>
-                        <li data-nav="player" onclick="showFloatingPlayer()"><i class="fas fa-play-circle"></i> <span>Reproductor</span></li>
+                        <li data-nav="channels" onclick="showSection('channels')"><i class="fas fa-satellite-dish"></i> <span>Canales</span></li>
+                        <li data-nav="playlists" onclick="showSection('playlists')"><i class="fas fa-list-ul"></i> <span>Listas</span></li>
+                        <li data-nav="videos" onclick="showSection('videos')"><i class="fas fa-clapperboard"></i> <span>Videos</span></li>
+                        <li data-nav="music" onclick="showSection('music')"><i class="fas fa-headphones"></i> <span>Música</span></li>
+                    </ul>
+                </section>
+                <section class="nowarfy-nav-group" aria-label="Tu biblioteca">
+                    <span class="nowarfy-nav-label">Tu biblioteca</span>
+                    <ul class="nav-links">
+                        <li data-nav="favorites" onclick="showSection('favorites')"><i class="fas fa-heart"></i> <span>Favoritos</span></li>
+                        <li data-nav="history" onclick="showSection('history')"><i class="fas fa-clock-rotate-left"></i> <span>Historial</span></li>
+                    </ul>
+                </section>
+                <section class="nowarfy-nav-group" aria-label="Tu experiencia">
+                    <span class="nowarfy-nav-label">Tu experiencia</span>
+                    <ul class="nav-links">
+                        <li data-nav="queue" onclick="openQueueFromSidebar()"><i class="fas fa-list-music"></i> <span>Playlist</span></li>
+                        <li data-nav="player" onclick="showFloatingPlayer()"><i class="fas fa-up-right-and-down-left-from-center"></i> <span>Reproductor</span></li>
+                        <li data-nav="taste" onclick="showSection('taste')"><i class="fas fa-shield-halved"></i> <span>Tus datos</span></li>
                     </ul>
                 </section>
             </div>
@@ -59,7 +79,7 @@
                 <button type="button" id="pwaInstallBtn" class="nowarfy-install-btn" hidden><i class="fas fa-download"></i> Instalar Nowarfy</button>
             </div>
             <button type="button" id="nowarfyQrButton" class="nowarfy-qr-launch" onclick="openNowarfyQr()" aria-haspopup="dialog" aria-controls="nowarfyQrModal" aria-label="Vincular otro dispositivo con código QR">
-                <img id="nowarfyQrPreview" src="assets/nowarfy-qr.png" alt="">
+                <img id="nowarfyQrPreview" src="assets/nowarfy-qr.png" width="48" height="48" decoding="async" alt="">
                 <span class="nowarfy-qr-copy"><strong>Vincular dispositivo</strong><small>Pairing por QR</small></span>
                 <i class="fas fa-qrcode" aria-hidden="true"></i>
             </button>
@@ -159,7 +179,7 @@
         </button>
 
         <div class="player-left">
-            <button type="button" class="player-cover" id="playerCover" onclick="openCurrentCollection()" aria-label="Abrir álbum o lista actual" title="Abrir álbum o lista actual"><img src="" class="player-img" id="currentImg" alt=""></button>
+            <button type="button" class="player-cover" id="playerCover" onclick="openCurrentCollection()" aria-label="Abrir álbum o lista actual" title="Abrir álbum o lista actual"><img src="" class="player-img" id="currentImg" width="64" height="64" decoding="async" alt=""></button>
             <div class="track-info">
                 <button type="button" class="track-name" id="currTitle" onclick="openCurrentCollection()" title="Abrir álbum o lista actual">Selecciona una canción</button>
                 <button type="button" class="artist-name" id="currArtist" onclick="openCurrentArtist()" title="Abrir artista">...</button>
@@ -274,6 +294,21 @@
             <p id="nowarfyQrDescription">Escaneá este código en tu celular. Se abrirá Nowarfy y podrás iniciar sesión para sincronizarlo con este reproductor.</p>
             <img id="nowarfyQrImage" src="assets/nowarfy-qr.png" alt="Código QR para vincular otro dispositivo con Nowarfy">
             <a class="nowarfy-qr-link" id="nowarfyQrLink" href="" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square"></i> Abrir enlace de pairing</a>
+        </div>
+    </div>
+
+    <div class="custom-playlist-modal" id="customPlaylistModal" role="dialog" aria-modal="true" aria-labelledby="customPlaylistModalTitle" hidden onclick="if (event.target === this) closeCustomPlaylistModal()">
+        <div class="custom-playlist-dialog">
+            <button type="button" class="custom-playlist-close" onclick="closeCustomPlaylistModal()" aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+            <span class="section-eyebrow"><i class="fas fa-list-music"></i> Tu biblioteca</span>
+            <h2 id="customPlaylistModalTitle">Guardar en una lista</h2>
+            <p>Elegí una lista existente o creá una nueva. Se guarda en este dispositivo.</p>
+            <div id="customPlaylistPickerList" class="custom-playlist-picker-list"></div>
+            <p id="customPlaylistPickerEmpty" class="custom-playlist-picker-empty" hidden>Todavía no tenés listas personalizadas.</p>
+            <div class="custom-playlist-create-row">
+                <input id="customPlaylistNameInput" type="text" maxlength="80" placeholder="Nombre de la nueva lista" aria-label="Nombre de la nueva lista">
+                <button type="button" class="custom-playlist-primary" onclick="createCustomPlaylist()"><i class="fas fa-plus"></i> Crear</button>
+            </div>
         </div>
     </div>
 

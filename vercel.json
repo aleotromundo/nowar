@@ -21,7 +21,7 @@
       ]
     },
     {
-      "source": "/(styles.css|script.js|manifest.webmanifest|favicon.ico)",
+      "source": "/(styles.css|styles-secondary.css|script.js|manifest.webmanifest|favicon.ico)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -50,7 +50,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!api/|assets/|favicon.ico|manifest.webmanifest|sw.js|styles.css|script.js).*)",
+      "source": "/((?!api/|assets/|favicon.ico|manifest.webmanifest|sw.js|styles.css|styles-secondary.css|script.js).*)",
       "destination": "/index.html"
     }
   ]
