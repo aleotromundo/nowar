@@ -1,15 +1,10 @@
 // --- HELPER: VIEW TRANSITIONS API ---
 // Permite que los cambios de DOM se animen como una App Nativa fluida
 function navigateWithTransition(updateDOMCallback) {
-    if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        updateDOMCallback();
-        return;
-    }
-    const transition = document.startViewTransition(() => {
-        updateDOMCallback();
-    });
-    transition.ready.catch(() => {});
-    transition.finished.catch(() => {});
+    // La View Transitions API puede recortar el contenido desplazable durante
+    // navegaciones rápidas. Las animaciones de entrada ya aportan movimiento
+    // sin bloquear ni cortar el panel principal.
+    try { updateDOMCallback(); } catch (error) { console.error('[Nowarfy] Error renderizando la vista:', error); }
 }
 
 // --- CONFIGURACIÓN ---
@@ -916,4 +911,3 @@ let currentList = [];
 let favorites = JSON.parse(localStorage.getItem('nowarfy_favs')) || [];
 let currentIndex = -1;
 let isPlaying = false;
-

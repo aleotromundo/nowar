@@ -1111,6 +1111,26 @@ function renderHomeQuickActions() {
     container.appendChild(actions);
 }
 
+function buildHomeResumeCard(song) {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'home-history-resume library-card';
+    card.setAttribute('aria-label', `Seguimos desde donde quedaste: ${song.title || 'reproducción reciente'}`);
+    card.innerHTML = `<span class="home-history-resume-art"><img src="${escapeHtml(song.img || 'assets/nowarfy-icon-512.png')}" alt="" loading="lazy" decoding="async"></span><span class="home-history-resume-copy"><small>Seguimos desde donde quedaste</small><strong>${escapeHtml(song.title || 'Tu última reproducción')}</strong><em>${escapeHtml(song.artist || 'Reproducción reciente')}</em></span><i class="fas fa-play home-history-resume-play" aria-hidden="true"></i>`;
+    card.addEventListener('click', () => resumeSongFromWelcome(song, 0));
+    card.querySelector('img')?.addEventListener('error', event => { event.currentTarget.src = 'assets/nowarfy-icon-512.png'; });
+    return card;
+}
+
+function renderHomeHistoryRail(history, lastViewed) {
+    const items = (history || []).filter(item => item && (!lastViewed || songKey(item) !== songKey(lastViewed)));
+    if (!lastViewed && !items.length) return;
+    renderLibraryRail(items, 'Última actividad', "<i class='fas fa-clock-rotate-left'></i>", false, {
+        hint: 'Continuá y deslizá para ver tu historial', showControls: true, infinite: true, leadingAction: lastViewed,
+        className: 'home-history-rail'
+    });
+}
+
 function renderDeferredHomeRail(list, title, icon, isPlaylist = false, options = {}) {
     const items = (list || []).filter(item => itemsWithArtwork([item]).length && (!isPlaylist || hasUsablePlaylistItems(item)));
     if (!items.length) return;
@@ -1148,7 +1168,7 @@ function renderHomeFeed() {
         currentList = [];
         const used = new Set();
         const lastViewed = normalizeTasteTrack(taste.plays[0]);
-        renderHomeWelcome(lastViewed);
+        if (!lastViewed) renderHomeWelcome(null);
         renderHomeQuickActions();
         renderCustomPlaylistHomeRail();
         if (lastViewed) used.add(songKey(lastViewed));
@@ -1182,9 +1202,7 @@ function renderHomeFeed() {
             .slice(0, 8);
         if (recentHistory.length) {
             recentHistory.forEach(item => used.add(songKey(item)));
-            renderDeferredHomeRail(recentHistory, 'Última actividad', "<i class='fas fa-clock-rotate-left'></i>", false, {
-                hint: 'Tu historial más reciente · ordenado por fecha', showControls: true, className: 'home-history-rail'
-            });
+            renderHomeHistoryRail(recentHistory, lastViewed);
         }
         const resume = takeNovelItems(taste.plays.map(normalizeTasteTrack).filter(Boolean), used, 8);
         if (resume.length) renderDeferredHomeRail(resume, 'Seguí desde donde quedaste', "<i class='fas fa-clock-rotate-left'></i>", false, { hint: 'Tu actividad reciente · sin repetir en otras sesiones', showControls: true, className: 'home-resume-rail' });
@@ -2129,7 +2147,8 @@ function buildPlaylistCard(playlist, idx) {
 
 function renderLibraryRail(list, title, icon, isPlaylist = false, options = {}) {
     const visibleItems = itemsWithArtwork(list).filter(item => !isPlaylist || hasUsablePlaylistItems(item));
-    if (!visibleItems.length) return;
+    const hasLeadingAction = !!options.leadingAction;
+    if (!visibleItems.length && !hasLeadingAction) return;
     const container = document.getElementById('dynamicSections');
     const section = document.createElement('section');
     section.className = `library-rail-section ${options.className || ''}`.trim();
@@ -2143,7 +2162,7 @@ function renderLibraryRail(list, title, icon, isPlaylist = false, options = {}) 
     let rendered = 0;
     const appendBatch = () => {
         let nextItems = visibleItems.slice(rendered, rendered + batchSize);
-        if (!nextItems.length) {
+        if (!nextItems.length && visibleItems.length) {
             nextItems = visibleItems.slice(0, batchSize);
         }
         nextItems.forEach((item, offset) => {
@@ -2156,6 +2175,7 @@ function renderLibraryRail(list, title, icon, isPlaylist = false, options = {}) 
         return true;
     };
     rail._appendBatch = appendBatch;
+    if (hasLeadingAction) rail.appendChild(buildHomeResumeCard(options.leadingAction));
     appendBatch();
     rail.addEventListener('scroll', () => {
         const closeToEnd = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 120;
@@ -2163,10 +2183,15 @@ function renderLibraryRail(list, title, icon, isPlaylist = false, options = {}) 
     }, { passive: true });
     if (options.showControls) {
         section.querySelectorAll('.library-rail-nav').forEach(button => {
-            button.addEventListener('click', () => {
-                const direction = Number(button.dataset.direction) || 1;
-                rail.scrollBy({ left: direction * Math.max(rail.clientWidth * 0.82, 260), behavior: 'smooth' });
-            });
+                button.addEventListener('click', () => {
+                    const direction = Number(button.dataset.direction) || 1;
+                    const amount = Math.max(rail.clientWidth * 0.82, 260);
+                    if (options.infinite && direction < 0 && rail.scrollLeft <= 4) {
+                        rail.scrollLeft = Math.max(rail.scrollWidth - rail.clientWidth - amount, 0);
+                    } else if (options.infinite && direction > 0 && rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 8) {
+                        rail.scrollLeft = 0;
+                    } else rail.scrollBy({ left: direction * amount, behavior: 'smooth' });
+                });
         });
     }
     section.appendChild(rail);
