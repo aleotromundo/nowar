@@ -172,7 +172,7 @@
         .featured-rail::after { content: ''; position: absolute; z-index: -1; inset: 0; opacity: .34; background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.06) 0 1px, transparent 1px 12px); pointer-events: none; }
         .featured-rail .library-rail-title { margin-bottom: 13px; }
         .featured-rail .library-rail { padding-bottom: 14px; }
-        .featured-rail--violet { background: radial-gradient(500px 220px at 8% -24%, rgba(167,139,250,.27), transparent 72%), linear-gradient(126deg, rgba(47,37,79,.62), rgba(16,17,33,.9) 58%, rgba(12,40,49,.68)); }
+        .featured-rail--violet { background: radial-gradient(500px 220px at 8% -24%, rgba(29,185,84,.22), transparent 72%), linear-gradient(126deg, rgba(22,67,45,.62), rgba(13,24,23,.9) 58%, rgba(12,40,49,.68)); }
         .featured-rail--aqua { background: radial-gradient(460px 210px at 4% -20%, rgba(94,234,212,.20), transparent 72%), linear-gradient(126deg, rgba(11,52,59,.62), rgba(15,17,33,.9) 58%, rgba(38,31,70,.64)); }
         .featured-rail--ember { background: radial-gradient(460px 210px at 4% -20%, rgba(251,146,60,.18), transparent 72%), linear-gradient(126deg, rgba(66,31,43,.63), rgba(17,17,32,.9) 58%, rgba(44,33,68,.66)); }
         .featured-rail--electric { background: radial-gradient(460px 210px at 4% -20%, rgba(96,165,250,.20), transparent 72%), linear-gradient(126deg, rgba(20,42,76,.62), rgba(15,17,33,.9) 58%, rgba(48,31,73,.66)); }
@@ -180,7 +180,7 @@
         .home-recommended-rail, .home-resume-rail { position: relative; overflow: hidden; margin-top: 18px; padding: 14px 15px 8px; border: 1px solid rgba(190,188,255,.14); border-radius: 17px; }
         .home-recommended-rail { background: radial-gradient(500px 230px at 8% -55%, rgba(94,234,212,.17), transparent 72%), linear-gradient(118deg, rgba(20,45,57,.62), rgba(17,18,35,.76)); }
         .home-resume-rail { background: radial-gradient(420px 190px at 12% -45%, rgba(167,139,250,.18), transparent 72%), linear-gradient(118deg, rgba(42,31,70,.62), rgba(17,18,35,.76)); }
-        .home-welcome { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(18px, 3vw, 34px); align-items: center; margin: 4px 0 18px; padding: clamp(18px, 3vw, 28px) clamp(18px, 3.2vw, 32px); border: 1px solid rgba(167,139,250,.28); border-radius: 22px; background: radial-gradient(520px 180px at 8% 0%, rgba(167,139,250,.24), transparent 70%), linear-gradient(118deg, rgba(32,27,57,.92), rgba(13,18,34,.88) 68%, rgba(14,48,51,.72)); box-shadow: 0 22px 52px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06); }
+        .home-welcome { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(18px, 3vw, 34px); align-items: center; margin: 4px 0 18px; padding: clamp(18px, 3vw, 28px) clamp(18px, 3.2vw, 32px); border: 1px solid rgba(29,185,84,.28); border-radius: 22px; background: radial-gradient(520px 180px at 8% 0%, rgba(29,185,84,.22), transparent 70%), linear-gradient(118deg, rgba(23,54,40,.92), rgba(13,24,25,.88) 68%, rgba(14,48,51,.72)); box-shadow: 0 22px 52px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06); }
         .home-welcome::after { content: ''; position: absolute; width: 260px; height: 260px; right: -88px; top: -142px; border-radius: 50%; background: radial-gradient(circle, rgba(94,234,212,.22), transparent 68%); pointer-events: none; }
         .home-welcome-copy { position: relative; z-index: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
         .home-welcome-brandline { align-self: stretch; display: flex; align-items: center; justify-content: flex-start; gap: clamp(10px, 2vw, 20px); min-width: 0; margin-bottom: 10px; flex-wrap: wrap; }
@@ -546,7 +546,7 @@
         }
 
         /* --- MODO YOUTOO: exploración audiovisual original --- */
-        body.mode-youtoo { --bg-black: #0a0a12; --bg-dark: #0f1020; --bg-card: #17182b; --bg-hover: #22233b; --accent: #a78bfa; --accent-hover: #c4b5fd; --accent-glow: rgba(167,139,250,.34); --accent-2: #5eead4; --border-soft: rgba(190,188,255,.13); }
+        body.mode-youtoo { --bg-black: #070a0b; --bg-dark: #101516; --bg-card: #18211f; --bg-hover: #24322e; --accent: #1db954; --accent-hover: #1ed760; --accent-glow: rgba(29,185,84,.34); --accent-2: #29b6f6; --border-soft: rgba(180,220,202,.13); }
         body.mode-youtoo .sidebar { width: 265px; background: rgba(10,10,18,.94); padding: 21px 17px; gap: 28px; }
         body.mode-youtoo .sidebar::after { content: 'VIDEO · AUDIO · CREADORES'; color: #72738f; font-weight: 800; font-size: .58rem; letter-spacing: .13em; margin-top: auto; padding: 0 10px 6px; }
         body.mode-youtoo .logo { font-size: 1.5rem; padding: 0 10px; }
@@ -561,9 +561,9 @@
         .brand-registered { display: inline-block; margin-left: 0; color: rgba(255,255,255,.78); font: 700 .46em/1 'Manrope', sans-serif; letter-spacing: 0; transform: translateY(-.72em); }
         body.mode-youtoo .brand-youtoo { display: flex; }
         body.mode-youtoo .nav-links li { border-radius: 11px; padding: 11px 13px; }
-        body.mode-youtoo .nav-links li.active { background: linear-gradient(90deg, rgba(167,139,250,.2), rgba(94,234,212,.05)); }
-        body.mode-youtoo .nav-links li.active::before { background: var(--accent-2); box-shadow: 0 0 10px rgba(94,234,212,.45); }
-        body.mode-youtoo .content-area { padding: 25px 32px; background: radial-gradient(900px 480px at 58% -18%, rgba(139,92,246,.21), transparent 61%), radial-gradient(730px 430px at 100% 26%, rgba(45,212,191,.08), transparent 67%), radial-gradient(580px 360px at 12% 80%, rgba(69,45,125,.12), transparent 73%), repeating-linear-gradient(125deg, rgba(255,255,255,.018) 0 1px, transparent 1px 13px), linear-gradient(rgba(15,16,32,.76), rgba(15,16,32,.88)); }
+        body.mode-youtoo .nav-links li.active { background: linear-gradient(90deg, rgba(29,185,84,.2), rgba(41,182,246,.05)); }
+        body.mode-youtoo .nav-links li.active::before { background: var(--accent); box-shadow: 0 0 10px rgba(29,185,84,.45); }
+        body.mode-youtoo .content-area { padding: 25px 32px; background: radial-gradient(900px 480px at 58% -18%, rgba(29,185,84,.16), transparent 61%), radial-gradient(730px 430px at 100% 26%, rgba(41,182,246,.09), transparent 67%), radial-gradient(580px 360px at 12% 80%, rgba(24,76,55,.16), transparent 73%), repeating-linear-gradient(125deg, rgba(255,255,255,.018) 0 1px, transparent 1px 13px), linear-gradient(rgba(15,21,20,.76), rgba(15,21,20,.88)); }
         body.mode-youtoo .search-container { display: flex; align-items: center; padding: 7px 0 21px; background: rgba(15,16,32,.82); }
         body.mode-youtoo .search-wrap { max-width: 720px; width: 100%; }
         body.mode-youtoo .search-input { background: #1a1b30; border: 1px solid rgba(190,188,255,.18); color: white; border-radius: 13px; padding: 15px 46px; }
@@ -573,7 +573,7 @@
         body.mode-youtoo .mood-selector { gap: 9px; margin-bottom: 23px; }
         body.mode-youtoo .mood-btn { flex: 0 0 auto; min-width: auto; padding: 9px 14px; border-radius: 99px; font-size: .76rem; background: #202139; color: #e5e3ff; border-color: rgba(190,188,255,.16); }
         body.mode-youtoo .mood-btn:hover { background: #2b2c49; transform: translateY(-2px); }
-        body.mode-youtoo .mood-btn.active { box-shadow: 0 0 0 1px #5eead4 inset, 0 7px 20px rgba(0,0,0,.28); background: #25264a; }
+        body.mode-youtoo .mood-btn.active { box-shadow: 0 0 0 1px #1ed760 inset, 0 7px 20px rgba(0,0,0,.28); background: #203b2c; }
         body.mode-youtoo .section-title { font-size: 1.55rem; margin-top: 23px; }
         body.mode-youtoo .grid { grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 17px; }
         body.mode-youtoo .card { padding: 0; background: transparent; border: 0; border-radius: 13px; overflow: visible; }
@@ -582,9 +582,9 @@
         body.mode-youtoo .card-img-wrap::after { content: 'YouToo'; position: absolute; right: 8px; bottom: 8px; z-index: 1; padding: 3px 6px; border-radius: 5px; background: rgba(8,8,18,.73); color: #d9d7ff; font-size: .56rem; font-weight: 800; letter-spacing: .04em; }
         body.mode-youtoo .card-title { font-size: .9rem; padding: 0 2px; }
         body.mode-youtoo .card-desc { padding: 0 2px; color: #9a9bb8; }
-        body.mode-youtoo .play-btn { right: 12px; bottom: 68px; width: 43px; height: 43px; background: linear-gradient(135deg, #a78bfa, #5eead4); }
+        body.mode-youtoo .play-btn { right: 12px; bottom: 68px; width: 43px; height: 43px; background: linear-gradient(135deg, #1ed760, #29b6f6); }
         body.mode-youtoo .player-bar { background: rgba(16,16,31,.94); }
-        body.mode-youtoo .volume-slider { background: linear-gradient(to right, #a78bfa 80%, #484960 80%); }
+        body.mode-youtoo .volume-slider { background: linear-gradient(to right, #1db954 80%, #48524f 80%); }
         .youtoo-hero { position: relative; overflow: hidden; margin: 3px 0 22px; padding: 18px 0 3px; }
         .youtoo-hero::after { content: ''; position: absolute; width: 215px; height: 215px; right: 7%; top: -120px; border-radius: 50%; background: radial-gradient(circle, rgba(94,234,212,.22), transparent 68%); pointer-events: none; }
         .youtoo-hero-kicker { color: #5eead4; font-size: .68rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
@@ -774,10 +774,14 @@
         }
         /* --- Pulido visual YouToo: profundidad, atmósfera y superficies suaves --- */
         body.mode-youtoo {
-            --bg-black: #070812;
-            --bg-dark: #0b0d18;
-            --bg-card: rgba(25, 27, 48, .76);
-            --bg-hover: rgba(45, 47, 78, .82);
+            --bg-black: #070a0b;
+            --bg-dark: #0b1211;
+            --bg-card: rgba(24, 33, 31, .76);
+            --bg-hover: rgba(36, 50, 46, .82);
+            --accent: #1db954;
+            --accent-hover: #1ed760;
+            --accent-glow: rgba(29,185,84,.34);
+            --accent-2: #29b6f6;
             --shadow-soft: 0 18px 48px rgba(0, 0, 0, .24);
             --shadow-card: 0 14px 32px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255,255,255,.055);
             background: #080a14;
@@ -796,9 +800,9 @@
         }
         body.mode-youtoo::before {
             background:
-                radial-gradient(38% 32% at 16% 16%, rgba(124, 92, 255, .28), transparent 72%),
-                radial-gradient(34% 34% at 82% 12%, rgba(30, 210, 190, .18), transparent 70%),
-                radial-gradient(40% 36% at 70% 82%, rgba(235, 72, 145, .14), transparent 72%);
+                radial-gradient(38% 32% at 16% 16%, rgba(29, 185, 84, .22), transparent 72%),
+                radial-gradient(34% 34% at 82% 12%, rgba(41, 182, 246, .16), transparent 70%),
+                radial-gradient(40% 36% at 70% 82%, rgba(20, 120, 84, .14), transparent 72%);
         }
         body.mode-youtoo::after {
             background: radial-gradient(65% 55% at 50% 42%, rgba(7,8,18,.18), rgba(5,6,14,.88) 78%);

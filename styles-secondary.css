@@ -94,8 +94,8 @@ html { scroll-behavior: smooth; }
 .nowarfy-orbit-loader::after {
     inset: 6px;
     border: 3px solid transparent;
-    border-bottom-color: #a78bfa;
-    border-left-color: #f472b6;
+    border-bottom-color: #29b6f6;
+    border-left-color: #1ed760;
     animation-duration: 0.9s;
     animation-direction: reverse;
 }
@@ -837,9 +837,9 @@ html { scroll-behavior: smooth; }
         body.mode-youtoo .video-stage,
         body.mode-youtoo .queue-panel,
         body.mode-youtoo .player-bar {
-            border-color: rgba(190,188,255,.13);
+            border-color: rgba(180,220,202,.13);
             box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,.055);
-            background-color: rgba(19,20,39,.58);
+            background-color: rgba(16,27,24,.58);
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
         }
@@ -847,9 +847,9 @@ html { scroll-behavior: smooth; }
         body.mode-youtoo .library-card,
         body.mode-youtoo .playlist-card,
         body.mode-youtoo .video-card {
-            border: 1px solid rgba(190,188,255,.10);
+            border: 1px solid rgba(180,220,202,.12);
             border-radius: 16px;
-            background: linear-gradient(145deg, rgba(32,33,60,.74), rgba(15,16,31,.66));
+            background: linear-gradient(145deg, rgba(28,54,42,.78), rgba(10,20,19,.70));
             box-shadow: var(--shadow-card);
             overflow: hidden;
             transition: transform .22s var(--ease), border-color .22s var(--ease), box-shadow .22s var(--ease);
@@ -859,8 +859,8 @@ html { scroll-behavior: smooth; }
         body.mode-youtoo .playlist-card:hover,
         body.mode-youtoo .video-card:hover {
             transform: translateY(-5px);
-            border-color: rgba(94,234,212,.34);
-            box-shadow: 0 22px 42px rgba(0,0,0,.30), 0 0 0 1px rgba(94,234,212,.07), inset 0 1px 0 rgba(255,255,255,.08);
+            border-color: rgba(29,185,84,.42);
+            box-shadow: 0 22px 42px rgba(0,0,0,.30), 0 0 0 1px rgba(29,185,84,.08), inset 0 1px 0 rgba(255,255,255,.08);
         }
 
         body.mode-youtoo .library-card:hover .card-img,
