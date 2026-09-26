@@ -16,7 +16,7 @@ checks = {
     'remove_preserves_qid': 'removeFromQueue(song._qid)' in queue,
     'reorder_preserves_dragging': 'reorderQueue(dragSrcQid, song._qid, before)' in queue,
     'virtual_css_exists': '.queue-virtual-row { position: absolute' in styles,
-    'service_worker_bumped': "CACHE_NAME = 'nowarfy-shell-v47'" in sw,
+    'service_worker_bumped': "CACHE_NAME = 'nowarfy-shell-v48'" in sw,
 }
 for key, value in checks.items():
     print(f'{key}: {value}')
