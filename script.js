@@ -3,6 +3,7 @@
 (function loadNowarfyModules() {
     const modules = [
         'storage.js',
+        'custom-playlists.js',
         'core.js',
         'state-and-taste.js',
         'catalog.js',

@@ -22,6 +22,7 @@
     <link rel="preload" href="styles-secondary.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="styles-secondary.css"></noscript>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles-custom-playlists.css">
 </head>
 <body class="mode-youtoo">
 
@@ -276,6 +277,21 @@
             <p id="nowarfyQrDescription">Escaneá este código en tu celular. Se abrirá Nowarfy y podrás iniciar sesión para sincronizarlo con este reproductor.</p>
             <img id="nowarfyQrImage" src="assets/nowarfy-qr.png" alt="Código QR para vincular otro dispositivo con Nowarfy">
             <a class="nowarfy-qr-link" id="nowarfyQrLink" href="" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square"></i> Abrir enlace de pairing</a>
+        </div>
+    </div>
+
+    <div class="custom-playlist-modal" id="customPlaylistModal" role="dialog" aria-modal="true" aria-labelledby="customPlaylistModalTitle" hidden onclick="if (event.target === this) closeCustomPlaylistModal()">
+        <div class="custom-playlist-dialog">
+            <button type="button" class="custom-playlist-close" onclick="closeCustomPlaylistModal()" aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+            <span class="section-eyebrow"><i class="fas fa-list-music"></i> Tu biblioteca</span>
+            <h2 id="customPlaylistModalTitle">Guardar en una lista</h2>
+            <p>Elegí una lista existente o creá una nueva. Se guarda en este dispositivo.</p>
+            <div id="customPlaylistPickerList" class="custom-playlist-picker-list"></div>
+            <p id="customPlaylistPickerEmpty" class="custom-playlist-picker-empty" hidden>Todavía no tenés listas personalizadas.</p>
+            <div class="custom-playlist-create-row">
+                <input id="customPlaylistNameInput" type="text" maxlength="80" placeholder="Nombre de la nueva lista" aria-label="Nombre de la nueva lista">
+                <button type="button" class="custom-playlist-primary" onclick="createCustomPlaylist()"><i class="fas fa-plus"></i> Crear</button>
+            </div>
         </div>
     </div>
 

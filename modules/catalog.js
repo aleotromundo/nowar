@@ -1104,8 +1104,9 @@ function renderHomeQuickActions() {
     const actions = document.createElement('div');
     actions.className = 'home-quick-actions';
     actions.innerHTML = `<button type="button" class="home-quick-action" onclick="searchInput.focus()"><i class="fas fa-magnifying-glass"></i><span><strong>Buscar música</strong><small>Encontrá un artista o canción</small></span></button>
-        <button type="button" class="home-quick-action" onclick="openQueueFromSidebar()"><i class="fas fa-list-music"></i><span><strong>Ver playlist</strong><small>Revisá lo que sigue</small></span></button>
-        <button type="button" class="home-quick-action" onclick="openNowarfyQr()"><i class="fas fa-qrcode"></i><span><strong>Vincular dispositivo</strong><small>Usá el pairing QR</small></span></button>`;
+        <button type="button" class="home-quick-action" onclick="showSection('playlists')"><i class="fas fa-list-music"></i><span><strong>Tus listas</strong><small>Guardá música a tu manera</small></span></button>
+        <button type="button" class="home-quick-action" onclick="openQueueFromSidebar()"><i class="fas fa-forward-step"></i><span><strong>Lo que sigue</strong><small>Revisá tu cola actual</small></span></button>
+        <button type="button" class="home-quick-action" onclick="openNowarfyQr()"><i class="fas fa-qrcode"></i><span><strong>Vincular dispositivo</strong><small>Escuchá en otra pantalla</small></span></button>`;
     container.appendChild(actions);
 }
 
@@ -1148,6 +1149,7 @@ function renderHomeFeed() {
         const lastViewed = normalizeTasteTrack(taste.plays[0]);
         renderHomeWelcome(lastViewed);
         renderHomeQuickActions();
+        renderCustomPlaylistHomeRail();
         if (lastViewed) used.add(songKey(lastViewed));
 
         const recommended = takeNovelItems(homeRecommended.filter(item => !isNonMusicalVideo(item)), used, 8);
@@ -1699,6 +1701,7 @@ async function showSection(section, options = {}) {
         }));
         await loadGlobalPlaylistCatalog({ reset: true });
         navigateWithTransition(() => {
+            renderCustomPlaylistLibrary();
             renderGlobalPlaylistLibrary();
             if (savedPlaylists.length) renderPlaylistGrid(savedPlaylists, 'Listas abiertas anteriormente');
             if (homePlaylists.length) renderPlaylistGrid(homePlaylists, savedPlaylists.length ? 'Listas sugeridas para explorar' : 'Listas destacadas');
@@ -1815,7 +1818,7 @@ function renderSongList(list, title, icon, options = {}) {
             <span class="song-row-actions">
                 <span class="song-row-duration">${formatContentDuration(song.duration)}</span>
                 <button type="button" class="song-row-addq song-row-favorite${isFavoriteSong(song) ? ' active' : ''}" title="Guardar en favoritos" aria-label="Guardar en favoritos"><i class="${isFavoriteSong(song) ? 'fas' : 'far'} fa-heart"></i></button>
-                <button type="button" class="song-row-addq" title="Agregar a Playlist" aria-label="Agregar a Playlist"><i class="fas fa-list"></i></button>
+                <button type="button" class="song-row-addq" title="Agregar a una lista" aria-label="Agregar a una lista"><i class="fas fa-list-music"></i></button>
                 <i class="fas fa-play song-row-play" aria-hidden="true"></i>
             </span>`;
         row.onclick = () => selectSong(song, song.sourceIndex ?? idx);
@@ -1825,7 +1828,7 @@ function renderSongList(list, title, icon, options = {}) {
         };
         row.querySelector('.song-row-addq:not(.song-row-favorite)').onclick = (e) => {
             e.stopPropagation();
-            addToQueue(song);
+            addSongToCustomPlaylist(song);
         };
         if (artistClickable) {
             row.querySelector('.song-row-artist').onclick = (e) => {
@@ -2034,7 +2037,7 @@ function buildMediaCard(song, idx) {
             </div>
             ${song.type !== 'search_trigger' ? `<button type="button" class="card-favorite${isFavoriteSong(song) ? ' active' : ''}" title="Guardar en favoritos" aria-label="Guardar en favoritos"><i class="${isFavoriteSong(song) ? 'fas' : 'far'} fa-heart"></i></button>
             <div class="card-actions" aria-label="Acciones rápidas">
-                <button type="button" class="card-addq" title="Agregar a Playlist" aria-label="Agregar a Playlist"><i class="fas fa-list"></i></button>
+                <button type="button" class="card-addq" title="Agregar a una lista" aria-label="Agregar a una lista"><i class="fas fa-list-music"></i></button>
                 <button type="button" class="play-btn" title="Reproducir" aria-label="Reproducir"><i class="fas fa-play"></i></button>
             </div>` : ''}
         </div>
@@ -2056,7 +2059,7 @@ function buildMediaCard(song, idx) {
         };
         div.querySelector('.card-addq').onclick = (e) => {
             e.stopPropagation();
-            addToQueue(song);
+            addSongToCustomPlaylist(song);
         };
     }
     if (artistClickable) {
@@ -2218,4 +2221,3 @@ function refreshAmbientArtworkFromCatalog() {
     setAmbientArtwork(candidates[ambientArtworkIndex]);
     if (!ambientArtworkRotationTimer && !nowarfyPageHidden) ambientArtworkRotationTimer = setInterval(rotateAmbientArtwork, 14000);
 }
-
