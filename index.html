@@ -185,7 +185,7 @@
                 <button type="button" class="track-name" id="currTitle" onclick="openCurrentCollection()" title="Abrir álbum o lista actual">Selecciona una canción</button>
                 <button type="button" class="artist-name" id="currArtist" onclick="openCurrentArtist()" title="Abrir artista">...</button>
             </div>
-            <i class="far fa-heart fav-btn" id="favBtn" role="button" tabindex="0" aria-label="Favorito" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="toggleFavorite()" title="Favorito"></i>
+            <i class="far fa-heart fav-btn" id="favBtn" role="button" tabindex="0" aria-label="Favorito" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="toggleFavorite()" title="Favorito"></i>
         </div>
         <div class="player-center">
             <div class="controls">
@@ -216,16 +216,16 @@
             </div>
         </div>
         <div class="player-utils">
-            <i class="fas fa-random btn-control btn-control-toggle" id="shuffleIcon" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="toggleShuffle()" title="Aleatorio" aria-label="Reproducción aleatoria" role="button" tabindex="0"></i>
+            <i class="fas fa-random btn-control btn-control-toggle" id="shuffleIcon" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="toggleShuffle()" title="Aleatorio" aria-label="Reproducción aleatoria" role="button" tabindex="0"></i>
             <div class="volume-control">
-                <i class="fas fa-volume-up btn-control" id="volIcon" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="toggleMute()" title="Silenciar o activar volumen" aria-label="Silenciar o activar volumen" role="button" tabindex="0"></i>
+                <i class="fas fa-volume-up btn-control" id="volIcon" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="toggleMute()" title="Silenciar o activar volumen" aria-label="Silenciar o activar volumen" role="button" tabindex="0"></i>
                 <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)" aria-label="Volumen">
             </div>
             <button type="button" class="btn-control share-btn whatsapp" id="shareWhatsappBtn" onclick="shareCurrentToWhatsApp()" title="Compartir por WhatsApp" aria-label="Compartir por WhatsApp" disabled><i class="fab fa-whatsapp" aria-hidden="true"></i></button>
             <button type="button" class="btn-control share-btn copy-link" id="copyCurrentLinkBtn" onclick="copyCurrentLink()" title="Copiar enlace" aria-label="Copiar enlace" disabled><i class="fas fa-link" aria-hidden="true"></i></button>
             <button type="button" class="btn-control share-btn download" id="downloadCurrentBtn" onclick="downloadCurrentTrack()" title="Descargar audio con licencia permitida" aria-label="Descargar audio con licencia permitida" hidden><i class="fas fa-download" aria-hidden="true"></i></button>
             <button type="button" class="btn-control" id="videoStageToggleBtn" onclick="toggleVideoStageVisibility()" title="Mostrar video" aria-label="Mostrar video" hidden><i class="fas fa-eye" aria-hidden="true"></i><span class="video-stage-toggle-copy"><strong>Mostrar video</strong><small>El audio sigue activo</small></span><span class="video-mini-indicator" aria-hidden="true"></span></button>
-            <i class="fas fa-compress-arrows-alt btn-control btn-control-toggle" id="pipBtn" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="toggleFloatingMode()" title="Modo Flotante" aria-label="Alternar modo flotante" role="button" tabindex="0"></i>
+            <i class="fas fa-compress-arrows-alt btn-control btn-control-toggle" id="pipBtn" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="toggleFloatingMode()" title="Modo Flotante" aria-label="Alternar modo flotante" role="button" tabindex="0"></i>
         </div>
     </div>
 

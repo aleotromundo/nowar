@@ -57,8 +57,9 @@ function updateFavButton(song) {
     if (!button) return;
     const exists = isFavoriteSong(song);
     button.className = exists ? 'fas fa-heart fav-btn active' : 'far fa-heart fav-btn';
+    button.setAttribute('aria-pressed', String(exists));
 }
-function toggleShuffle() { shuffleMode = !shuffleMode; const icon = document.getElementById('shuffleIcon'); icon.classList.toggle('on', shuffleMode); icon.style.opacity = shuffleMode ? '1' : '0.5'; }
+function toggleShuffle() { shuffleMode = !shuffleMode; const icon = document.getElementById('shuffleIcon'); icon.classList.toggle('on', shuffleMode); icon.style.opacity = shuffleMode ? '1' : '0.5'; icon.setAttribute('aria-pressed', String(shuffleMode)); }
 
 function initVolume() {
     const saved = parseFloat(localStorage.getItem('nowarfy_vol'));
@@ -101,6 +102,7 @@ function applyVolume(v) {
     slider.style.background = `linear-gradient(to right, var(--accent) ${safe * 100}%, #535353 ${safe * 100}%)`;
     const icon = document.getElementById('volIcon');
     icon.className = (safe == 0 ? 'fas fa-volume-mute' : safe < 0.5 ? 'fas fa-volume-down' : 'fas fa-volume-up') + ' btn-control';
+    icon.setAttribute('aria-pressed', String(safe == 0));
 }
 function getCurrentPlaybackVolume(song = currentQueueSong()) {
     try {
@@ -549,6 +551,7 @@ let isFloating = false;
 
 function toggleFloatingMode() {
     isFloating = !isFloating;
+    pipBtn.setAttribute('aria-pressed', String(isFloating));
 
     if (isFloating) {
         playerBar.classList.add('floating');
