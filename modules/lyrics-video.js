@@ -754,7 +754,6 @@ function stopAll(options = {}) {
     updatePlaybackState();
     progFill.style.width = '0%';
     progThumb.style.left = '0%';
-    updateProgressA11y(0, 0);
 }
 
 function startProgress(source) {
@@ -776,7 +775,6 @@ function startProgress(source) {
             progThumb.style.left = `${pct}%`;
             currTimeEl.innerText = format(curr);
             totalTimeEl.innerText = format(dur);
-            updateProgressA11y(curr, dur);
         }
     }, 500);
 }
@@ -789,7 +787,6 @@ function updateProgress(curr, dur) {
         progThumb.style.left = `${pct}%`;
         currTimeEl.innerText = format(curr);
         totalTimeEl.innerText = format(dur);
-        updateProgressA11y(curr, dur);
     }
 }
 
