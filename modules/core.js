@@ -539,6 +539,7 @@ function updateRemoteShadowProgress() {
     progThumb.style.left = `${pct}%`;
     currTimeEl.innerText = format(position);
     totalTimeEl.innerText = format(duration);
+    updateProgressA11y(position, duration);
 }
 function updateRemoteControlsFromState(state, forceQueue = false) {
     if (!state) return;

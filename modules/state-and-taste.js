@@ -125,6 +125,15 @@ const progFill = document.getElementById('progFill');
 const progThumb = document.getElementById('progThumb');
 const currTimeEl = document.getElementById('currTime');
 const totalTimeEl = document.getElementById('totalTime');
+// Expone la posición como slider para tecnologías de asistencia (las flechas ya hacen seek vía atajos globales).
+function updateProgressA11y(position, duration) {
+    const max = Math.max(0, Math.round(Number(duration) || 0));
+    const now = Math.max(0, Math.min(max, Math.round(Number(position) || 0)));
+    if (progressTrack.getAttribute('aria-valuenow') === String(now) && progressTrack.getAttribute('aria-valuemax') === String(max)) return;
+    progressTrack.setAttribute('aria-valuemax', String(max));
+    progressTrack.setAttribute('aria-valuenow', String(now));
+    progressTrack.setAttribute('aria-valuetext', `${format(now)} de ${format(max)}`);
+}
 const searchInput = document.getElementById('searchInput');
 const searchClearBtn = document.getElementById('searchClear');
 const silentAudioLoop = document.getElementById('silent-audio-loop');
