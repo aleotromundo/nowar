@@ -1,7 +1,5 @@
 
 function renderCustomPlaylistHomeRail() {
-    // Esta función depende de readCustomPlaylists(), que todavía no existe: sin ella el carril se omite en vez de romper Inicio.
-    if (typeof readCustomPlaylists !== 'function') return;
     const container = document.getElementById('dynamicSections');
     const playlists = readCustomPlaylists();
     if (!container || !playlists.length) return;

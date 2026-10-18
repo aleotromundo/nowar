@@ -1749,7 +1749,7 @@ async function showSection(section, options = {}) {
         }));
         await loadGlobalPlaylistCatalog({ reset: true });
         navigateWithTransition(() => {
-            if (typeof renderCustomPlaylistLibrary === 'function') renderCustomPlaylistLibrary();
+            renderCustomPlaylistLibrary();
             renderGlobalPlaylistLibrary();
             if (savedPlaylists.length) renderPlaylistGrid(savedPlaylists, 'Listas abiertas anteriormente');
             if (homePlaylists.length) renderPlaylistGrid(homePlaylists, savedPlaylists.length ? 'Listas sugeridas para explorar' : 'Listas destacadas');
@@ -1876,9 +1876,7 @@ function renderSongList(list, title, icon, options = {}) {
         };
         row.querySelector('.song-row-addq:not(.song-row-favorite)').onclick = (e) => {
             e.stopPropagation();
-            // Las listas personalizadas aún no están implementadas: sin ellas, el botón conserva el comportamiento previo (Playlist).
-            if (typeof addSongToCustomPlaylist === 'function') addSongToCustomPlaylist(song);
-            else addToQueue(song);
+            addSongToCustomPlaylist(song);
         };
         if (artistClickable) {
             row.querySelector('.song-row-artist').onclick = (e) => {
@@ -2109,9 +2107,7 @@ function buildMediaCard(song, idx) {
         };
         div.querySelector('.card-addq').onclick = (e) => {
             e.stopPropagation();
-            // Las listas personalizadas aún no están implementadas: sin ellas, el botón conserva el comportamiento previo (Playlist).
-            if (typeof addSongToCustomPlaylist === 'function') addSongToCustomPlaylist(song);
-            else addToQueue(song);
+            addSongToCustomPlaylist(song);
         };
     }
     if (artistClickable) {

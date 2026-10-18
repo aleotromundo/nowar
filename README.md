@@ -22,12 +22,9 @@ Biblioteca audiovisual de rock, metal, videos, música y canales públicos. PWA 
 │   ├── cleanup-reserve.js  # Cron job diario: limpia reservas viejas
 │   └── lyrics.js           # Búsqueda y scoring de letras de canciones
 ├── assets/                 # Iconos, logo, sonidos, QR
-├── modules/                # Lógica del frontend (se carga en orden desde script.js)
 ├── index.html               # Punto de entrada del sitio
-├── script.js                 # Loader secuencial de modules/
-├── styles.css                 # Estilos base
-├── styles-secondary.css       # Estilos secundarios (carga diferida)
-├── styles-custom-playlists.css # Estilos de listas personalizadas
+├── script.js                 # Lógica del frontend
+├── styles.css                 # Estilos
 ├── sw.js                    # Service Worker (cache del app shell)
 ├── manifest.webmanifest    # Manifest de la PWA
 ├── vercel.json              # Config de despliegue, rewrites y cron
