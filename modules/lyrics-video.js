@@ -736,7 +736,7 @@ function stopAll(options = {}) {
     ytStartupTimer = null;
     ytPlaybackIntent = false;
     ytPlayCommandAt = 0;
-    if (ytPlayer && !preserveYouTubePlayer) { ytPlayer.stopVideo(); ytPlayer.destroy(); ytPlayer = null; }
+    if (ytPlayer && !preserveYouTubePlayer) { try { if (typeof ytPlayer.stopVideo === 'function') ytPlayer.stopVideo(); if (typeof ytPlayer.destroy === 'function') ytPlayer.destroy(); } catch (_) {} ytPlayer = null; }
     if (!preserveYouTubePlayer) pendingYTRequest = null;
     freeVideoEl.pause();
     freeVideoEl.currentTime = 0;
