@@ -9,6 +9,14 @@ function addSongToCustomPlaylist(song) {
     if (typeof showToast === 'function') showToast('Agregada a la Playlist', 'fa-list-music');
 }
 
+// Modal y acciones de listas propias: aún sin implementar. Se dejan definidas
+// para que los botones no lancen ReferenceError; muestran un aviso en vez de fallar.
+function openCustomPlaylistModal() { if (typeof showToast === 'function') showToast('Las listas propias llegarán pronto', 'fa-list-music'); }
+function closeCustomPlaylistModal() { const m = document.getElementById('customPlaylistModal'); if (m) m.hidden = true; }
+function createCustomPlaylist() { closeCustomPlaylistModal(); if (typeof showToast === 'function') showToast('Las listas propias llegarán pronto', 'fa-list-music'); }
+function openCustomPlaylist() {}
+function playCustomPlaylist() {}
+
 function renderCustomPlaylistHomeRail() {
     const container = document.getElementById('dynamicSections');
     const playlists = readCustomPlaylists();
