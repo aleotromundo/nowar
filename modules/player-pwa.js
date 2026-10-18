@@ -141,8 +141,14 @@ function toggleMute() {
 
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-        const tag = document.activeElement.tagName;
-        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        const active = document.activeElement;
+        const tag = active?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        // Con un modal abierto los atajos del reproductor no deben actuar por detrás.
+        if (document.body.classList.contains('auth-modal-open') || document.body.classList.contains('qr-modal-open')) return;
+        // Con el foco del teclado sobre un botón o enlace, Espacio lo activa (no alterna la reproducción).
+        // :focus-visible evita afectar al clic con mouse, que deja el foco en el botón pero espera el atajo.
+        if (e.code === 'Space' && active?.matches?.(':focus-visible') && (tag === 'BUTTON' || tag === 'A' || active.getAttribute('role') === 'button')) return;
         switch (e.code) {
             case 'Space': e.preventDefault(); togglePlay(); break;
             case 'ArrowRight': seekBy(5); break;
