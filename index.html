@@ -19,10 +19,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     
-    <link rel="preload" href="/styles-secondary.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="/styles-secondary.css"></noscript>
-    <link rel="stylesheet" href="/styles.css">
-    <link rel="stylesheet" href="/styles-custom-playlists.css">
+    <link rel="preload" href="styles-secondary.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="styles-secondary.css"></noscript>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles-custom-playlists.css">
 </head>
 <body class="mode-youtoo">
 
@@ -32,11 +32,11 @@
         <aside class="sidebar" aria-label="Navegación principal de Nowarfy">
             <div class="logo">
                 <span class="brand-nowarfi">
-                    <img class="brand-nowarfi-mark" src="/assets/nowarfy-logo-red-solid.png" width="32" height="32" decoding="async" alt=""> Nowarfy<sup class="brand-registered">®</sup>
+                    <img class="brand-nowarfi-mark" src="assets/nowarfy-logo-red-solid.png" width="32" height="32" decoding="async" alt=""> Nowarfy<sup class="brand-registered">®</sup>
                 </span>
                 <button type="button" class="brand-youtoo" onclick="hardResetNowarfy(event)" aria-label="Reiniciar y actualizar Nowarfy" title="Reiniciar y actualizar Nowarfy">
                     <span class="brand-lockup">
-                        <img class="brand-lockup-mark" src="/assets/nowarfy-logo-red-solid.png" width="32" height="32" decoding="async" alt="">
+                        <img class="brand-lockup-mark" src="assets/nowarfy-logo-red-solid.png" width="32" height="32" decoding="async" alt="">
                         <span class="brand-lockup-text"><strong>Nowarfy</strong><span>YouToo</span><sup class="brand-registered">®</sup></span>
                     </span>
                 </button>
@@ -79,7 +79,7 @@
                 <button type="button" id="pwaInstallBtn" class="nowarfy-install-btn" hidden><i class="fas fa-download" aria-hidden="true"></i> Instalar Nowarfy</button>
             </div>
             <button type="button" id="nowarfyQrButton" class="nowarfy-qr-launch" onclick="openNowarfyQr()" aria-haspopup="dialog" aria-controls="nowarfyQrModal" aria-label="Vincular otro dispositivo con código QR">
-                <img id="nowarfyQrPreview" src="/assets/nowarfy-qr.png" width="48" height="48" decoding="async" alt="">
+                <img id="nowarfyQrPreview" src="assets/nowarfy-qr.png" width="48" height="48" decoding="async" alt="">
                 <span class="nowarfy-qr-copy"><strong>Vincular dispositivo</strong><small>Pairing por QR</small></span>
                 <i class="fas fa-qrcode" aria-hidden="true"></i>
             </button>
@@ -292,7 +292,7 @@
             <button type="button" class="nowarfy-qr-close" onclick="closeNowarfyQr()" aria-label="Cerrar código QR"><i class="fas fa-xmark" aria-hidden="true"></i></button>
             <h2 id="nowarfyQrTitle">Vinculá otro dispositivo</h2>
             <p id="nowarfyQrDescription">Escaneá este código en tu celular. Se abrirá Nowarfy y podrás iniciar sesión para sincronizarlo con este reproductor.</p>
-            <img id="nowarfyQrImage" src="/assets/nowarfy-qr.png" alt="Código QR para vincular otro dispositivo con Nowarfy">
+            <img id="nowarfyQrImage" src="assets/nowarfy-qr.png" alt="Código QR para vincular otro dispositivo con Nowarfy">
             <a class="nowarfy-qr-link" id="nowarfyQrLink" href="" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> Abrir enlace de pairing</a>
         </div>
     </div>
@@ -314,10 +314,10 @@
 
     <audio id="audio-element" preload="metadata"></audio>
     <audio id="audio-element-next" preload="metadata" aria-hidden="true"></audio>
-    <audio id="silent-audio-loop" loop preload="auto" src="/assets/nowarfy-audio-anchor.wav" aria-hidden="true"></audio>
+    <audio id="silent-audio-loop" loop preload="auto" src="assets/nowarfy-audio-anchor.wav" aria-hidden="true"></audio>
     <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0"></script>
-    <script src="/script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
