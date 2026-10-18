@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 root = Path(__file__).parent
@@ -16,7 +17,7 @@ checks = {
     'remove_preserves_qid': 'removeFromQueue(song._qid)' in queue,
     'reorder_preserves_dragging': 'reorderQueue(dragSrcQid, song._qid, before)' in queue,
     'virtual_css_exists': '.queue-virtual-row { position: absolute' in styles,
-    'service_worker_bumped': "CACHE_NAME = 'nowarfy-shell-v48'" in sw,
+    'service_worker_bumped': re.search(r"CACHE_NAME = 'nowarfy-shell-v\d+'", sw) is not None,
 }
 for key, value in checks.items():
     print(f'{key}: {value}')

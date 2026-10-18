@@ -36,7 +36,6 @@ Objetivo: dejar [script.js](script.js) más legible y sostenible sin cambiar la 
 
 ### Archivos clave
 - [script.js](script.js)
-- [app.js](app.js)
 - [index.html](index.html)
 
 ---
@@ -132,7 +131,7 @@ La prioridad **P0** corresponde a mejoras de impacto alto y bajo riesgo. **P1** 
 | OPT-001 | P0 | Evitar búsquedas remotas durante el arranque de la portada | Red / carga inicial | `loadHomeCatalogSources()` y flujo de búsqueda en `script.js` | Aplicada |
 | OPT-002 | P0 | Cachear y actualizar el shell de la PWA con Service Worker | Caché / disponibilidad | `sw.js`, `CACHE_NAME = 'nowarfy-shell-v40'` | Aplicada |
 | OPT-003 | P0 | Usar `network-first` para navegación y caché para recursos estáticos | Caché / despliegue | `sw.js` y headers de `vercel.json` | Aplicada |
-| OPT-004 | P1 | Evitar lecturas duplicadas del estado modular | Estado / persistencia | `state.js`, `app.js` y commits de refactor de estado | Aplicada |
+| OPT-004 | P1 | Evitar lecturas duplicadas del estado modular | Estado / persistencia | commits de refactor de estado (`state.js` y `app.js` se retiraron: no se cargaban) | Aplicada |
 | OPT-005 | P1 | Cargar el reproductor de YouTube cuando se necesita | Reproducción / carga inicial | Flujo `loadYouTubeAPI()` en `script.js` | Aplicada |
 | OPT-006 | P1 | Reducir la navegación visible y agrupar funciones relacionadas | UX / trabajo de renderizado | Navegación principal y `renderLibraryHub()` | Aplicada |
 | OPT-007 | P1 | Añadir pairing QR dinámico y registrar el dispositivo vinculado | Red / experiencia multidispositivo | `buildNowarfyPairingUrl()`, `handleNowarfyPairingLink()` y modal QR | Aplicada |
