@@ -105,6 +105,9 @@
             box-shadow: 0 0 8px var(--accent-glow);
         }
         .nav-links li.active i { color: var(--accent); }
+        .nav-link-btn { display: flex; align-items: center; justify-content: inherit; gap: inherit; flex: 1; min-width: 0; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+        .nav-link-btn:focus-visible { outline: none; }
+        .nav-links li:has(.nav-link-btn:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
 
         /* CONTENIDO PRINCIPAL */
         .content-area {
