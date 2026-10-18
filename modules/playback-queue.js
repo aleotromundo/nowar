@@ -735,7 +735,7 @@ async function fetchJamendoGenreTracks(seedSong, count) {
             type: 'mp3',
             source: 'jamendo',
             sourceId: String(track.sourceId || track.id || track.url),
-            img: track.img || track.thumbnail || 'assets/nowarfy-icon-512.png',
+            img: track.img || track.thumbnail || '/assets/nowarfy-icon-512.png',
             genre: track.genre || style,
             license: track.license || 'Jamendo catalog license',
             sourceUrl: track.sourceUrl || ''

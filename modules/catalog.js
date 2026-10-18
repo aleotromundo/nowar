@@ -24,7 +24,7 @@ function knowledgeCandidateAction(item) {
 function knowledgeCandidateCard(item, index) {
     const source = String(item?.source || 'unknown').toLowerCase();
     const health = String(item?.healthStatus || 'unverified').toLowerCase();
-    const image = escapeHtml(item?.img || 'assets/nowarfy-icon-512.png');
+    const image = escapeHtml(item?.img || '/assets/nowarfy-icon-512.png');
     const title = escapeHtml(item?.title || 'Sin título');
     const artist = escapeHtml(item?.artist || 'Artista no informado');
     const key = escapeHtml(item?.candidateKey || 'sin-clave');
@@ -58,7 +58,7 @@ function renderKnowledgeCatalog() {
         card.addEventListener('keydown', event => { if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('[data-knowledge-favorite]')) { event.preventDefault(); knowledgeCandidateAction(item); } });
         const favoriteButton = card.querySelector('[data-knowledge-favorite]');
         favoriteButton?.addEventListener('click', event => { event.stopPropagation(); toggleFavoriteSong(item, favoriteButton); });
-        card.querySelector('[data-knowledge-image]')?.addEventListener('error', event => { event.currentTarget.src = 'assets/nowarfy-icon-512.png'; event.currentTarget.removeAttribute('data-knowledge-image'); });
+        card.querySelector('[data-knowledge-image]')?.addEventListener('error', event => { event.currentTarget.src = '/assets/nowarfy-icon-512.png'; event.currentTarget.removeAttribute('data-knowledge-image'); });
     });
     const moreButton = document.getElementById('knowledgeMoreButton');
     moreButton?.addEventListener('click', () => void loadKnowledgeBasePage());
@@ -823,7 +823,7 @@ async function fetchOpenverseTracks(query, limit = 20, options = {}) {
         })
         .map(track => ({
             title: track.title, artist: track.creator,
-            img: track.thumbnail || 'assets/nowarfy-icon-512.png', url: track.url, type: 'mp3',
+            img: track.thumbnail || '/assets/nowarfy-icon-512.png', url: track.url, type: 'mp3',
             duration: track.duration ? Math.round(track.duration / 1000) : null,
             genre: (track.genres && track.genres[0]) || 'unknown',
             license: track.license || '',
@@ -1091,10 +1091,10 @@ function renderHomeWelcome(lastViewed, mount = document.getElementById('dynamicS
     welcome.type = 'button';
     welcome.className = 'home-welcome';
     if (lastViewed?.title) {
-        welcome.innerHTML = `<span class="home-welcome-copy"><span class="home-welcome-brandline"><span class="home-welcome-logo"><img class="brand-lockup-mark" src="assets/nowarfy-logo-red-solid.png" alt=""><span class="brand-lockup-text"><strong>Nowarfy</strong><span>YouToo</span><sup class="brand-registered">®</sup></span></span><span class="home-welcome-kicker">Bienvenido de nuevo</span></span><h1>Seguimos desde donde quedaste</h1><p>Lo último que viste fue <strong>${escapeHtml(lastViewed.title)}</strong>${lastViewed.artist ? ` · ${escapeHtml(lastViewed.artist)}` : ''}. El reproductor empieza detenido: tocá esta tarjeta o el botón de reproducir cuando quieras continuar.</p></span>${lastViewed.img ? `<img class="home-welcome-art" src="${escapeHtml(lastViewed.img)}" alt="" loading="lazy">` : ''}`;
+        welcome.innerHTML = `<span class="home-welcome-copy"><span class="home-welcome-brandline"><span class="home-welcome-logo"><img class="brand-lockup-mark" src="/assets/nowarfy-logo-red-solid.png" alt=""><span class="brand-lockup-text"><strong>Nowarfy</strong><span>YouToo</span><sup class="brand-registered">®</sup></span></span><span class="home-welcome-kicker">Bienvenido de nuevo</span></span><h1>Seguimos desde donde quedaste</h1><p>Lo último que viste fue <strong>${escapeHtml(lastViewed.title)}</strong>${lastViewed.artist ? ` · ${escapeHtml(lastViewed.artist)}` : ''}. El reproductor empieza detenido: tocá esta tarjeta o el botón de reproducir cuando quieras continuar.</p></span>${lastViewed.img ? `<img class="home-welcome-art" src="${escapeHtml(lastViewed.img)}" alt="" loading="lazy">` : ''}`;
         welcome.addEventListener('click', () => resumeSongFromWelcome(lastViewed, 0));
     } else {
-        welcome.innerHTML = `<span class="home-welcome-copy"><span class="home-welcome-brandline"><span class="home-welcome-logo"><img class="brand-lockup-mark" src="assets/nowarfy-logo-red-solid.png" alt=""><span class="brand-lockup-text"><strong>Nowarfy</strong><span>YouToo</span><sup class="brand-registered">®</sup></span></span><span class="home-welcome-kicker">Bienvenido a Nowarfy · YouToo</span></span><h1>Descubrí música real, sin límites</h1><p>Explorá artistas, canales y fuentes musicales. El reproductor empieza detenido para que vos elijas cuándo comenzar.</p></span>`;
+        welcome.innerHTML = `<span class="home-welcome-copy"><span class="home-welcome-brandline"><span class="home-welcome-logo"><img class="brand-lockup-mark" src="/assets/nowarfy-logo-red-solid.png" alt=""><span class="brand-lockup-text"><strong>Nowarfy</strong><span>YouToo</span><sup class="brand-registered">®</sup></span></span><span class="home-welcome-kicker">Bienvenido a Nowarfy · YouToo</span></span><h1>Descubrí música real, sin límites</h1><p>Explorá artistas, canales y fuentes musicales. El reproductor empieza detenido para que vos elijas cuándo comenzar.</p></span>`;
     }
     mount.appendChild(welcome);
     return welcome;
@@ -1116,9 +1116,9 @@ function buildHomeResumeCard(song) {
     card.type = 'button';
     card.className = 'home-history-resume library-card';
     card.setAttribute('aria-label', `Seguimos desde donde quedaste: ${song.title || 'reproducción reciente'}`);
-    card.innerHTML = `<span class="home-history-resume-art"><img src="${escapeHtml(song.img || 'assets/nowarfy-icon-512.png')}" alt="" loading="lazy" decoding="async"></span><span class="home-history-resume-copy"><small>Seguimos desde donde quedaste</small><strong>${escapeHtml(song.title || 'Tu última reproducción')}</strong><em>${escapeHtml(song.artist || 'Reproducción reciente')}</em></span><i class="fas fa-play home-history-resume-play" aria-hidden="true"></i>`;
+    card.innerHTML = `<span class="home-history-resume-art"><img src="${escapeHtml(song.img || '/assets/nowarfy-icon-512.png')}" alt="" loading="lazy" decoding="async"></span><span class="home-history-resume-copy"><small>Seguimos desde donde quedaste</small><strong>${escapeHtml(song.title || 'Tu última reproducción')}</strong><em>${escapeHtml(song.artist || 'Reproducción reciente')}</em></span><i class="fas fa-play home-history-resume-play" aria-hidden="true"></i>`;
     card.addEventListener('click', () => resumeSongFromWelcome(song, 0));
-    card.querySelector('img')?.addEventListener('error', event => { event.currentTarget.src = 'assets/nowarfy-icon-512.png'; });
+    card.querySelector('img')?.addEventListener('error', event => { event.currentTarget.src = '/assets/nowarfy-icon-512.png'; });
     return card;
 }
 
@@ -1137,7 +1137,7 @@ function renderHomeHistoryRail(history, mountInto = null) {
     const rail = document.createElement('div');
     rail.className = 'library-rail';
     items.forEach((item, index) => {
-        const card = buildMediaCard({ ...item, img: hasValidArtwork(item) ? item.img : 'assets/nowarfy-icon-512.png' }, index);
+        const card = buildMediaCard({ ...item, img: hasValidArtwork(item) ? item.img : '/assets/nowarfy-icon-512.png' }, index);
         card.classList.add('library-card');
         rail.appendChild(card);
     });
@@ -1188,7 +1188,7 @@ function renderHomeFeed() {
             ...lastPlayed,
             url: lastPlayed.url || '',
             type: lastPlayed.type || 'history',
-            img: lastPlayed.img || 'assets/nowarfy-icon-512.png',
+            img: lastPlayed.img || '/assets/nowarfy-icon-512.png',
             artist: lastPlayed.artist || lastPlayed.channelTitle || 'Reproducción reciente'
         } : null);
         const recentHistory = uniqueMediaByUrl(taste.plays.map(normalizeTasteTrack).filter(Boolean), 24);
@@ -1217,7 +1217,7 @@ function renderHomeFeed() {
         if (recentArtists.length) {
             const artistItems = recentArtists.map(artist => {
                 const lastPlay = taste.plays.find(p => String(p.artist || '').trim() === artist);
-                return { title: artist, artist: 'Artista escuchado recientemente', img: lastPlay?.img || 'assets/nowarfy-icon-512.png', url: artist, type: 'search_trigger', query: artist };
+                return { title: artist, artist: 'Artista escuchado recientemente', img: lastPlay?.img || '/assets/nowarfy-icon-512.png', url: artist, type: 'search_trigger', query: artist };
             });
             renderDeferredHomeRail(artistItems, 'Tus artistas recientes', "<i class='fas fa-microphone-lines'></i>", false, { hint: 'Basado en tu historial · tocá para buscar más', showControls: true, className: 'home-artists-rail' });
         }
