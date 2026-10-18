@@ -115,6 +115,7 @@ async function globalReserveRequest(url = GLOBAL_RESERVE_ENDPOINT, options = {})
     try {
         const response = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json', ...(options.headers || {}) } });
         const data = await response.json().catch(() => ({}));
+        if (!response.ok) console.warn('[Nowarfy] reserva global', response.status, JSON.stringify(data), (options.body || '').slice(0, 600));
         return response.ok ? data : null;
     } catch (error) { return null; }
 }
