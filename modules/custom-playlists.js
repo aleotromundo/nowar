@@ -1,4 +1,14 @@
 
+// Listas personalizadas: todavía no hay implementación completa en el repo.
+// Estas funciones mantienen la app estable: el '+' agrega a la Playlist (cola)
+// y el carril de listas propias queda oculto hasta que exista el feature.
+function readCustomPlaylists() { return []; }
+function renderCustomPlaylistLibrary() {}
+function addSongToCustomPlaylist(song) {
+    if (typeof addToQueue === 'function') addToQueue(song);
+    if (typeof showToast === 'function') showToast('Agregada a la Playlist', 'fa-list-music');
+}
+
 function renderCustomPlaylistHomeRail() {
     const container = document.getElementById('dynamicSections');
     const playlists = readCustomPlaylists();
