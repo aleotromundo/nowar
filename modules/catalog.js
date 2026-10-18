@@ -1019,10 +1019,8 @@ async function resetView(options = {}) {
     renderTasteChips();
     searchInput.value = ""; searchClearBtn.classList.remove('show');
     document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.nav-links li').forEach(l => { l.classList.remove('active'); l.querySelector('.nav-link-btn')?.removeAttribute('aria-current'); });
-    const homeNavItem = document.querySelector('.nav-links li:first-child');
-    homeNavItem.classList.add('active');
-    homeNavItem.querySelector('.nav-link-btn')?.setAttribute('aria-current', 'page');
+    document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
+    document.querySelector('.nav-links li:first-child').classList.add('active');
 
     if (homeFeedLoaded) {
         renderHomeFeed();
@@ -1313,11 +1311,9 @@ window.addEventListener('popstate', event => {
 
 function activateNavigation(section) {
     closeNowarfyMobileNav();
-    document.querySelectorAll('.nav-links li').forEach(item => { item.classList.remove('active'); item.querySelector('.nav-link-btn')?.removeAttribute('aria-current'); });
+    document.querySelectorAll('.nav-links li').forEach(item => item.classList.remove('active'));
     const primarySection = ['favorites', 'history', 'taste', 'playlists', 'queue'].includes(section) ? 'library' : section;
-    const activeNavItem = document.querySelector(`[data-nav="${primarySection}"]`);
-    activeNavItem?.classList.add('active');
-    activeNavItem?.querySelector('.nav-link-btn')?.setAttribute('aria-current', 'page');
+    document.querySelector(`[data-nav="${primarySection}"]`)?.classList.add('active');
 }
 
 async function ensureHomeCatalog() {

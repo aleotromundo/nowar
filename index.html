@@ -48,27 +48,27 @@
                 <section class="nowarfy-nav-group" aria-label="Descubrir">
                     <span class="nowarfy-nav-label">Descubrir</span>
                     <ul class="nav-links">
-                        <li data-nav="home" onclick="resetView()" class="active"><button type="button" class="nav-link-btn" aria-current="page"><i class="fas fa-house" aria-hidden="true"></i> <span>Inicio</span></button></li>
-                        <li data-nav="explore" onclick="showSection('explore')"><button type="button" class="nav-link-btn"><i class="fas fa-compass" aria-hidden="true"></i> <span>Explorar</span></button></li>
-                        <li data-nav="channels" onclick="showSection('channels')"><button type="button" class="nav-link-btn"><i class="fas fa-satellite-dish" aria-hidden="true"></i> <span>Canales</span></button></li>
-                        <li data-nav="playlists" onclick="showSection('playlists')"><button type="button" class="nav-link-btn"><i class="fas fa-list-ul" aria-hidden="true"></i> <span>Listas</span></button></li>
-                        <li data-nav="videos" onclick="showSection('videos')"><button type="button" class="nav-link-btn"><i class="fas fa-clapperboard" aria-hidden="true"></i> <span>Videos</span></button></li>
-                        <li data-nav="music" onclick="showSection('music')"><button type="button" class="nav-link-btn"><i class="fas fa-headphones" aria-hidden="true"></i> <span>Música</span></button></li>
+                        <li data-nav="home" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="resetView()" class="active"><i class="fas fa-house" aria-hidden="true"></i> <span>Inicio</span></li>
+                        <li data-nav="explore" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="showSection('explore')"><i class="fas fa-compass" aria-hidden="true"></i> <span>Explorar</span></li>
+                        <li data-nav="channels" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="showSection('channels')"><i class="fas fa-satellite-dish" aria-hidden="true"></i> <span>Canales</span></li>
+                        <li data-nav="playlists" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="showSection('playlists')"><i class="fas fa-list-ul" aria-hidden="true"></i> <span>Listas</span></li>
+                        <li data-nav="videos" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="showSection('videos')"><i class="fas fa-clapperboard" aria-hidden="true"></i> <span>Videos</span></li>
+                        <li data-nav="music" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="showSection('music')"><i class="fas fa-headphones" aria-hidden="true"></i> <span>Música</span></li>
                     </ul>
                 </section>
                 <section class="nowarfy-nav-group" aria-label="Tu biblioteca">
                     <span class="nowarfy-nav-label">Tu biblioteca</span>
                     <ul class="nav-links">
-                        <li data-nav="favorites" onclick="showSection('favorites')"><button type="button" class="nav-link-btn"><i class="fas fa-heart" aria-hidden="true"></i> <span>Favoritos</span></button></li>
-                        <li data-nav="history" onclick="showSection('history')"><button type="button" class="nav-link-btn"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> <span>Historial</span></button></li>
+                        <li data-nav="favorites" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="showSection('favorites')"><i class="fas fa-heart" aria-hidden="true"></i> <span>Favoritos</span></li>
+                        <li data-nav="history" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="showSection('history')"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> <span>Historial</span></li>
                     </ul>
                 </section>
                 <section class="nowarfy-nav-group" aria-label="Tu experiencia">
                     <span class="nowarfy-nav-label">Tu experiencia</span>
                     <ul class="nav-links">
-                        <li data-nav="queue" onclick="openQueueFromSidebar()"><button type="button" class="nav-link-btn"><i class="fas fa-list-music" aria-hidden="true"></i> <span>Playlist</span></button></li>
-                        <li data-nav="player" onclick="showFloatingPlayer()"><button type="button" class="nav-link-btn"><i class="fas fa-up-right-and-down-left-from-center" aria-hidden="true"></i> <span>Reproductor</span></button></li>
-                        <li data-nav="taste" onclick="showSection('taste')"><button type="button" class="nav-link-btn"><i class="fas fa-shield-halved" aria-hidden="true"></i> <span>Tus datos</span></button></li>
+                        <li data-nav="queue" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="openQueueFromSidebar()"><i class="fas fa-list-music" aria-hidden="true"></i> <span>Playlist</span></li>
+                        <li data-nav="player" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="showFloatingPlayer()"><i class="fas fa-up-right-and-down-left-from-center" aria-hidden="true"></i> <span>Reproductor</span></li>
+                        <li data-nav="taste" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="showSection('taste')"><i class="fas fa-shield-halved" aria-hidden="true"></i> <span>Tus datos</span></li>
                     </ul>
                 </section>
             </div>
