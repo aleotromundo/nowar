@@ -548,23 +548,8 @@ function closeNowarfyQr() {
     document.body.classList.remove('qr-modal-open');
     nowarfyQrPreviousFocus?.focus?.();
 }
-// Mantiene el foco del teclado dentro del modal abierto (cuenta o QR).
-function trapModalFocus(event) {
-    const modal = document.querySelector('.nowarfy-auth-modal:not([hidden]), .nowarfy-qr-modal:not([hidden])');
-    if (!modal) return;
-    const focusable = [...modal.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
-        .filter(el => !el.hidden && el.getClientRects().length);
-    if (!focusable.length) return;
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    const active = document.activeElement;
-    if (!modal.contains(active)) { event.preventDefault(); first.focus(); }
-    else if (event.shiftKey && active === first) { event.preventDefault(); last.focus(); }
-    else if (!event.shiftKey && active === last) { event.preventDefault(); first.focus(); }
-}
 window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') { closeNowarfyQr(); closeNowarfyAuth(); closeQueuePanel(); }
-    else if (event.key === 'Tab') trapModalFocus(event);
+    if (event.key === 'Escape') closeNowarfyQr();
 });
 
 // --- MODO FLOTANTE (ARRASTRE + RETORNO) ---
