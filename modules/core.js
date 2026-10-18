@@ -202,7 +202,9 @@ function closeNowarfyMobileNav() {
     button.setAttribute('aria-label', 'Abrir menú');
     button.innerHTML = '<i class="fas fa-bars"></i>';
 }
+let nowarfyAuthPreviousFocus = null;
 function openNowarfyAuth() {
+    nowarfyAuthPreviousFocus = document.activeElement;
     closeNowarfyMobileNav();
     const modal = document.getElementById('nowarfyAuthModal');
     if (!modal) return;
@@ -218,6 +220,8 @@ function closeNowarfyAuth() {
     modal.hidden = true;
     document.body.classList.remove('auth-modal-open');
     authStatus('');
+    nowarfyAuthPreviousFocus?.focus?.();
+    nowarfyAuthPreviousFocus = null;
 }
 async function submitNowarfyAuth(mode) {
     if (!nowarfySupabase) await initNowarfyAuth();
