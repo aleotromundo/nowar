@@ -889,18 +889,41 @@ function setMood(mood) {
 }
 
 function loadYouTubeAPI() {
-    if (window.YT && window.YT.Player) { ytApiReady = true; return; }
+    if (window.YT && window.YT.Player) {
+        ytApiReady = true;
+        const pending = pendingYTRequest;
+        pendingYTRequest = null;
+        if (pending) initYTPlayer(pending.resourceId, pending.isPlaylist, pending.resumeSession || null, !!pending.deferAutoplay);
+        return;
+    }
     if (document.querySelector('script[data-youtoo-iframe-api]')) return;
+
     const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
     tag.dataset.youtooIframeApi = 'true';
-    document.getElementsByTagName('script')[0].parentNode.insertBefore(tag, document.getElementsByTagName('script')[0]);
     window.onYouTubeIframeAPIReady = () => {
+        clearTimeout(ytApiLoadTimer);
+        ytApiLoadTimer = null;
         ytApiReady = true;
         const pending = pendingYTRequest;
         pendingYTRequest = null;
         if (pending) initYTPlayer(pending.resourceId, pending.isPlaylist, pending.resumeSession || null, !!pending.deferAutoplay);
     };
+    const fail = () => {
+        clearTimeout(ytApiLoadTimer);
+        ytApiLoadTimer = null;
+        tag.remove();
+        const pending = pendingYTRequest;
+        pendingYTRequest = null;
+        const song = currentQueueSong();
+        if (!pending || song?.type !== 'yt' || String(song.url) !== String(pending.resourceId)) return;
+        setTrackLoading(false);
+        showYouTubeEmbedFallback(song, 'api-load');
+        showToast('No pudimos cargar el reproductor de YouTube; podés abrir el video desde aquí', 'fab fa-youtube');
+    };
+    tag.onerror = fail;
+    ytApiLoadTimer = window.setTimeout(fail, 20000);
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
 }
 
 function uniqueMediaByUrl(items, maxItems) {

@@ -18,6 +18,7 @@ let activeSearchRequestId = 0;
 let knowledgeMoreObserver = null;
 let ytPlayer = null;
 let ytStartupTimer = null;
+let ytApiLoadTimer = null;
 let ytPlaybackIntent = false;
 let ytPlayCommandAt = 0;
 let ytApiReady = false;
@@ -136,7 +137,6 @@ const initializeNowarfyHome = () => {
     nowarfyHomeInitialized = true;
     initNowarfyHistory();
     initVolume();
-    loadYouTubeAPI();
     setupProgressDrag();
     setupBackgroundPlaybackSupport();
     setupKeyboardShortcuts();

@@ -264,9 +264,11 @@ function showYouTubeEmbedFallback(song, errorCode = '') {
     if (!fallback || !title || !message || !openButton || !popupButton || !stage || !url) return;
     youtubeEmbedFallbackUrl = url;
     title.textContent = song?.title || 'Este video necesita YouTube';
-    const reason = Number(errorCode) === 101 || Number(errorCode) === 150
-        ? 'El creador no permite la reproducción dentro de otras páginas.'
-        : 'YouTube no pudo reproducirlo dentro del reproductor integrado.';
+    const reason = errorCode === 'api-load'
+        ? 'No pudimos cargar el reproductor integrado de YouTube.'
+        : Number(errorCode) === 101 || Number(errorCode) === 150
+            ? 'El creador no permite la reproducción dentro de otras páginas.'
+            : 'YouTube no pudo reproducirlo dentro del reproductor integrado.';
     message.textContent = `${reason} Podés abrirlo en una ventana compacta oficial sin cerrar Nowarfy.`;
     openButton.href = url;
     openButton.setAttribute('aria-label', `Ver ${song?.title || 'este video'} en YouTube`);
@@ -852,4 +854,3 @@ function setupProgressDrag() {
         document.addEventListener('pointerup', onUp);
     });
 }
-

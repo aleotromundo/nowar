@@ -2,8 +2,8 @@
 
 > Registro centralizado de mejoras de rendimiento, experiencia de carga y mantenibilidad. Este documento se actualiza junto con el código para conservar el contexto de cada cambio.
 
-**Última actualización:** 2026-09-20  
-**Rama de trabajo:** `chore/ux-pairing`  
+**Última actualización:** 2026-10-22<br>
+**Rama de trabajo:** `chore/ux-pairing`<br>
 **Estado general:** navegación y pairing QR implementados; optimizaciones profundas de carga y arquitectura pendientes.
 
 ## Cómo leer este registro
@@ -16,7 +16,7 @@ La prioridad **P0** corresponde a mejoras de impacto alto y bajo riesgo. **P1** 
 
 | Estado | Cantidad | Significado |
 |---|---:|---|
-| Aplicada | 12 | Ya está implementada en el repositorio. |
+| Aplicada | 13 | Ya está implementada en el repositorio. |
 | En validación | 1 | Está implementada y necesita medición real. |
 | Planificada | 8 | Está registrada para una siguiente iteración. |
 | Descartada | 0 | No hay propuestas descartadas actualmente. |
@@ -26,13 +26,14 @@ La prioridad **P0** corresponde a mejoras de impacto alto y bajo riesgo. **P1** 
 | ID | Prioridad | Optimización | Área | Evidencia o ubicación | Estado |
 |---|---|---|---|---|---|
 | OPT-001 | P0 | Evitar búsquedas remotas durante el arranque de la portada | Red / carga inicial | `loadHomeCatalogSources()` y flujo de búsqueda en `script.js` | Aplicada |
-| OPT-002 | P0 | Cachear y actualizar el shell de la PWA con Service Worker | Caché / disponibilidad | `sw.js`, `CACHE_NAME = 'nowarfy-shell-v40'` | Aplicada |
+| OPT-002 | P0 | Cachear y actualizar el shell de la PWA con Service Worker | Caché / disponibilidad | `sw.js`, `CACHE_NAME = 'nowarfy-shell-v51'` | Aplicada |
 | OPT-003 | P0 | Usar `network-first` para navegación y caché para recursos estáticos | Caché / despliegue | `sw.js` y headers de `vercel.json` | Aplicada |
 | OPT-004 | P1 | Evitar lecturas duplicadas del estado modular | Estado / persistencia | commits de refactor de estado (`state.js` y `app.js` se retiraron: no se cargaban) | Aplicada |
-| OPT-005 | P1 | Cargar el reproductor de YouTube cuando se necesita | Reproducción / carga inicial | Flujo `loadYouTubeAPI()` en `script.js` | Aplicada |
+| OPT-005 | P1 | Cargar el reproductor de YouTube cuando se necesita | Reproducción / carga inicial | Flujo `loadYouTubeAPI()` en `modules/catalog.js`, invocado por `modules/playback-queue.js` | Aplicada |
 | OPT-006 | P1 | Reducir la navegación visible y agrupar funciones relacionadas | UX / trabajo de renderizado | Navegación principal y `renderLibraryHub()` | Aplicada |
 | OPT-007 | P1 | Añadir pairing QR dinámico y registrar el dispositivo vinculado | Red / experiencia multidispositivo | `buildNowarfyPairingUrl()`, `handleNowarfyPairingLink()` y modal QR | Aplicada |
 | OPT-008 | P0 | Mostrar el estado real de sincronización en vez de un estado estático | UX / sincronización | `updateNowarfyConnectionStatus()` y `data-state` del panel lateral | En validación |
+| OPT-009 | P0 | Diferir el reproductor de YouTube y evitar la descarga secuencial de módulos | Reproducción / carga inicial | `loadYouTubeAPI()` se ejecuta al reproducir; `index.html` precarga módulos en paralelo y muestra una alternativa si el reproductor no carga | Aplicada |
 
 ## Mejoras planificadas
 
@@ -89,6 +90,7 @@ Cada optimización debe verificarse con una comparación antes/después. Como m�
 
 | Fecha | Cambio | Responsable |
 |---|---|---|
+| 2026-10-22 | Implementación de OPT-009: carga diferida del IFrame API de YouTube, alternativa visible ante fallo o timeout de carga y precarga paralela de módulos | Copilot |
 | 2026-09-21 | Implementación de OPT-108: caché de respuestas de YouTube, Openverse y Commons en memoria y `localStorage`, con TTL de 5, 15 y 30 minutos respectivamente | Manus AI |
 | 2026-09-21 | Implementación de OPT-109: división de `script.js` en siete módulos de responsabilidades, con bootstrap compatible con handlers inline y precache del Service Worker | Manus AI |
 | 2026-09-21 | Implementación de OPT-110: separación del CSS crítico y secundario, carga no bloqueante, headers de caché y precache del Service Worker | Manus AI |
