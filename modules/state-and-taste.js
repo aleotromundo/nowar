@@ -55,7 +55,6 @@ let externalAudioFocusRecoveryAttempts = 0;
 let externalAudioFocusFadeTimer = null;
 let externalAudioFocusVolume = null;
 let videoStageManualMinimized = false;
-let videoFrameRefreshTimer = null;
 let youtubeCompactWindow = null;
 let youtubeEmbedFallbackUrl = '';
 let mediaTransitionInProgress = false;

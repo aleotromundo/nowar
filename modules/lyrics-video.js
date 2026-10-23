@@ -312,7 +312,6 @@ function showVideoStage(song, options = {}) {
     renderVideoStageDetails(song);
     renderVideoSuggestions(song);
     updateVideoStageToggle(!videoStageMinimized);
-    if (options.restoreFrame && song.type === 'yt') refreshYouTubeVideoFrame('show');
     if (options.focus && !videoStageMinimized) window.requestAnimationFrame(() => stage.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 }
 
@@ -335,7 +334,7 @@ function hideVideoStage(pauseVideo = false, options = {}) {
     }
 }
 
-function setVideoFramePoster(song, restoring = false) {
+function setVideoFramePoster(song) {
     const poster = document.getElementById('videoFramePoster');
     if (!poster) return;
     const source = String(song?.img || '').trim();
@@ -343,50 +342,7 @@ function setVideoFramePoster(song, restoring = false) {
     poster.src = source;
     poster.alt = source ? `Miniatura de ${song?.title || 'la pista actual'}` : '';
     poster.hidden = !source;
-    poster.classList.toggle('is-restoring', restoring && !!source);
-}
-
-function finishVideoFrameRestore(expectedUrl) {
-    const poster = document.getElementById('videoFramePoster');
-    if (!poster || currentQueueSong()?.url !== expectedUrl) return;
     poster.classList.remove('is-restoring');
-    window.setTimeout(() => {
-        if (currentQueueSong()?.url === expectedUrl && poster) poster.hidden = true;
-    }, 1250);
-}
-
-function refreshYouTubeVideoFrame() {
-    const song = currentQueueSong();
-    const stage = document.getElementById('videoStage');
-    const frame = document.querySelector('#yt-player-container iframe');
-    const frameBox = document.querySelector('#videoStage .video-frame');
-    if (!stage?.classList.contains('visible') || song?.type !== 'yt' || !ytPlayer || !frameBox) return;
-    const expectedUrl = String(song.url);
-    setVideoFramePoster(song, true);
-    clearTimeout(videoFrameRefreshTimer);
-    const reflow = () => {
-        if (currentQueueSong()?.url !== expectedUrl || !stage.classList.contains('visible')) return;
-        const rect = frameBox.getBoundingClientRect();
-        const width = Math.max(1, Math.floor(rect.width || frameBox.clientWidth));
-        const height = Math.max(1, Math.floor(rect.height || frameBox.clientHeight));
-        try { ytPlayer.setSize?.(width, height); } catch (error) {}
-        if (frame) {
-            frame.style.display = 'block';
-            frame.style.visibility = 'hidden';
-            void frame.offsetHeight;
-            frame.style.visibility = 'visible';
-        }
-    };
-    window.requestAnimationFrame(() => {
-        reflow();
-        videoFrameRefreshTimer = window.setTimeout(() => {
-            reflow();
-            window.setTimeout(() => {
-                reflow();
-                finishVideoFrameRestore(expectedUrl);
-            }, 320);
-        }, 260);
-    });
 }
 
 function toggleVideoStageVisibility() {
@@ -395,7 +351,7 @@ function toggleVideoStageVisibility() {
     const stage = document.getElementById('videoStage');
     if (stage.classList.contains('visible')) hideVideoStage(false, { manual: true });
     else {
-        showVideoStage(song, { focus: true, restoreFrame: song.type === 'yt' });
+        showVideoStage(song, { focus: true });
         if (song.type === 'freevideo') { freeVideoEl.style.display = 'block'; }
     }
 }
