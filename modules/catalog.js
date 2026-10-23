@@ -2108,7 +2108,7 @@ function buildMediaCard(song, idx) {
             </div>
             ${song.type !== 'search_trigger' ? `<button type="button" class="card-favorite${isFavoriteSong(song) ? ' active' : ''}" title="Guardar en favoritos" aria-label="Guardar en favoritos"><i class="${isFavoriteSong(song) ? 'fas' : 'far'} fa-heart"></i></button>
             <div class="card-actions" aria-label="Acciones rápidas">
-                <button type="button" class="card-addq" title="Agregar a una lista" aria-label="Agregar a una lista"><i class="fas fa-list-music"></i></button>
+                <button type="button" class="card-addq" title="Agregar a la Playlist" aria-label="Agregar a la Playlist"><i class="fas fa-plus"></i><span>Agregar a Playlist</span></button>
                 <button type="button" class="play-btn" title="Reproducir" aria-label="Reproducir"><i class="fas fa-play"></i></button>
             </div>` : ''}
         </div>
