@@ -78,6 +78,8 @@ let initialRadioQueueReady = false;
 const FEATURED_ROTATION_STORAGE_KEY = 'nowarfy_featured_rotation_v1';
 const FEATURED_EDITION_SIZE = 5;
 const FEATURED_THEMES = ['violet', 'aqua', 'ember', 'electric'];
+const HOME_RECOMMENDATION_HISTORY_KEY = 'nowarfy_home_recommendation_history_v1';
+const HOME_RECOMMENDATION_HISTORY_LIMIT = 48;
 let homeVideos = [];
 let homeMusicVideos = [];
 let homeChannels = [];
@@ -420,6 +422,7 @@ function rememberSearch(query) {
 function rememberPlay(song) {
     if (!song?.title) return;
     const taste = readTaste();
+    if (!taste.personalization) return;
     const entry = {
         title: song.title,
         artist: song.artist || '',
@@ -441,6 +444,7 @@ function rememberPlay(song) {
 function rememberChannel(channelId, title, details = {}) {
     if (!channelId) return;
     const taste = readTaste();
+    if (!taste.personalization) return;
     const entry = {
         id: String(channelId), title: String(title || 'Canal de YouTube'),
         img: details.img || details.thumbnails?.medium?.url || details.thumbnails?.default?.url || '',
@@ -455,6 +459,7 @@ function rememberChannel(channelId, title, details = {}) {
 function rememberPlaylist(playlist) {
     if (!playlist?.url) return;
     const taste = readTaste();
+    if (!taste.personalization) return;
     const entry = {
         id: String(playlist.url), title: String(playlist.title || 'Lista de reproducción'),
         artist: String(playlist.artist || playlist.channelTitle || 'YouTube'), img: playlist.img || '',
@@ -535,6 +540,7 @@ function setPersonalization(enabled) {
 
 function clearTasteData() {
     localStorage.removeItem(TASTE_STORAGE_KEY);
+    localStorage.removeItem(HOME_RECOMMENDATION_HISTORY_KEY);
     if (window.nowarfyStorage) void window.nowarfyStorage.remove(TASTE_STORAGE_KEY);
     homeFeedLoaded = false;
     renderTasteChips();

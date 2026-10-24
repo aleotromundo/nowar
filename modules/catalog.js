@@ -1004,8 +1004,12 @@ function persistCatalogCache() {
 
 function buildHomeRecommendations() {
     const taste = readTaste();
-    const localActivity = [...taste.plays, ...favorites].map(normalizeTasteTrack).filter(Boolean);
-    homeRecommended = uniqueMediaByUrl([...localActivity, ...homeMusicVideos, ...homeVideos, ...EMERGENCY_VIDEO_CATALOG], 24);
+    const localActivity = taste.personalization
+        ? [...taste.plays, ...favorites].map(normalizeTasteTrack).filter(Boolean)
+        : [];
+    // Keep radio candidates local. Home ranking below uses these only as
+    // signals, filtering exact history/favorites from the recommendation rail.
+    homeRecommended = uniqueMediaByUrl([...localActivity, ...homeMusicVideos, ...homeVideos, ...EMERGENCY_VIDEO_CATALOG], 48);
 }
 
 async function loadHomeCatalogSources() {
@@ -1097,6 +1101,108 @@ function getFeaturedEdition(videos) {
 
 function diversityKey(item) {
     return String(item?.url || item?.id || item?.videoId || '').trim();
+}
+const RECOMMENDATION_STOP_WORDS = new Set([
+    'the', 'and', 'for', 'with', 'from', 'official', 'video', 'music', 'song',
+    'live', 'los', 'las', 'del', 'una', 'uno', 'por', 'con', 'para', 'que'
+]);
+function recommendationTextTokens(value) {
+    return String(value || '')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .toLocaleLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter(token => token.length > 2 && !RECOMMENDATION_STOP_WORDS.has(token));
+}
+function readHomeRecommendationHistory() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(HOME_RECOMMENDATION_HISTORY_KEY) || '[]');
+        return Array.isArray(saved) ? saved.filter(key => typeof key === 'string').slice(-HOME_RECOMMENDATION_HISTORY_LIMIT) : [];
+    } catch (_) { return []; }
+}
+function homeRecommendationProfile(taste) {
+    const profile = new Map();
+    const add = (value, weight) => {
+        [...new Set(recommendationTextTokens(value))].forEach(token => {
+            profile.set(token, (profile.get(token) || 0) + weight);
+        });
+    };
+    (taste.searches || []).slice(0, 8).forEach((query, index) => add(query, Math.max(1.5, 4 - index * 0.35)));
+    (taste.plays || []).slice(0, 12).forEach((item, index) => {
+        const recency = Math.max(1, 4 - index * 0.25);
+        add(item.artist || item.channelTitle, recency * 1.35);
+        add(item.title, recency * 0.45);
+    });
+    (favorites || []).slice(0, 30).forEach(item => {
+        add(item.artist || item.channelTitle, 5);
+        add(item.title, 1.5);
+    });
+    (taste.channels || []).slice(0, 8).forEach(item => add(item.title, 2.5));
+    (taste.playlists || []).slice(0, 8).forEach(item => {
+        add(item.artist, 1.5);
+        add(item.title, 1.25);
+    });
+    return profile;
+}
+function rankHomeRecommendations(taste, alreadyUsed = new Set()) {
+    const pool = uniqueMediaByUrl([
+        ...homeRecommended,
+        ...homeMusicVideos,
+        ...homeVideos,
+        ...EMERGENCY_VIDEO_CATALOG
+    ], 120).filter(item => item?.type === 'yt' && !isNonMusicalVideo(item));
+    const historyUrls = new Set(taste.personalization ? (taste.plays || []).map(item => String(item.url || '')).filter(Boolean) : []);
+    const favoriteUrls = new Set(taste.personalization ? (favorites || []).map(item => String(item.url || '')).filter(Boolean) : []);
+    const recentlyShown = new Set(taste.personalization ? readHomeRecommendationHistory() : []);
+    const profile = taste.personalization ? homeRecommendationProfile(taste) : new Map();
+    const candidates = pool.map((item, index) => {
+        const key = diversityKey(item);
+        const tokens = new Set(recommendationTextTokens([
+            item.title, item.artist, item.channelTitle, item.description, item.genre,
+            Array.isArray(item.tags) ? item.tags.join(' ') : item.tags
+        ].join(' ')));
+        let score = 0;
+        tokens.forEach(token => { score += profile.get(token) || 0; });
+        return { item, key, index, score, artist: String(item.artist || item.channelTitle || '').toLocaleLowerCase() };
+    }).filter(candidate => candidate.key &&
+        !historyUrls.has(candidate.key) &&
+        !favoriteUrls.has(candidate.key) &&
+        !alreadyUsed.has(songKey(candidate.item)));
+    const fresh = candidates.filter(candidate => !recentlyShown.has(candidate.key));
+    // Exhaust unseen options before recycling, while never recommending an
+    // exact item that is already in the user's playback history or favorites.
+    const eligible = fresh.length ? fresh : candidates;
+    if (!profile.size) {
+        for (let index = eligible.length - 1; index > 0; index -= 1) {
+            const swap = Math.floor(Math.random() * (index + 1));
+            [eligible[index], eligible[swap]] = [eligible[swap], eligible[index]];
+        }
+    } else {
+        eligible.sort((a, b) => b.score - a.score || a.index - b.index);
+    }
+    const selected = [];
+    const artistCounts = new Map();
+    for (const candidate of eligible) {
+        const count = artistCounts.get(candidate.artist) || 0;
+        if (candidate.artist && count >= 2 && eligible.length > 8) continue;
+        selected.push(candidate);
+        artistCounts.set(candidate.artist, count + 1);
+        if (selected.length >= 8) break;
+    }
+    if (taste.personalization && selected.length) {
+        try {
+            const selectedKeys = selected.map(candidate => candidate.key);
+            const nextHistory = [
+                ...readHomeRecommendationHistory().filter(key => !selectedKeys.includes(key)),
+                ...selectedKeys
+            ].slice(-HOME_RECOMMENDATION_HISTORY_LIMIT);
+            localStorage.setItem(HOME_RECOMMENDATION_HISTORY_KEY, JSON.stringify(nextHistory));
+        } catch (_) {}
+    }
+    return {
+        items: selected.map(candidate => candidate.item),
+        personalized: taste.personalization && selected.some(candidate => candidate.score > 0),
+        hasSignals: profile.size > 0
+    };
 }
 function takeNovelItems(items, used, limit = 12) {
     const result = [];
@@ -1222,10 +1328,19 @@ function renderHomeFeed() {
         if (recentHistory.length || lastViewed) renderHomeHistoryRail(recentHistory.length ? recentHistory : [lastViewed], homeTopLayout);
         renderHomeQuickActions();
         renderCustomPlaylistHomeRail();
-        if (lastViewed) used.add(songKey(lastViewed));
+        if (taste.personalization && lastViewed) used.add(songKey(lastViewed));
 
-        const recommended = takeNovelItems(homeRecommended.filter(item => !isNonMusicalVideo(item)), used, 8);
-        if (recommended.length) renderLibraryRail(recommended, taste.personalization && getTasteSeed() ? 'Recomendado para vos' : 'Para empezar ahora', "<i class='fas fa-wand-magic-sparkles'></i>", false, { hint: taste.personalization && getTasteSeed() ? 'Según tu actividad local · selección nueva' : 'Selección inicial · contenido no repetido', showControls: true, className: 'home-recommended-rail' });
+        const recommendationSet = rankHomeRecommendations(taste, used);
+        const recommended = takeNovelItems(recommendationSet.items, used, 8);
+        if (recommended.length) {
+            const title = recommendationSet.personalized ? 'Recomendado para vos' : 'Para empezar ahora';
+            const hint = recommendationSet.personalized
+                ? 'Coincidencias con búsquedas, reproducciones y favoritos · actividad local'
+                : taste.personalization && recommendationSet.hasSignals
+                    ? 'Sin coincidencias suficientes con tu actividad · selección nueva'
+                    : 'Selección rotativa · sin usar actividad personal';
+            renderLibraryRail(recommended, title, "<i class='fas fa-wand-magic-sparkles'></i>", false, { hint, showControls: true, className: 'home-recommended-rail' });
+        }
         const edition = getFeaturedEdition(musicalVideoPool(homeVideos));
         const featured = takeNovelItems(edition.items, used, 8);
         if (featured.length >= 3) {
@@ -1236,7 +1351,9 @@ function renderHomeFeed() {
                 showControls: true
             });
         }
-        const recentArtists = [...new Set(taste.plays.map(item => String(item.artist || '').trim()).filter(Boolean))].slice(0, 10);
+        const recentArtists = taste.personalization
+            ? [...new Set(taste.plays.map(item => String(item.artist || '').trim()).filter(Boolean))].slice(0, 10)
+            : [];
         if (recentArtists.length) {
             const artistItems = recentArtists.map(artist => {
                 const lastPlay = taste.plays.find(p => String(p.artist || '').trim() === artist);
@@ -1245,8 +1362,10 @@ function renderHomeFeed() {
             renderDeferredHomeRail(artistItems, 'Tus artistas recientes', "<i class='fas fa-microphone-lines'></i>", false, { hint: 'Basado en tu historial · tocá para buscar más', showControls: true, className: 'home-artists-rail' });
         }
 
-        recentHistory.forEach(item => used.add(songKey(item)));
-        const resume = takeNovelItems(taste.plays.map(normalizeTasteTrack).filter(Boolean), used, 8);
+        if (taste.personalization) recentHistory.forEach(item => used.add(songKey(item)));
+        const resume = taste.personalization
+            ? takeNovelItems(taste.plays.map(normalizeTasteTrack).filter(Boolean), used, 8)
+            : [];
         if (resume.length) renderDeferredHomeRail(resume, 'Seguí desde donde quedaste', "<i class='fas fa-clock-rotate-left'></i>", false, { hint: 'Tu actividad reciente · sin repetir en otras sesiones', showControls: true, className: 'home-resume-rail' });
         const musicVideos = takeNovelItems(musicalVideoPool(homeMusicVideos), used, 8);
         if (musicVideos.length >= 3) renderDeferredHomeRail(musicVideos, 'Música para escuchar', "<i class='fab fa-youtube'></i>", false, { hint: 'Videoclips nuevos · sin repetir las sesiones anteriores', showControls: true });
