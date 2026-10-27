@@ -802,7 +802,9 @@ html { scroll-behavior: smooth; }
 
         .nowarfy-auth-magic { width: 100%; margin-top: 9px; }
 
-        .nowarfy-auth-status { min-height: 20px; margin-top: 12px; color: #b9e9d5; font-size: .78rem; line-height: 1.45; }
+        .nowarfy-auth-status { display: flex; min-height: 20px; align-items: center; gap: 8px; margin-top: 12px; color: #b9e9d5; font-size: .78rem; line-height: 1.45; }
+        .nowarfy-auth-status .loader-spinner { flex: 0 0 14px; width: 14px; height: 14px; border-width: 2px; }
+        .nowarfy-auth-status.is-error { color: #ffb5bd; }
 
         .nowarfy-auth-account { display: grid; gap: 10px; }
 

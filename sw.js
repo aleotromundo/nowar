@@ -1,4 +1,5 @@
 const CACHE_NAME = 'nowarfy-shell-v51';
+const NAVIGATION_TIMEOUT_MS = 5000;
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -32,6 +33,16 @@ async function cachePut(request, response) {
   return response;
 }
 
+async function fetchNavigation(request) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), NAVIGATION_TIMEOUT_MS);
+  try {
+    return await fetch(request, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
@@ -62,7 +73,7 @@ self.addEventListener('fetch', event => {
   // El HTML se actualiza primero desde la red para no ocultar despliegues nuevos.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      fetchNavigation(request)
         .then(response => cachePut('/index.html', response))
         .catch(() => caches.match('/index.html'))
     );

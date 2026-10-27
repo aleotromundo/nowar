@@ -2,6 +2,21 @@ const KNOWLEDGE_SOURCE_LABELS = { youtube: 'YouTube', openverse: 'Openverse', co
 const KNOWLEDGE_HEALTH_LABELS = { unverified: 'Sin verificar', healthy: 'Saludable', suspect: 'Sospechoso', invalid: 'Inválido' };
 const KNOWLEDGE_KIND_LABELS = { 'youtube#video': 'Video', 'youtube#playlist': 'Lista', 'youtube#channel': 'Canal', 'commons#video': 'Video libre' };
 
+function setCatalogLoading(loading, message = '') {
+    const loader = document.getElementById('loader');
+    const sections = document.getElementById('dynamicSections');
+    if (loader) {
+        loader.style.display = loading ? 'flex' : 'none';
+        loader.classList.remove('is-error');
+        loader.setAttribute('aria-busy', String(loading));
+        if (loading && message) {
+            const label = document.getElementById('loaderMessage');
+            if (label) label.textContent = message;
+        }
+    }
+    if (sections) sections.setAttribute('aria-busy', String(loading));
+}
+
 function knowledgeSourceLabel(source) {
     return KNOWLEDGE_SOURCE_LABELS[String(source || '').toLowerCase()] || 'Otra fuente';
 }
@@ -121,9 +136,8 @@ function setupKnowledgeBaseFilters() {
 async function renderKnowledgeBase() {
     minimizeActiveVideoForNavigation();
     const container = document.getElementById('dynamicSections');
-    const loader = document.getElementById('loader');
     container.innerHTML = '';
-    loader.style.display = 'flex';
+    setCatalogLoading(true, 'Cargando la base global...');
     try {
         const data = await globalReserveRequest(`${GLOBAL_RESERVE_ENDPOINT}?action=stats`);
         if (!data) throw new Error('stats_unavailable');
@@ -167,7 +181,7 @@ async function renderKnowledgeBase() {
     } catch (error) {
         renderEmptyState('No pudimos cargar la base global', 'La reserva global puede estar temporalmente fuera de servicio.');
     } finally {
-        loader.style.display = 'none';
+        setCatalogLoading(false);
     }
 }
 function deriveChannels(videos) {
@@ -381,11 +395,10 @@ function renderChannelCatalog() {
 
 async function loadChannelProfile(channelReference, channelTitle = '') {
     minimizeActiveVideoForNavigation();
-    const loader = document.getElementById('loader');
     const container = document.getElementById('dynamicSections');
     activeBrowseMode = 'channel';
     channelFilter = null;
-    loader.style.display = 'flex';
+    setCatalogLoading(true, 'Abriendo canal...');
     container.innerHTML = '';
     try {
         const response = await fetch(`/api/search?type=youtube&action=channelOverview&channelRef=${encodeURIComponent(channelReference)}&maxResults=24`);
@@ -411,7 +424,7 @@ async function loadChannelProfile(channelReference, channelTitle = '') {
     } catch (error) {
         renderEmptyState('No pudimos abrir este canal', 'El enlace puede no corresponder a un canal público, o YouTube puede estar temporalmente no disponible.');
     } finally {
-        loader.style.display = 'none';
+        setCatalogLoading(false);
     }
 }
 
@@ -715,9 +728,8 @@ async function performSmartSearch(query, options = {}) {
     currentMood = null;
     document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
 
-    const loader = document.getElementById('loader');
     const container = document.getElementById('dynamicSections');
-    loader.style.display = 'flex';
+    setCatalogLoading(true, 'Buscando resultados...');
     container.innerHTML = '';
 
     try {
@@ -770,7 +782,7 @@ async function performSmartSearch(query, options = {}) {
             renderEmptyState(`Sin resultados para "${query}"`, 'No encontramos coincidencias ni propuestas de rock y metal disponibles ahora.');
         }
     } finally {
-        if (requestId === activeSearchRequestId && loader.style.display === 'flex') loader.style.display = 'none';
+        if (requestId === activeSearchRequestId) setCatalogLoading(false);
     }
 }
 
@@ -1059,9 +1071,8 @@ async function resetView(options = {}) {
     }
     if (homeFeedLoading) return;
     homeFeedLoading = true;
-    const loader = document.getElementById('loader');
     const container = document.getElementById('dynamicSections');
-    loader.style.display = 'flex';
+    setCatalogLoading(true, 'Cargando Inicio...');
     container.innerHTML = '';
     try {
         const hasContent = await loadHomeCatalogSources();
@@ -1075,7 +1086,7 @@ async function resetView(options = {}) {
         } else renderEmptyState('No pudimos cargar propuestas ahora', 'Probá recargar dentro de unos segundos o buscá un artista.');
     } finally {
         homeFeedLoading = false;
-        loader.style.display = 'none';
+        setCatalogLoading(false);
     }
 }
 
@@ -1462,9 +1473,8 @@ async function ensureHomeCatalog() {
     if (homeFeedLoaded) return true;
     if (homeFeedLoading) return false;
     homeFeedLoading = true;
-    const loader = document.getElementById('loader');
     const container = document.getElementById('dynamicSections');
-    loader.style.display = 'flex';
+    setCatalogLoading(true, 'Preparando recomendaciones...');
     container.innerHTML = '';
     try {
         const hasContent = await loadHomeCatalogSources();
@@ -1473,7 +1483,7 @@ async function ensureHomeCatalog() {
         return hasContent;
     } finally {
         homeFeedLoading = false;
-        loader.style.display = 'none';
+        setCatalogLoading(false);
     }
 }
 
@@ -1560,10 +1570,9 @@ async function renderGlobalChannelRail(title, hint, { styleKey = '', limit = 24,
 }
 async function renderGenreChannels() {
     const container = document.getElementById('dynamicSections');
-    const loader = document.getElementById('loader');
     container.innerHTML = '';
     currentList = [];
-    loader.style.display = 'flex';
+    setCatalogLoading(true, 'Cargando canales...');
     try {
         const heading = document.createElement('div');
         heading.innerHTML = `<div class="section-title"><i class="fas fa-satellite-dish"></i> Canales</div><p class="discovery-intro">Canales reales organizados por historial, escucha actual y escenas musicales. Abrí uno para ver su descripción, estadísticas, listas y videos publicados.</p>`;
@@ -1599,7 +1608,7 @@ async function renderGenreChannels() {
         });
         if (!rendered) renderEmptyState('No hay canales disponibles ahora', 'Probá volver a intentarlo cuando YouTube vuelva a responder o buscá un canal por nombre.');
     } finally {
-        loader.style.display = 'none';
+        setCatalogLoading(false);
     }
 }
 
@@ -2148,9 +2157,8 @@ async function openPlaylist(playlist, options = {}) {
         }
     });
     rememberPlaylist(playlist);
-    const loader = document.getElementById('loader');
     const container = document.getElementById('dynamicSections');
-    loader.style.display = 'flex';
+    setCatalogLoading(true, 'Cargando lista...');
     container.innerHTML = '';
     try {
         const response = await fetch(`/api/search?type=youtube&action=playlistItems&playlistId=${encodeURIComponent(playlist.url)}&maxResults=24`);
@@ -2176,7 +2184,7 @@ async function openPlaylist(playlist, options = {}) {
         activePlaylistCatalog = null;
         renderEmptyState('No pudimos abrir esta lista', 'La lista puede ser privada, estar vacía o no permitir reproducción. No mostramos videos de otra colección como reemplazo.');
     } finally {
-        loader.style.display = 'none';
+        setCatalogLoading(false);
     }
 }
 

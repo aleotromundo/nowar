@@ -350,6 +350,10 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loader-wrap span { font-weight: 600; font-size: 0.9rem; }
+        .loader-wrap.is-error .loader-spinner { display: none; }
+        .loader-retry { padding: 9px 18px; border: 1px solid var(--border-soft); border-radius: 999px; color: #fff; background: rgba(255,255,255,.08); font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; }
+        .loader-retry:hover { background: rgba(255,255,255,.15); }
+        @media (prefers-reduced-motion: reduce) { .loader-spinner { animation: none; } }
 
         .empty-state { text-align: center; padding: 60px 20px; color: var(--text-gray); }
         .empty-state i { font-size: 2rem; color: #3a3a3a; margin-bottom: 14px; display: block; }

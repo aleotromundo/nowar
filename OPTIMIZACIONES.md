@@ -90,6 +90,7 @@ Cada optimización debe verificarse con una comparación antes/después. Como m�
 
 | Fecha | Cambio | Responsable |
 |---|---|---|
+| 2026-10-27 | Se carga Supabase bajo demanda (o al restaurar una sesión), se difirió la hoja de la vista clásica, la navegación de la PWA vuelve a la caché tras 5 s sin red, se hizo visible el estado de arranque con reintento ante errores de módulo y se unificaron los mensajes de carga de catálogo y cuenta | Copilot |
 | 2026-10-22 | Implementación de OPT-009: carga diferida del IFrame API de YouTube, alternativa visible ante fallo o timeout de carga y precarga paralela de módulos | Copilot |
 | 2026-09-21 | Implementación de OPT-108: caché de respuestas de YouTube, Openverse y Commons en memoria y `localStorage`, con TTL de 5, 15 y 30 minutos respectivamente | Manus AI |
 | 2026-09-21 | Implementación de OPT-109: división de `script.js` en siete módulos de responsabilidades, con bootstrap compatible con handlers inline y precache del Service Worker | Manus AI |

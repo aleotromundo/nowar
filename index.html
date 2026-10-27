@@ -32,7 +32,8 @@
     <noscript><link rel="stylesheet" href="styles-secondary.css"></noscript>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="styles-custom-playlists.css">
-    <link rel="stylesheet" href="styles-classic.css">
+    <link rel="preload" href="styles-classic.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="styles-classic.css"></noscript>
 </head>
 <body class="mode-youtoo">
 
@@ -175,9 +176,10 @@
                 </div>
             </section>
 
-            <div id="loader" class="loader-wrap">
-                <div class="nowarfy-orbit-loader"></div>
-                <span>Buscando...</span>
+            <div id="loader" class="loader-wrap" style="display:flex" role="status" aria-live="polite" aria-busy="true">
+                <div class="loader-spinner" aria-hidden="true"></div>
+                <span id="loaderMessage">Iniciando Nowarfy...</span>
+                <button type="button" class="loader-retry" id="loaderRetry" onclick="window.retryNowarfyModules?.()" hidden>Reintentar</button>
             </div>
             <div id="dynamicSections"></div>
         </div>
@@ -294,7 +296,10 @@
                 <button type="button" onclick="switchNowarfyUser()"><i class="fas fa-user-gear"></i> Cambiar de usuario</button>
                 <button type="button" onclick="signOutNowarfy()"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</button>
             </div>
-            <div class="nowarfy-auth-status" id="nowarfyAuthStatus" aria-live="polite"></div>
+            <div class="nowarfy-auth-status" id="nowarfyAuthStatus" aria-live="polite" aria-busy="false">
+                <span class="loader-spinner" aria-hidden="true" hidden></span>
+                <span id="nowarfyAuthStatusMessage"></span>
+            </div>
         </div>
     </div>
 
@@ -327,8 +332,6 @@
     <audio id="audio-element-next" preload="metadata" aria-hidden="true"></audio>
     <audio id="silent-audio-loop" loop preload="auto" src="assets/nowarfy-audio-anchor.wav" aria-hidden="true"></audio>
     <div class="toast-container" id="toastContainer"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0"></script>
 
     <section class="classic-panel" id="classicPanel" aria-label="Reproductor clásico" hidden>
         <header class="classic-titlebar"><span>NOWARFY</span><button type="button" class="classic-close" id="classicClose" aria-label="Salir de la vista clásica">×</button></header>

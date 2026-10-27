@@ -615,7 +615,7 @@ function makeDraggable(element) {
 }
 
 handleNowarfyPairingLink();
-void initNowarfyAuth();
+if (hasStoredNowarfyAuthSession()) void initNowarfyAuth();
 setTimeout(() => {
     initTouchSwipeGestures();
     initScrollAssemblyEngine();
