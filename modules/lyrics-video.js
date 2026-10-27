@@ -204,6 +204,13 @@ function openVideoStageChannel() {
     browseChannel(song.channelId, song.channelTitle || song.artist || 'Canal de YouTube');
 }
 
+let videoStageFocusScrollUntil = 0;
+
+function focusVideoStage(stage) {
+    videoStageFocusScrollUntil = Date.now() + 1200;
+    window.requestAnimationFrame(() => stage.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+}
+
 function updateVideoStageToggle(isVisible) {
     const button = document.getElementById('videoStageToggleBtn');
     if (!button) return;
@@ -234,9 +241,7 @@ function setVideoStageMinimized(minimized, options = {}) {
     if (videoStageMinimized) stage.classList.remove('is-error');
     updateVideoStageToggle(!videoStageMinimized);
     persistVideoResumeSession(true);
-    if (!videoStageMinimized && options.focus) {
-        window.requestAnimationFrame(() => stage.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-    }
+    if (!videoStageMinimized && options.focus) focusVideoStage(stage);
 }
 
 function clearYouTubeEmbedFallback() {
@@ -312,7 +317,7 @@ function showVideoStage(song, options = {}) {
     renderVideoStageDetails(song);
     renderVideoSuggestions(song);
     updateVideoStageToggle(!videoStageMinimized);
-    if (options.focus && !videoStageMinimized) window.requestAnimationFrame(() => stage.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    if (options.focus && !videoStageMinimized) focusVideoStage(stage);
 }
 
 function hideVideoStage(pauseVideo = false, options = {}) {
@@ -351,7 +356,7 @@ function toggleVideoStageVisibility() {
     const stage = document.getElementById('videoStage');
     if (stage.classList.contains('visible')) hideVideoStage(false, { manual: true });
     else {
-        showVideoStage(song, { focus: true });
+        setVideoStageMinimized(false, { focus: true });
         if (song.type === 'freevideo') { freeVideoEl.style.display = 'block'; }
     }
 }
@@ -364,9 +369,11 @@ function setupVideoStageObserver() {
         const entry = entries[0];
         const song = currentQueueSong();
         if (!entry || !isVisualVideo(song)) return;
-        const rect = entry.boundingClientRect;
+        if (Date.now() < videoStageFocusScrollUntil) return;
+        const frame = stage.querySelector('.video-frame');
+        const rect = frame?.getBoundingClientRect() || entry.boundingClientRect;
         if (!videoStageMinimized && stage.classList.contains('visible')) {
-            const scrolledOut = (rect.top < -15 || rect.bottom < 120 || entry.intersectionRatio < 0.85) && rect.height > 0;
+            const scrolledOut = (rect.bottom < 120 || rect.top > window.innerHeight - 120) && rect.height > 0;
             if (scrolledOut) {
                 setVideoStageMinimized(true, { autoReason: 'out-of-view' });
             }
