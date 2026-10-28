@@ -957,6 +957,11 @@ function initAutoMovingCarousels() {
             get isPaused() { return isPaused || rail.classList.contains('is-dragging'); },
             step() {
                 if (this.isPaused) return;
+                if (!this.el.isConnected) return;
+                if (rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 2 && rail.scrollLeft > 0) {
+                    rail.scrollLeft = 0;
+                    return;
+                }
                 rail.scrollLeft += speed;
                 if (rail._appendBatch && rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 140) {
                     rail._appendBatch();
@@ -965,10 +970,12 @@ function initAutoMovingCarousels() {
         });
     });
 
+    activeAutoCarousels = activeAutoCarousels.filter(carousel => carousel.el.isConnected);
     if (!autoCarouselAnimationFrame && activeAutoCarousels.length) {
         const loop = () => {
-            activeAutoCarousels.forEach(c => c.step());
-            autoCarouselAnimationFrame = requestAnimationFrame(loop);
+            activeAutoCarousels = activeAutoCarousels.filter(carousel => carousel.el.isConnected);
+            activeAutoCarousels.forEach(carousel => carousel.step());
+            autoCarouselAnimationFrame = activeAutoCarousels.length ? requestAnimationFrame(loop) : null;
         };
         autoCarouselAnimationFrame = requestAnimationFrame(loop);
     }

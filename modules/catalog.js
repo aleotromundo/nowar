@@ -2330,18 +2330,16 @@ function renderLibraryRail(list, title, icon, isPlaylist = false, options = {}) 
     const batchSize = 5;
     let rendered = 0;
     const appendBatch = () => {
+        if (rendered >= visibleItems.length) return false;
         let nextItems = visibleItems.slice(rendered, rendered + batchSize);
-        if (!nextItems.length && visibleItems.length) {
-            nextItems = visibleItems.slice(0, batchSize);
-        }
         nextItems.forEach((item, offset) => {
-            const index = (rendered + offset) % visibleItems.length;
+            const index = rendered + offset;
             const card = isPlaylist ? buildPlaylistCard(item, index) : buildMediaCard(item, index);
             card.classList.add('library-card');
             rail.appendChild(card);
         });
         rendered += nextItems.length;
-        return true;
+        return rendered < visibleItems.length;
     };
     rail._appendBatch = appendBatch;
     if (hasLeadingAction) rail.appendChild(buildHomeResumeCard(options.leadingAction));
