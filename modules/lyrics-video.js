@@ -393,6 +393,13 @@ function setupVideoStageVisibilityAwareness() {
         const song = currentQueueSong();
         if (document.visibilityState === 'hidden' && stage?.classList.contains('visible') && isVisualVideo(song)) {
             setVideoStageMinimized(true, { autoReason: 'document-hidden' });
+        } else if (
+            document.visibilityState === 'visible' &&
+            isPlaying &&
+            isVisualVideo(song) &&
+            videoStageAutoHiddenReason === 'document-hidden'
+        ) {
+            setVideoStageMinimized(false);
         }
     });
 }
