@@ -818,7 +818,11 @@ async function buildAutomaticBatch(seed) {
 }
 
 async function growQueueIfNeeded(force = false) {
-    if (queueFetching || queue.length === 0) return;
+    if (queue.length === 0) return;
+    if (queueGrowthPromise) {
+        await queueGrowthPromise;
+        return;
+    }
     const idx = queue.findIndex(s => s._qid === currentPlayingQid);
     const atPlaylistEnd = idx >= 0 && idx + 1 >= queue.length;
     if (!force && !atPlaylistEnd) return;
@@ -826,15 +830,23 @@ async function growQueueIfNeeded(force = false) {
     if (!seed) return;
     queueFetching = true;
     toggleQueueLoadingHint(true);
-    try {
-        const added = await buildAutomaticBatch(seed);
-        if (added.length) {
-            queue = queue.concat(added);
-            persistQueue();
-            renderQueue();
+    queueGrowthPromise = (async () => {
+        try {
+            const added = await buildAutomaticBatch(seed);
+            if (added.length) {
+                queue = queue.concat(added);
+                persistQueue();
+                renderQueue();
+            }
+        } catch (error) {
+            console.warn('[Nowarfy] No se pudo ampliar la cola automática', error);
+        } finally {
+            queueFetching = false;
+            queueGrowthPromise = null;
+            toggleQueueLoadingHint(false);
         }
-    } catch (e) {}
-    finally { queueFetching = false; toggleQueueLoadingHint(false); }
+    })();
+    await queueGrowthPromise;
 }
 
 function toggleQueueLoadingHint(show) {

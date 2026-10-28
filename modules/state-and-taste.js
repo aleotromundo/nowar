@@ -7,6 +7,7 @@ let currentPlayingQid = null;
 let currentSourceIdx = null;
 let queueRound = 0;
 let queueFetching = false;
+let queueGrowthPromise = null;
 let dragSrcQid = null;
 let searchQuery = "";
 let currentMood = null;
