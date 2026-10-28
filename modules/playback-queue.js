@@ -1145,6 +1145,7 @@ function renderVirtualQueue(list) {
 function renderQueue() {
     renderContinuousPlaybackControls();
     currentIndex = queue.findIndex(s => s._qid === currentPlayingQid);
+    window.dispatchEvent(new Event('nowarfy:queue-updated'));
     const list = document.getElementById('queueList');
     const sub = document.getElementById('queueSub');
     const badge = document.getElementById('queueCountBadge');

@@ -12,7 +12,7 @@
 .classic-panel[hidden] { display: none; }
 .classic-panel {
     position: fixed; top: 76px; right: 16px; z-index: 900;
-    width: min(380px, calc(100vw - 32px)); max-height: calc(100vh - 110px);
+    width: min(380px, calc(100vw - 32px)); max-height: calc(100vh - 110px); max-height: calc(100dvh - 110px);
     display: flex; flex-direction: column; overflow: hidden;
     border: 1px solid #2c2f3d; border-radius: 12px;
     background: #161821; color: #d9dbe8; box-shadow: 0 18px 50px rgba(0,0,0,.5);
@@ -27,13 +27,15 @@
 .classic-body { display: grid; gap: 12px; padding: 12px; overflow-y: auto; }
 
 .classic-display {
-    display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center;
     padding: 10px 12px; border-radius: 8px; background: #0b0d12; border: 1px solid #1f2230;
 }
 .classic-time {
     font-family: 'Courier New', monospace; font-size: 1.6rem; font-weight: 700;
     color: #5eead4; text-shadow: 0 0 8px rgba(94,234,212,.45); min-width: 4.2ch;
 }
+.classic-times { display: grid; gap: 2px; justify-items: end; }
+.classic-total-time { color: #6b7088; font: 600 .68rem 'Courier New', monospace; }
 .classic-now { min-width: 0; }
 .classic-title, .classic-artist {
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -49,10 +51,17 @@
 
 .classic-transport { display: flex; justify-content: center; gap: 8px; }
 .classic-transport button {
-    width: 44px; height: 40px; border: 1px solid #2c2f3d; border-radius: 8px;
+    flex: 0 1 44px; min-width: 40px; height: 40px; border: 1px solid #2c2f3d; border-radius: 8px;
     background: linear-gradient(#262938, #1a1d28); color: #e8e6ff; font-size: 1rem; cursor: pointer;
 }
-.classic-transport button:hover { border-color: #5eead4; }
+.classic-transport button:hover:not(:disabled) { border-color: #5eead4; }
+.classic-transport button:disabled { opacity: .4; cursor: not-allowed; }
+.classic-transport button.is-active { color: #5eead4; border-color: #5eead4; }
+.classic-transport button:focus-visible,
+.classic-eq button:focus-visible,
+.classic-eq select:focus-visible,
+.classic-library button:focus-visible,
+.classic-close:focus-visible { outline: 2px solid #5eead4; outline-offset: 2px; }
 
 .classic-volume { display: flex; align-items: center; gap: 10px; font-size: .78rem; color: #8b90a8; }
 .classic-volume input { flex: 1; accent-color: #5eead4; }
@@ -78,14 +87,30 @@
     border: 1px solid #1f2230; border-radius: 8px; background: #0f1116;
 }
 .classic-playlist li button {
-    width: 100%; text-align: left; padding: 6px 8px; border: 0; border-radius: 6px;
+    display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: left; padding: 6px 8px; border: 0; border-radius: 6px;
     background: none; color: #c3c6d8; font: inherit; font-size: .8rem; cursor: pointer;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    min-width: 0;
 }
 .classic-playlist li button:hover { background: #1c1f2b; }
 .classic-playlist li.is-current button { color: #5eead4; font-weight: 700; }
+.classic-track-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.classic-track-artist { flex: none; max-width: 42%; overflow: hidden; color: #777d93; font-size: .7rem; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.classic-playlist li.is-current .classic-track-artist { color: #81cfc2; }
 .classic-empty { padding: 8px; color: #6b7088; font-size: .8rem; }
 
 @media (max-width: 720px) {
-    .classic-panel { top: auto; bottom: 90px; right: 8px; left: 8px; width: auto; max-height: 60vh; }
+    .classic-panel { top: auto; bottom: calc(90px + env(safe-area-inset-bottom, 0px)); right: 8px; left: 8px; width: auto; max-height: min(60vh, calc(100dvh - 110px - env(safe-area-inset-bottom, 0px))); }
+}
+@media (max-width: 380px) {
+    .classic-body { gap: 9px; padding: 9px; }
+    .classic-display { grid-template-columns: 1fr auto; gap: 8px; padding: 8px; }
+    .classic-times { grid-column: 2; grid-row: 1; }
+    .classic-now { grid-column: 1; grid-row: 1; }
+    .classic-bars { display: none; }
+    .classic-transport { gap: 5px; }
+    .classic-transport button { flex-basis: 40px; min-width: 36px; }
+    .classic-eq-bands { gap: 1px; }
+    .classic-band input { width: 16px; }
+    .classic-library { gap: 4px; }
+    .classic-library button { flex: 1 1 auto; padding: 0 7px; }
 }
