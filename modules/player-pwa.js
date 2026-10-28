@@ -2,6 +2,7 @@ function updateIcon() {
     document.getElementById('playIcon').style.display = isPlaying ? 'none' : 'inline';
     document.getElementById('pauseIcon').style.display = isPlaying ? 'inline' : 'none';
     document.getElementById('playerCover')?.classList.toggle('is-spinning', !!isPlaying);
+    document.body.classList.toggle('nowarfy-video-playing', !!isPlaying && ['yt', 'freevideo'].includes(currentQueueSong()?.type));
     updateVideoStageToggle(!videoStageMinimized);
 }
 
