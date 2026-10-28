@@ -559,9 +559,10 @@ function onYTError(event) {
     isPlaying = false;
     const song = currentQueueSong();
     showYouTubeEmbedFallback(song, event?.data);
-    showToast('YouTube no permite este video dentro del IFrame; podés abrirlo desde aquí', 'fab fa-youtube');
+    showToast('No se pudo reproducir este video en Nowarfy; probando la siguiente pista', 'fab fa-youtube');
     updateIcon();
     updatePlaybackState();
+    queueAutomaticAdvance('youtube-error');
 }
 
 function togglePlay() {

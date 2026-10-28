@@ -1331,7 +1331,8 @@ async function recoverAutomaticQueue(targetQid) {
 function queueAutomaticAdvance(reason = 'ended') {
     const targetQid = currentPlayingQid;
     if (!targetQid || playbackStoppedByUser || automaticAdvanceTargetQid === targetQid) return;
-    if (!continuousPlayback) {
+    const skipUnplayableYouTubeTrack = reason === 'youtube-error';
+    if (!continuousPlayback && !skipUnplayableYouTubeTrack) {
         isPlaying = false;
         clearAutomaticAdvance();
         updateIcon();
