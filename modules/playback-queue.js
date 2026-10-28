@@ -1298,24 +1298,34 @@ function findAutomaticFallback(current) {
 }
 
 async function recoverAutomaticQueue(targetQid) {
-    if (automaticQueueRecoveryInFlight || playbackStoppedByUser || currentPlayingQid !== targetQid) return false;
-    automaticQueueRecoveryInFlight = true;
-    try {
-        const current = currentQueueSong();
-        await growQueueIfNeeded();
-        if (playbackStoppedByUser || currentPlayingQid !== targetQid) return false;
-        const currentQueueIndex = queue.findIndex(item => item._qid === targetQid);
-        if (currentQueueIndex >= 0 && currentQueueIndex + 1 < queue.length) {
-            playQueueAt(currentQueueIndex + 1);
-            return true;
-        }
-        const immediateFallback = findAutomaticFallback(current);
-        return appendAutomaticFallback(immediateFallback);
-    } catch (error) {
-        return false;
-    } finally {
-        automaticQueueRecoveryInFlight = false;
+    if (playbackStoppedByUser || currentPlayingQid !== targetQid) return false;
+    if (automaticQueueRecoveryPromise) {
+        return automaticQueueRecoveryTargetQid === targetQid
+            ? automaticQueueRecoveryPromise
+            : false;
     }
+    automaticQueueRecoveryTargetQid = targetQid;
+    automaticQueueRecoveryPromise = (async () => {
+        try {
+            const current = currentQueueSong();
+            await growQueueIfNeeded();
+            if (playbackStoppedByUser || currentPlayingQid !== targetQid) return false;
+            const currentQueueIndex = queue.findIndex(item => item._qid === targetQid);
+            if (currentQueueIndex >= 0 && currentQueueIndex + 1 < queue.length) {
+                playQueueAt(currentQueueIndex + 1);
+                return true;
+            }
+            const immediateFallback = findAutomaticFallback(current);
+            return appendAutomaticFallback(immediateFallback);
+        } catch (error) {
+            console.warn('[Nowarfy] No se pudo recuperar la cola automática', error);
+            return false;
+        } finally {
+            automaticQueueRecoveryPromise = null;
+            automaticQueueRecoveryTargetQid = null;
+        }
+    })();
+    return automaticQueueRecoveryPromise;
 }
 
 function queueAutomaticAdvance(reason = 'ended') {
@@ -1334,7 +1344,15 @@ function queueAutomaticAdvance(reason = 'ended') {
     const advance = async () => {
         automaticAdvanceTimer = null;
         if (playbackStoppedByUser || currentPlayingQid !== targetQid) return;
-        if (nextSong(false)) return;
+        if (queuePlaybackMode === 'prebuilt_playlist') {
+            if (nextSong(false)) return;
+        } else {
+            const currentQueueIndex = queue.findIndex(item => item._qid === targetQid);
+            if (currentQueueIndex >= 0 && currentQueueIndex + 1 < queue.length) {
+                playQueueAt(currentQueueIndex + 1);
+                return;
+            }
+        }
         if (await recoverAutomaticQueue(targetQid)) return;
         isPlaying = false;
         stopSilentLoop();
