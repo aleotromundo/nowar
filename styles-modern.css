@@ -241,6 +241,21 @@ body.mode-youtoo .empty-message{
   body.mode-youtoo *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
 }
 
+/* El decodificador de video tiene prioridad sobre la ambientación de la interfaz. */
+body.mode-youtoo.nowarfy-video-playing .ambient-artwork-background{
+  display:none !important;
+}
+body.mode-youtoo.nowarfy-video-playing::before,
+body.mode-youtoo.nowarfy-video-playing::after,
+body.mode-youtoo.nowarfy-video-playing .content-area{
+  animation:none !important;
+  filter:none !important;
+}
+body.mode-youtoo.nowarfy-video-playing .card,
+body.mode-youtoo.nowarfy-video-playing .song-row{
+  will-change:auto;
+}
+
 /* responsive */
 @media (max-width:768px){
   body.mode-youtoo .player-bar{padding-bottom:calc(10px + var(--safe-area-bottom,0px))}
