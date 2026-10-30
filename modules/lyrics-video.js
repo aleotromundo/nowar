@@ -409,8 +409,9 @@ function setupVideoStageVisibilityAwareness() {
     frame?.addEventListener('dblclick', event => {
         const target = event.target;
         const isNativeVideo = target === freeVideoEl;
-        const isYouTubeFrame = target instanceof HTMLIFrameElement && target.closest('#yt-player-container');
-        if ((!isNativeVideo && !isYouTubeFrame) || !isVisualVideo(currentQueueSong())) return;
+        // Los eventos dentro del iframe de YouTube no atraviesan su origen.
+        // YouTube gestiona allí su propio doble clic para pantalla completa.
+        if (!isNativeVideo || !isVisualVideo(currentQueueSong())) return;
 
         if (document.fullscreenElement || document.webkitFullscreenElement || freeVideoEl.webkitDisplayingFullscreen) {
             const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || freeVideoEl.webkitExitFullscreen;
@@ -425,7 +426,7 @@ function setupVideoStageVisibilityAwareness() {
             return;
         }
 
-        const fullscreenTarget = isNativeVideo ? freeVideoEl : target;
+        const fullscreenTarget = freeVideoEl;
         if (typeof fullscreenTarget.requestFullscreen === 'function') {
             fullscreenTarget.requestFullscreen().catch(error => {
                 console.warn('[YouToo] No se pudo activar pantalla completa', error);
@@ -524,9 +525,8 @@ function onYTReady(event) {
     if (iframe) {
         iframe.allowFullscreen = true;
         iframe.setAttribute('allowfullscreen', '');
-        const permissions = new Set(String(iframe.getAttribute('allow') || '').split(';').map(permission => permission.trim()).filter(Boolean));
-        permissions.add('fullscreen');
-        iframe.setAttribute('allow', [...permissions].join('; '));
+        iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
+        iframe.setAttribute('title', 'Reproductor de video de YouTube');
     }
     const v = parseFloat(document.getElementById('volumeSlider').value);
     if (ytPlayer.setVolume) ytPlayer.setVolume(v * 100);
