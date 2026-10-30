@@ -1,7 +1,7 @@
 {
   "name": "YouToo®",
   "short_name": "YouToo®",
-  "description": "Biblioteca audiovisual para buscar, descubrir y escuchar música y videos de múltiples fuentes.",
+  "description": "Buscá videos, música, recetas, tutoriales y más. Descubrí contenido de YouTube y fuentes abiertas.",
   "id": "/nowarfy",
   "start_url": "/?source=pwa",
   "scope": "/",

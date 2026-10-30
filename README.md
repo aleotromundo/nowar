@@ -1,6 +1,6 @@
 # YouToo®
 
-Biblioteca audiovisual para buscar, descubrir y escuchar música y videos de múltiples fuentes. PWA instalable construida como sitio estático (HTML/CSS/JS) con funciones serverless en Vercel para búsqueda, reservas y letras de canciones.
+Aplicación web para buscar videos de música, recetas, tutoriales y otros temas en YouTube, además de descubrir música de fuentes abiertas. La PWA guarda el historial localmente y ofrece reproducción continua; se construye como sitio estático (HTML/CSS/JS) con funciones serverless en Vercel.
 
 🔗 **Sitio en producción:** https://nowar-rose.vercel.app
 

@@ -59,7 +59,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!api/|assets/|favicon.ico|manifest.webmanifest|sw.js|styles.css|styles-secondary.css|script.js).*)",
+      "source": "/((?!api/|assets/|favicon.ico|manifest.webmanifest|robots.txt|sitemap.xml|sw.js|styles.css|styles-secondary.css|script.js).*)",
       "destination": "/index.html"
     }
   ]

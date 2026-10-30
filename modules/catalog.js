@@ -1222,11 +1222,16 @@ function renderHomeWelcome(lastViewed, mount = document.getElementById('dynamicS
     const welcome = document.createElement('button');
     welcome.type = 'button';
     welcome.className = 'home-welcome';
+    const artwork = lastViewed && hasValidArtwork(lastViewed)
+        ? `<span class="home-welcome-backdrop" aria-hidden="true"><img src="${escapeHtml(lastViewed.img)}" alt="" decoding="async"></span>`
+        : '';
+    const logo = `<img class="home-welcome-logo" src="assets/nowarfy-logo-red-solid.png" alt="YouToo®" width="38" height="38" decoding="async">`;
     if (lastViewed?.title) {
-        welcome.innerHTML = `<span class="home-welcome-copy"><span class="home-welcome-brandline"><span class="home-welcome-logo"><img class="brand-lockup-mark" src="assets/nowarfy-logo-red-solid.png" alt=""><span class="brand-lockup-text"><strong>YouToo</strong><sup class="brand-registered">®</sup></span></span><span class="home-welcome-kicker">Bienvenido de nuevo</span></span><h1>Seguimos desde donde quedaste</h1></span>${lastViewed.img ? `<img class="home-welcome-art" src="${escapeHtml(lastViewed.img)}" alt="" loading="lazy">` : ''}`;
+        welcome.classList.toggle('has-background', !!artwork);
+        welcome.innerHTML = `${artwork}<span class="home-welcome-copy"><span class="home-welcome-kicker">Bienvenido de nuevo</span><h1>Seguimos desde donde quedaste</h1><p>${escapeHtml(lastViewed.title)}</p></span><span class="home-welcome-brand">${logo}</span>`;
         welcome.addEventListener('click', () => resumeSongFromWelcome(lastViewed, 0));
     } else {
-        welcome.innerHTML = `<span class="home-welcome-copy"><span class="home-welcome-brandline"><span class="home-welcome-logo"><img class="brand-lockup-mark" src="assets/nowarfy-logo-red-solid.png" alt=""><span class="brand-lockup-text"><strong>YouToo</strong><sup class="brand-registered">®</sup></span></span><span class="home-welcome-kicker">Bienvenido a YouToo</span></span><h1>Descubrí música real, sin límites</h1></span>`;
+        welcome.innerHTML = `<span class="home-welcome-copy"><span class="home-welcome-kicker">Bienvenido a YouToo®</span><h1>Buscá videos, música, recetas y más</h1></span><span class="home-welcome-brand">${logo}</span>`;
     }
     mount.appendChild(welcome);
     return welcome;

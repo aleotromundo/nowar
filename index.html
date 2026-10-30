@@ -3,8 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>YouToo®</title>
+    <title>YouToo® | Buscá videos, música, recetas y más</title>
+    <meta name="description" content="Buscá música, videos, recetas, tutoriales y más en YouToo®. Descubrí contenido de YouTube y fuentes abiertas, y retomá tus búsquedas desde el historial.">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="author" content="YouToo®">
     <meta name="theme-color" content="#ef4444">
+    <link rel="canonical" href="https://nowar-rose.vercel.app/">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_AR">
+    <meta property="og:site_name" content="YouToo®">
+    <meta property="og:title" content="YouToo® | Buscá videos, música, recetas y más">
+    <meta property="og:description" content="Buscá música, videos, recetas, tutoriales y más. Descubrí contenido de YouTube y fuentes abiertas, y retomá tus búsquedas desde el historial.">
+    <meta property="og:url" content="https://nowar-rose.vercel.app/">
+    <meta property="og:image" content="https://nowar-rose.vercel.app/assets/nowarfy-logo-red-solid.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="577">
+    <meta property="og:image:height" content="561">
+    <meta property="og:image:alt" content="Logo oficial de YouToo®: un ave blanca con una nota musical sobre un disco rojo">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="YouToo® | Buscá videos, música, recetas y más">
+    <meta name="twitter:description" content="Buscá música, videos, recetas, tutoriales y más. Descubrí y retomá contenido desde tu historial.">
+    <meta name="twitter:image" content="https://nowar-rose.vercel.app/assets/nowarfy-logo-red-solid.png">
+    <meta name="twitter:image:alt" content="Logo oficial de YouToo®">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://nowar-rose.vercel.app/#organization",
+          "name": "YouToo®",
+          "url": "https://nowar-rose.vercel.app/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://nowar-rose.vercel.app/assets/nowarfy-logo-red-solid.png",
+            "width": 577,
+            "height": 561
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://nowar-rose.vercel.app/#website",
+          "url": "https://nowar-rose.vercel.app/",
+          "name": "YouToo®",
+          "description": "Buscá música, videos, recetas, tutoriales y más en YouToo®. Descubrí contenido de YouTube y fuentes abiertas.",
+          "inLanguage": "es-AR",
+          "publisher": { "@id": "https://nowar-rose.vercel.app/#organization" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://nowar-rose.vercel.app/#application",
+          "name": "YouToo®",
+          "url": "https://nowar-rose.vercel.app/",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "Web",
+          "image": "https://nowar-rose.vercel.app/assets/nowarfy-logo-red-solid.png",
+          "description": "Aplicación web para buscar videos, música, recetas, tutoriales y otros contenidos, con historial y reproducción continua.",
+          "publisher": { "@id": "https://nowar-rose.vercel.app/#organization" }
+        }
+      ]
+    }
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -99,13 +158,20 @@
             <div class="search-container">
                 <div class="search-wrap">
                     <i class="fas fa-magnifying-glass"></i>
-                    <input type="text" class="search-input" id="searchInput" name="nowarfy-search" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Buscá videos, artistas o canciones..." oninput="handleSearchInput()" onkeydown="handleSearchKeydown(event)" aria-label="Buscar videos, artistas o canciones">
+                    <input type="text" class="search-input" id="searchInput" name="nowarfy-search" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Buscá música, videos, recetas y más..." oninput="handleSearchInput()" onkeydown="handleSearchKeydown(event)" aria-label="Buscar música, videos, recetas y más">
                     <button type="button" class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Limpiar búsqueda"><i class="fas fa-xmark"></i></button>
                 </div>
             </div>
             <nav class="taste-rail" aria-label="Categorías para descubrir">
                 <div class="taste-chips" id="tasteChips"></div>
             </nav>
+            <noscript>
+                <section aria-label="Sobre YouToo">
+                    <h1>Buscá videos, música, recetas y más</h1>
+                    <p>YouToo® te ayuda a descubrir videos de YouTube y contenido de fuentes abiertas. Activá JavaScript para buscar, reproducir contenido y guardar tu historial.</p>
+                    <a href="/precios.html">Conocé las funciones de YouToo®</a>
+                </section>
+            </noscript>
 
             <section class="video-stage" id="videoStage" aria-live="polite" aria-label="Reproductor de video">
                 <div class="video-stage-layout">
