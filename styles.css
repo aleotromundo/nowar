@@ -177,7 +177,7 @@
         .library-rail { display: flex; gap: 12px; overflow-x: auto; padding: 3px 2px 16px; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--accent) rgba(255,255,255,.08); }
         .library-rail::-webkit-scrollbar { height: 7px; }
         .library-rail::-webkit-scrollbar-thumb { border-radius: 20px; background: rgba(167,139,250,.65); }
-        .library-rail .library-card { flex: 0 0 calc((100% - 36px) / 4); min-width: 170px; scroll-snap-align: start; min-height: 120px; }
+        .library-rail .library-card { flex: 0 0 calc((100% - 36px) / 4); min-width: 170px; scroll-snap-align: start; min-height: 180px; }
         .featured-rail { position: relative; isolation: isolate; overflow: hidden; margin-top: 18px; padding: 17px 15px 8px; border: 1px solid rgba(190,188,255,.15); border-radius: 20px; box-shadow: 0 20px 44px rgba(0,0,0,.16); }
         .featured-rail::before { content: ''; position: absolute; z-index: -1; width: 250px; height: 250px; border-radius: 50%; right: -92px; top: -138px; background: radial-gradient(circle, rgba(255,255,255,.17), transparent 68%); filter: blur(1px); animation: featured-ambient-flow 16s ease-in-out infinite; pointer-events: none; }
         .featured-rail::after { content: ''; position: absolute; z-index: -1; inset: 0; opacity: .34; background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.06) 0 1px, transparent 1px 12px); pointer-events: none; }
