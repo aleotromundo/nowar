@@ -344,6 +344,12 @@
         .card-favorite:hover { transform: scale(1.08); border-color: #ff7b90; color: #ff9cad; }
         .card-favorite.active { border-color: #ff7b90; color: #ff7b90; background: rgba(65,17,30,.86); }
 
+        /* Carrusel: botones compactos para que no se apretujen en miniaturas angostas */
+        .library-card .card-actions { left: 8px; right: 8px; bottom: 8px; gap: 6px; }
+        .library-card .card-addq { width: 38px; min-height: 38px; padding: 0; border-radius: 50%; }
+        .library-card .card-addq span { display: none; }
+        .library-card .play-btn { width: 40px; height: 40px; font-size: .95rem; }
+
         /* Loader / empty state */
         .loader-wrap { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 60px 20px; color: var(--text-gray); }
         .loader-spinner {
@@ -622,7 +628,7 @@
         body.mode-youtoo .card-img-wrap::after { content: 'YouToo'; position: absolute; right: 8px; bottom: 8px; z-index: 1; padding: 3px 6px; border-radius: 5px; background: rgba(8,8,18,.73); color: #d9d7ff; font-size: .56rem; font-weight: 800; letter-spacing: .04em; }
         body.mode-youtoo .card-title { font-size: .9rem; padding: 0 2px; }
         body.mode-youtoo .card-desc { padding: 0 2px; color: #9a9bb8; }
-        body.mode-youtoo .play-btn { right: 12px; bottom: 68px; width: 43px; height: 43px; background: linear-gradient(135deg, #1ed760, #29b6f6); }
+        body.mode-youtoo .play-btn { width: 40px; height: 40px; background: linear-gradient(135deg, #1ed760, #29b6f6); }
         body.mode-youtoo .player-bar { background: rgba(16,16,31,.94); }
         body.mode-youtoo .volume-slider { background: linear-gradient(to right, #1db954 80%, #48524f 80%); }
         .youtoo-hero { position: relative; overflow: hidden; margin: 3px 0 22px; padding: 18px 0 3px; }
