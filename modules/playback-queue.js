@@ -280,7 +280,12 @@ function getCurrentContentLink(song) {
 }
 
 function currentQueueSong() {
-    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer && nowarfyRemoteShadowSong) return nowarfyRemoteShadowSong;
+    // En un control, la pista mostrada es la que llega del reproductor principal.
+    // Con "Sonar también acá" activo este equipo carga audio de verdad, así que
+    // manda la cola local: las guardas de carga comparan `_qid` contra ella y el
+    // shadow (que no siempre trae ese id) las haría fallar.
+    const mirroringHere = typeof nowarfyMirrorEnabled !== 'undefined' && nowarfyMirrorEnabled;
+    if (!mirroringHere && nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer && nowarfyRemoteShadowSong) return nowarfyRemoteShadowSong;
     return currentIndex >= 0 ? queue[currentIndex] || nowarfyRemoteShadowSong : nowarfyRemoteShadowSong;
 }
 
