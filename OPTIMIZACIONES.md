@@ -2,8 +2,8 @@
 
 > Registro centralizado de mejoras de rendimiento, experiencia de carga y mantenibilidad. Este documento se actualiza junto con el código para conservar el contexto de cada cambio.
 
-**Última actualización:** 2026-10-22<br>
-**Rama de trabajo:** `chore/ux-pairing`<br>
+**Última actualización:** 2026-10-29<br>
+**Rama de trabajo:** `main`<br>
 **Estado general:** navegación y pairing QR implementados; optimizaciones profundas de carga y arquitectura pendientes.
 
 ## Cómo leer este registro
@@ -16,7 +16,7 @@ La prioridad **P0** corresponde a mejoras de impacto alto y bajo riesgo. **P1** 
 
 | Estado | Cantidad | Significado |
 |---|---:|---|
-| Aplicada | 13 | Ya está implementada en el repositorio. |
+| Aplicada | 16 | Ya está implementada en el repositorio. |
 | En validación | 1 | Está implementada y necesita medición real. |
 | Planificada | 8 | Está registrada para una siguiente iteración. |
 | Descartada | 0 | No hay propuestas descartadas actualmente. |
@@ -26,7 +26,7 @@ La prioridad **P0** corresponde a mejoras de impacto alto y bajo riesgo. **P1** 
 | ID | Prioridad | Optimización | Área | Evidencia o ubicación | Estado |
 |---|---|---|---|---|---|
 | OPT-001 | P0 | Evitar búsquedas remotas durante el arranque de la portada | Red / carga inicial | `loadHomeCatalogSources()` y flujo de búsqueda en `script.js` | Aplicada |
-| OPT-002 | P0 | Cachear y actualizar el shell de la PWA con Service Worker | Caché / disponibilidad | `sw.js`, `CACHE_NAME = 'nowarfy-shell-v51'` | Aplicada |
+| OPT-002 | P0 | Cachear y actualizar el shell de la PWA con Service Worker | Caché / disponibilidad | `sw.js`, `CACHE_NAME = 'nowarfy-shell-v52'` | Aplicada |
 | OPT-003 | P0 | Usar `network-first` para navegación y caché para recursos estáticos | Caché / despliegue | `sw.js` y headers de `vercel.json` | Aplicada |
 | OPT-004 | P1 | Evitar lecturas duplicadas del estado modular | Estado / persistencia | commits de refactor de estado (`state.js` y `app.js` se retiraron: no se cargaban) | Aplicada |
 | OPT-005 | P1 | Cargar el reproductor de YouTube cuando se necesita | Reproducción / carga inicial | Flujo `loadYouTubeAPI()` en `modules/catalog.js`, invocado por `modules/playback-queue.js` | Aplicada |
@@ -34,6 +34,9 @@ La prioridad **P0** corresponde a mejoras de impacto alto y bajo riesgo. **P1** 
 | OPT-007 | P1 | Añadir pairing QR dinámico y registrar el dispositivo vinculado | Red / experiencia multidispositivo | `buildNowarfyPairingUrl()`, `handleNowarfyPairingLink()` y modal QR | Aplicada |
 | OPT-008 | P0 | Mostrar el estado real de sincronización en vez de un estado estático | UX / sincronización | `updateNowarfyConnectionStatus()` y `data-state` del panel lateral | En validación |
 | OPT-009 | P0 | Diferir el reproductor de YouTube y evitar la descarga secuencial de módulos | Reproducción / carga inicial | `loadYouTubeAPI()` se ejecuta al reproducir; `index.html` precarga módulos en paralelo y muestra una alternativa si el reproductor no carga | Aplicada |
+| OPT-010 | P0 | Llevar la vista al reproductor cuando el usuario elige un video | Móvil / reproducción | `selectSong()` y `startPrebuiltPlaylistPlayback()` pasan `focusVideo: true`; `showVideoStage()` desplaza el escenario con `scroll-margin-top` | Aplicada |
+| OPT-011 | P0 | Alinear el reproductor fijo con la altura real y las safe areas | Móvil / layout | `--player-height` móvil pasa a 138 px y 146 px (≤380 px), `viewport-fit=cover` y `--safe-area-top` en el body | Aplicada |
+| OPT-012 | P1 | Revalidar todas las hojas de estilo del shell en el Service Worker | Caché / despliegue | `sw.js` aplica stale-while-revalidate a `styles-secondary.css`, `styles-classic.css` y `styles-custom-playlists.css`; `vercel.json` declara sus headers | Aplicada |
 
 ## Mejoras planificadas
 
@@ -90,6 +93,7 @@ Cada optimización debe verificarse con una comparación antes/después. Como m�
 
 | Fecha | Cambio | Responsable |
 |---|---|---|
+| 2026-10-29 | Se corrigió el video invisible en móvil (scroll al escenario al elegir una tarjeta), se alineó `--player-height` con el reproductor real, se habilitaron safe areas con `viewport-fit=cover` y se forzó la revalidación de todas las hojas de estilo en el Service Worker | Copilot |
 | 2026-10-27 | Se carga Supabase bajo demanda (o al restaurar una sesión), se difirió la hoja de la vista clásica, la navegación de la PWA vuelve a la caché tras 5 s sin red, se hizo visible el estado de arranque con reintento ante errores de módulo y se unificaron los mensajes de carga de catálogo y cuenta | Copilot |
 | 2026-10-22 | Implementación de OPT-009: carga diferida del IFrame API de YouTube, alternativa visible ante fallo o timeout de carga y precarga paralela de módulos | Copilot |
 | 2026-09-21 | Implementación de OPT-108: caché de respuestas de YouTube, Openverse y Commons en memoria y `localStorage`, con TTL de 5, 15 y 30 minutos respectivamente | Manus AI |

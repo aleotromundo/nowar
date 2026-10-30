@@ -1,10 +1,19 @@
-const CACHE_NAME = 'nowarfy-shell-v51';
+const CACHE_NAME = 'nowarfy-shell-v52';
 const NAVIGATION_TIMEOUT_MS = 5000;
+// Recursos que se sirven desde caché al instante y se revalidan en segundo plano.
+const REVALIDATED_PATHS = new Set([
+  '/script.js',
+  '/styles.css',
+  '/styles-secondary.css',
+  '/styles-classic.css',
+  '/styles-custom-playlists.css'
+]);
 const APP_SHELL = [
   '/',
   '/index.html',
   '/styles.css',
   '/styles-secondary.css',
+  '/styles-classic.css',
   '/styles-custom-playlists.css',
   '/script.js',
   '/modules/storage.js',
@@ -80,10 +89,10 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // script.js, los módulos y styles.css: stale-while-revalidate. Se sirven al instante desde cache y se
-  // revalidan en segundo plano (sin pasar por la cache HTTP), asi que un deploy nuevo llega
-  // en la visita siguiente aunque no se suba CACHE_NAME.
-  if (url.pathname === '/script.js' || url.pathname === '/styles.css' || url.pathname.startsWith('/modules/')) {
+  // script.js, los modulos, las hojas de estilo y styles.css: stale-while-revalidate. Se sirven al instante
+  // desde cache y se revalidan en segundo plano (sin pasar por la cache HTTP), asi que un deploy nuevo
+  // llega en la visita siguiente aunque no se suba CACHE_NAME.
+  if (REVALIDATED_PATHS.has(url.pathname) || url.pathname.startsWith('/modules/')) {
     event.respondWith((async () => {
       const cached = await caches.match(request);
       const refresh = fetch(request, { cache: 'no-cache' })

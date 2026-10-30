@@ -21,7 +21,16 @@
       ]
     },
     {
-      "source": "/(styles.css|styles-secondary.css|script.js|manifest.webmanifest|favicon.ico)",
+      "source": "/(styles.css|styles-secondary.css|styles-classic.css|styles-custom-playlists.css|script.js|manifest.webmanifest|favicon.ico)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/modules/(.*)",
       "headers": [
         {
           "key": "Cache-Control",

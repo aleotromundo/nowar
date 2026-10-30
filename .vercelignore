@@ -1,0 +1,9 @@
+# Carpetas de trabajo y respaldos que no deben publicarse en el sitio.
+_revisar/
+_candidatos-borrar/
+.github/
+.vercelignore
+
+# Scripts de verificación local y plantilla de variables.
+verify_*.py
+.env.example

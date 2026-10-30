@@ -207,8 +207,19 @@ function openVideoStageChannel() {
 let videoStageFocusScrollUntil = 0;
 
 function focusVideoStage(stage) {
+    if (!stage) return;
+    // Si el escenario ya está completo a la vista no movemos la página:
+    // evita saltos molestos en escritorio o al cambiar de video desde el propio escenario.
+    const rect = stage.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top >= 0 && rect.bottom <= viewportHeight) return;
+    // Bloquea el autominimizado por "out-of-view" mientras dura el desplazamiento.
     videoStageFocusScrollUntil = Date.now() + 1200;
-    window.requestAnimationFrame(() => stage.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    const reduceMotion = typeof window.matchMedia === 'function'
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.requestAnimationFrame(() => {
+        stage.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
 }
 
 function updateVideoStageToggle(isVisible) {

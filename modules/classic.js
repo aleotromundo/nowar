@@ -12,6 +12,17 @@
     const audioElements = () => [$('audio-element'), $('audio-element-next')].filter(Boolean);
 
     // --- Panel on/off ---
+    let syncTimer = null;
+    function startSyncTimer() {
+        if (syncTimer) return;
+        syncTimer = window.setInterval(syncDisplay, 500);
+    }
+    function stopSyncTimer() {
+        if (!syncTimer) return;
+        window.clearInterval(syncTimer);
+        syncTimer = null;
+    }
+
     function setClassic(on) {
         document.body.classList.toggle('mode-classic', on);
         $('classicPanel').hidden = !on;
@@ -21,6 +32,9 @@
         if (on) {
             renderPlaylist();
             syncDisplay();
+            startSyncTimer();
+        } else {
+            stopSyncTimer();
         }
     }
 
@@ -203,7 +217,6 @@
         window.addEventListener('nowarfy:queue-updated', () => {
             if (!$('classicPanel').hidden) renderPlaylist();
         });
-        setInterval(syncDisplay, 500);
         try {
             if (localStorage.getItem(STORAGE_KEY) === '1') setClassic(true);
         } catch (_) {}

@@ -2135,7 +2135,7 @@ function startPrebuiltPlaylistPlayback(playlist, tracks, pageInfo = {}, nextPage
     persistQueue();
     renderContinuousPlaybackControls();
     renderQueue();
-    playQueueAt(0, { sourceIdx: tracks[0].sourceIndex ?? 0, playlistId: String(playlist.url), forceNewYouTubePlayer: true });
+    playQueueAt(0, { sourceIdx: tracks[0].sourceIndex ?? 0, playlistId: String(playlist.url), forceNewYouTubePlayer: true, focusVideo: true });
     showToast(`Reproduciendo playlist · ${queue.length} videos en orden`, 'fa-list-music');
     return true;
 }

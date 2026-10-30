@@ -14,6 +14,7 @@
             --border-soft: rgba(255, 255, 255, 0.06);
             --player-height: 90px;
             --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-area-top: env(safe-area-inset-top, 0px);
             --ease: cubic-bezier(.2, .8, .2, 1);
         }
 
@@ -546,7 +547,8 @@
         }
         /* Reproductor mobile: información arriba, controles y progreso abajo, sin apretar botones. */
         @media (max-width: 768px) {
-            :root { --player-height: 124px; }
+            :root { --player-height: 138px; }
+            body { padding-top: var(--safe-area-top); }
             .content-area { padding-bottom: calc(var(--player-height) + 34px); }
             .player-bar { height: var(--player-height); min-height: var(--player-height); padding: 9px 12px 10px; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 48px 1fr; grid-template-areas: "info utils" "center center"; gap: 4px 10px; align-items: center; }
             .player-left { grid-area: info; width: auto; min-width: 0; }
@@ -568,7 +570,7 @@
             .queue-list { padding: 4px 10px 10px; }
         }
         @media (max-width: 480px) {
-            :root { --player-height: 132px; }
+            :root { --player-height: 138px; }
             .player-bar { padding-left: 10px; padding-right: 10px; grid-template-rows: 45px 1fr; }
             .player-cover { width: 38px; height: 38px; margin-right: 8px; }
             .track-name { font-size: .75rem; }
@@ -643,7 +645,7 @@
         .discovery-action strong, .discovery-action span { position: relative; z-index: 1; display: block; }
         .discovery-action strong { font-size: .92rem; }
         .discovery-action span { margin-top: 5px; color: #a9a9c2; font-size: .73rem; line-height: 1.35; }
-        .video-stage { display: none; margin: 2px 0 24px; border: 1px solid rgba(190,188,255,.18); border-radius: 17px; background: linear-gradient(145deg, rgba(25,26,48,.96), rgba(13,14,28,.96)); overflow: hidden; box-shadow: 0 18px 38px rgba(0,0,0,.2); }
+        .video-stage { display: none; margin: 2px 0 24px; border: 1px solid rgba(190,188,255,.18); border-radius: 17px; background: linear-gradient(145deg, rgba(25,26,48,.96), rgba(13,14,28,.96)); overflow: hidden; box-shadow: 0 18px 38px rgba(0,0,0,.2); scroll-margin-top: 84px; }
         .video-stage.visible { display: block; }
         .video-frame { position: relative; min-height: 270px; aspect-ratio: 16 / 9; background: #07070e; }
         .video-frame-poster { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; object-fit: cover; opacity: 0; pointer-events: none; transition: opacity .18s var(--ease); }
@@ -809,6 +811,7 @@
             .video-stage-layout { grid-template-columns: 1fr; }
             .video-frame { min-height: 205px; }
             .video-stage-info { padding: 15px; }
+            .video-stage { scroll-margin-top: 70px; }
         }
         /* --- Pulido visual YouToo: profundidad, atmósfera y superficies suaves --- */
         body.mode-youtoo {
@@ -971,6 +974,7 @@
             .nowarfy-auth-dialog, .nowarfy-qr-dialog { max-height: calc(100dvh - 24px); overflow-y: auto; }
         }
         @media (max-width: 380px) {
+            :root { --player-height: 146px; }
             body.mode-youtoo .sidebar { padding-left: 8px; padding-right: 8px; }
             body.mode-youtoo .sidebar .brand-youtoo { font-size: .9rem; }
             body.mode-youtoo .sidebar .brand-lockup-mark { width: 34px; height: 34px; flex-basis: 34px; }

@@ -171,7 +171,9 @@ async function selectSong(song, sourceIdx) {
     queueRound = 0;
     persistQueue();
     renderQueue();
-    playQueueAt(0, { sourceIdx });
+    // focusVideo: al tocar una tarjeta llevamos la vista al escenario.
+    // En móvil el grid queda debajo y el video se abría fuera de pantalla.
+    playQueueAt(0, { sourceIdx, focusVideo: true });
     void reserveDiscoveredCandidates([song], { context: 'radio', seed: song });
     growQueueIfNeeded(true);
 }
@@ -189,7 +191,7 @@ async function resumeSongFromWelcome(song, sourceIdx = 0) {
     if (!matches) { selectSong(song, sourceIdx); return; }
     const existingIndex = queue.findIndex(item => String(item.url) === String(song.url) && item.type === song.type);
     if (existingIndex >= 0) {
-        playQueueAt(existingIndex, { sourceIdx, resumeSession: { ...resume, wasPlaying: true }, restoreMinimized: !!resume.minimized });
+        playQueueAt(existingIndex, { sourceIdx, resumeSession: { ...resume, wasPlaying: true }, restoreMinimized: !!resume.minimized, focusVideo: !resume.minimized });
         return;
     }
     const q = withQid(song);
@@ -596,7 +598,7 @@ function playQueueAt(idx, options = {}) {
         freeVideoEl.pause();
         freeVideoEl.removeAttribute('src');
         freeVideoEl.hidden = true;
-        showVideoStage(song);
+        showVideoStage(song, { focus: !!options.focusVideo });
         if (reuseYouTubePlayer) {
             ytPlaybackIntent = !deferYTAutoplay && resumeSession?.wasPlaying !== false;
             const startSeconds = resumeSession && Number(resumeSession.position) > 0 ? Number(resumeSession.position) : 0;
@@ -621,7 +623,7 @@ function playQueueAt(idx, options = {}) {
         }
     } else if (song.type === 'freevideo') {
         document.getElementById('yt-player-container').innerHTML = '';
-        showVideoStage(song);
+        showVideoStage(song, { focus: !!options.focusVideo });
         freeVideoEl.hidden = false;
         activeAudioEl = freeVideoEl;
         freeVideoEl.src = song.url;
