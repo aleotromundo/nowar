@@ -1,120 +1,190 @@
-/* styles-modern.css — capa estética 2026 (liquid glass + bento + micro-interacciones).
-   Se carga después de styles.css, por lo que sobrescribe sin tocar la lógica. */
+/* styles-modern.css — capa estética 2026: minimalista + colores pastel.
+   Se carga después de styles.css; sobrescribe sin tocar la lógica. */
 :root{
-  --bg-black:#07080b;
-  --bg-dark:#0b0d12;
-  --bg-card:rgba(16,19,24,.55);
-  --bg-hover:rgba(246,244,239,.04);
-  --text-white:#f6f4ef;
-  --text-gray:#9a978f;
-  --text-dim:#6b6860;
-  --accent:#e02531;
-  --accent-hover:#ff3a47;
-  --accent-glow:rgba(224,37,49,.45);
-  --accent-2:#22d3a5;
-  --border-soft:rgba(246,244,239,.08);
-  --border-strong:rgba(246,244,239,.16);
+  --bg-black:#faf8f5;
+  --bg-dark:#f7f5f1;
+  --bg-card:rgba(255,255,255,.72);
+  --bg-hover:rgba(120,110,140,.06);
+  --text-white:#1c1c22;
+  --text-gray:#6e6e78;
+  --text-dim:#9a9aa4;
+  --accent:#d98a9a;
+  --accent-hover:#e89aab;
+  --accent-glow:rgba(217,138,154,.35);
+  --accent-2:#8ecfc0;
+  --accent-2-glow:rgba(142,207,192,.3);
+  --border-soft:rgba(28,28,34,.07);
+  --border-strong:rgba(28,28,34,.14);
   --ease:cubic-bezier(.2,.8,.2,1);
-  --radius-sm:10px;
-  --radius-md:16px;
-  --radius-lg:22px;
-  --glass:rgba(16,19,24,.55);
-  --glass-strong:rgba(10,12,16,.78);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --radius-xs:8px;
+  --radius-sm:12px;
+  --radius-md:18px;
+  --radius-lg:26px;
+  --glass:rgba(255,255,255,.62);
+  --glass-strong:rgba(255,255,255,.82);
+  --shadow-sm:0 2px 8px -2px rgba(40,30,50,.08);
+  --shadow-md:0 8px 24px -8px rgba(40,30,50,.12);
+  --shadow-lg:0 20px 50px -20px rgba(40,30,50,.18);
+  --shadow-glow:0 0 30px -10px var(--accent-glow);
 }
 
-/* ambient background */
+/* ---------- fondo suave ---------- */
 body.mode-youtoo{
   background:
-    radial-gradient(60% 50% at 10% -10%,rgba(224,37,49,.18),transparent 60%),
-    radial-gradient(45% 45% at 95% 0%,rgba(34,211,165,.12),transparent 65%),
+    radial-gradient(70% 50% at 12% -5%,rgba(217,138,154,.18),transparent 60%),
+    radial-gradient(50% 50% at 92% 0%,rgba(142,207,192,.14),transparent 65%),
     var(--bg-dark);
+  background-attachment:fixed;
+  color:var(--text-white);
 }
-body.mode-youtoo::before{opacity:.035}
+body.mode-youtoo::before{opacity:.012;mix-blend-mode:multiply}
+body.mode-youtoo::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;
+  background-image:
+    radial-gradient(circle at 20% 30%,rgba(217,138,154,.06) 0,transparent 40%),
+    radial-gradient(circle at 80% 70%,rgba(142,207,192,.06) 0,transparent 40%);
+}
 
-/* glass surfaces */
+/* ---------- superficies glass pastel ---------- */
 body.mode-youtoo .sidebar,
 body.mode-youtoo .nowarfy-nav-groups,
 body.mode-youtoo .queue-panel,
-body.mode-youtoo .player-bar{
-  backdrop-filter:blur(22px) saturate(1.25);
-  -webkit-backdrop-filter:blur(22px) saturate(1.25);
-  background:var(--glass-strong);
-  border-color:var(--border-soft);
+body.mode-youtoo .player-bar,
+body.mode-youtoo .classic-panel{
+  backdrop-filter:blur(20px) saturate(1.1);
+  -webkit-backdrop-filter:blur(20px) saturate(1.1);
 }
 body.mode-youtoo .player-bar{
-  box-shadow:0 -1px 0 var(--border-soft),0 -24px 60px -24px rgba(0,0,0,.6);
+  background:var(--glass-strong);
+  border-top:1px solid var(--border-soft);
+  box-shadow:0 -1px 0 var(--border-soft),0 -20px 50px -20px rgba(40,30,50,.12);
+  position:relative;z-index:10;
+}
+body.mode-youtoo .player-bar::before{
+  background:linear-gradient(90deg,transparent,var(--accent-glow),transparent);
+  opacity:.6;
 }
 body.mode-youtoo .sidebar{
+  background:var(--glass-strong);
+  border-right:1px solid var(--border-soft);
   box-shadow:1px 0 0 var(--border-soft);
 }
+body.mode-youtoo .nowarfy-nav-groups{
+  background:rgba(255,255,255,.45);
+  border:1px solid var(--border-soft);
+  border-radius:var(--radius-lg);
+  margin:10px 12px;
+  padding:12px 8px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+}
+body.mode-youtoo .queue-panel{
+  background:var(--glass-strong);
+  border:1px solid var(--border-soft);
+  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow:0 -20px 50px -20px rgba(40,30,50,.15);
+}
 
-/* nav groups & items */
+/* ---------- tipografía ---------- */
+body.mode-youtoo{
+  font-feature-settings:"ss01","cv11";
+  letter-spacing:-.003em;
+}
+body.mode-youtoo h1,body.mode-youtoo h2,body.mode-youtoo h3,
+body.mode-youtoo .section-title,body.mode-youtoo .content-title{
+  letter-spacing:-.015em;
+  font-weight:600;
+  color:var(--text-white);
+}
+body.mode-youtoo .mono,body.mode-youtoo .nowarfy-nav-label{
+  letter-spacing:.2em;
+  color:var(--text-dim);
+}
+
+/* ---------- nav ---------- */
+body.mode-youtoo .nowarfy-nav-label{
+  font-size:10px;
+  margin:14px 12px 8px;
+}
 body.mode-youtoo .nowarfy-nav-group{
-  background:rgba(246,244,239,.02);
+  background:rgba(255,255,255,.35);
   border:1px solid var(--border-soft);
   border-radius:var(--radius-md);
   margin:8px 10px;
-  padding:10px 8px;
-  transition:background .25s var(--ease),border-color .25s var(--ease);
+  padding:10px 6px;
+  transition:background .25s var(--ease),border-color .25s var(--ease),transform .25s var(--ease);
 }
 body.mode-youtoo .nowarfy-nav-group:hover{
-  background:rgba(246,244,239,.035);
+  background:rgba(255,255,255,.55);
   border-color:var(--border-strong);
 }
-body.mode-youtoo .nowarfy-nav-label{
-  font-family:var(--mono, "JetBrains Mono", monospace);
-  letter-spacing:.22em;
-  color:var(--text-dim);
-}
 body.mode-youtoo .nav-links li a,
-body.mode-youtoo .nav-links button{
+body.mode-youtoo .nav-links button,
+body.mode-youtoo .nowarfy-nav-group button{
   border-radius:var(--radius-sm);
   transition:background .2s var(--ease),color .2s var(--ease),transform .2s var(--ease);
+  color:var(--text-gray);
 }
 body.mode-youtoo .nav-links li a:hover,
 body.mode-youtoo .nav-links button:hover{
-  background:rgba(246,244,239,.06);
+  background:rgba(217,138,154,.1);
+  color:var(--text-white);
   transform:translateX(2px);
 }
 body.mode-youtoo .nav-links li.active a,
 body.mode-youtoo .nav-links li.active button{
-  background:linear-gradient(90deg,rgba(224,37,49,.18),transparent);
+  background:linear-gradient(90deg,rgba(217,138,154,.18),transparent);
   color:var(--text-white);
-  border-left:2px solid var(--accent);
+  box-shadow:inset 2px 0 0 var(--accent);
 }
 
-/* buttons */
+/* ---------- buttons ---------- */
 body.mode-youtoo .btn-control,
 body.mode-youtoo .btn-play,
-body.mode-youtoo #queueToggleBtn{
+body.mode-youtoo #queueToggleBtn,
+body.mode-youtoo .nowarfy-mobile-action{
   border-radius:50%;
-  transition:transform .2s var(--ease),background .2s var(--ease),box-shadow .2s var(--ease);
+  transition:transform .22s var(--ease),background .22s,box-shadow .22s,border-color .22s;
+  background:rgba(255,255,255,.6);
+  border:1px solid var(--border-soft);
+  color:var(--text-gray);
 }
 body.mode-youtoo .btn-control:hover,
-body.mode-youtoo .btn-play:hover{
-  transform:translateY(-2px) scale(1.04);
+body.mode-youtoo .btn-play:hover,
+body.mode-youtoo #queueToggleBtn:hover{
+  transform:translateY(-2px) scale(1.05);
+  background:#fff;
+  color:var(--text-white);
+  box-shadow:var(--shadow-md);
 }
 body.mode-youtoo .btn-play{
-  background:var(--accent);
-  box-shadow:0 8px 24px -8px var(--accent-glow);
+  background:linear-gradient(135deg,var(--accent),var(--accent-hover));
+  color:#fff;
+  border:none;
+  box-shadow:var(--shadow-glow);
 }
 body.mode-youtoo .btn-play:hover{
-  background:var(--accent-hover);
-  box-shadow:0 12px 28px -8px var(--accent-glow);
+  background:linear-gradient(135deg,var(--accent-hover),var(--accent));
+  box-shadow:0 10px 28px -8px var(--accent-glow);
 }
+body.mode-youtoo .btn-control:active,
+body.mode-youtoo .btn-play:active{transform:scale(.92)}
 
-/* cards */
+/* ---------- cards ---------- */
 body.mode-youtoo .library-card,
 body.mode-youtoo .video-card,
 body.mode-youtoo .playlist-card,
-body.mode-youtoo .home-card{
+body.mode-youtoo .home-card,
+body.mode-youtoo .search-result-card,
+body.mode-youtoo .radio-card{
   border-radius:var(--radius-md);
   border:1px solid var(--border-soft);
   background:var(--glass);
   backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
-  transition:transform .3s var(--ease),border-color .3s,box-shadow .3s;
+  transition:transform .3s var(--ease-out),border-color .3s,box-shadow .3s,background .3s;
   overflow:hidden;
+  box-shadow:var(--shadow-sm);
 }
 body.mode-youtoo .library-card:hover,
 body.mode-youtoo .video-card:hover,
@@ -122,82 +192,140 @@ body.mode-youtoo .playlist-card:hover,
 body.mode-youtoo .home-card:hover{
   transform:translateY(-4px);
   border-color:var(--border-strong);
-  box-shadow:0 20px 40px -20px rgba(0,0,0,.6);
+  box-shadow:var(--shadow-lg);
+  background:rgba(255,255,255,.85);
 }
 
-/* inputs / search */
+/* ---------- inputs / search ---------- */
 body.mode-youtoo .search-container,
 body.mode-youtoo input[type="search"],
-body.mode-youtoo input[type="text"]{
+body.mode-youtoo input[type="text"],
+body.mode-youtoo .search-input{
   border-radius:var(--radius-md);
-  background:rgba(246,244,239,.04);
+  background:rgba(255,255,255,.6);
   border:1px solid var(--border-soft);
   transition:border-color .2s,background .2s,box-shadow .2s;
+  color:var(--text-white);
 }
 body.mode-youtoo .search-container:focus-within,
 body.mode-youtoo input:focus{
   border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(224,37,49,.18);
-  background:rgba(246,244,239,.06);
+  box-shadow:0 0 0 3px rgba(217,138,154,.18),var(--shadow-sm);
+  background:#fff;
 }
 
-/* queue panel */
-body.mode-youtoo .queue-panel{
-  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
-  box-shadow:0 -24px 60px -20px rgba(0,0,0,.7);
-}
-
-/* modals / dialogs */
+/* ---------- modals / dialogs ---------- */
 body.mode-youtoo .nowarfy-auth-dialog,
 body.mode-youtoo .nowarfy-qr-dialog,
-body.mode-youtoo .nowarfy-device-dock-panel{
+body.mode-youtoo .nowarfy-device-dock-panel,
+body.mode-youtoo .modal,
+body.mode-youtoo .dialog{
   border-radius:var(--radius-lg);
   background:var(--glass-strong);
   backdrop-filter:blur(24px);
   -webkit-backdrop-filter:blur(24px);
   border:1px solid var(--border-strong);
-  box-shadow:0 30px 80px -20px rgba(0,0,0,.8);
+  box-shadow:var(--shadow-lg);
 }
 
-/* dock fab */
+/* ---------- dock fab ---------- */
 body.mode-youtoo .nowarfy-device-dock-fab{
   border-radius:999px;
   background:var(--glass-strong);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
   border:1px solid var(--border-strong);
-  box-shadow:0 12px 32px -12px rgba(0,0,0,.6);
-  transition:transform .2s var(--ease),box-shadow .2s;
+  box-shadow:var(--shadow-md);
+  transition:transform .22s var(--ease),box-shadow .22s;
+  color:var(--text-white);
 }
 body.mode-youtoo .nowarfy-device-dock-fab:hover{
-  transform:translateY(-2px);
-  box-shadow:0 18px 40px -12px rgba(0,0,0,.7);
+  transform:translateY(-3px);
+  box-shadow:var(--shadow-lg);
 }
 
-/* focus rings */
+/* ---------- focus rings ---------- */
 body.mode-youtoo *:focus-visible{
   outline:2px solid var(--accent-2);
   outline-offset:2px;
-  border-radius:6px;
+  border-radius:var(--radius-xs);
+  box-shadow:0 0 0 4px var(--accent-2-glow);
 }
 
-/* smooth transitions global */
+/* ---------- global transitions ---------- */
 body.mode-youtoo button,
 body.mode-youtoo a,
 body.mode-youtoo .btn-control{
-  transition:transform .2s var(--ease),background .2s var(--ease),color .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease);
+  transition:transform .22s var(--ease),background .22s var(--ease),color .22s var(--ease),box-shadow .22s var(--ease),border-color .22s var(--ease);
 }
 
-/* scrollbar refined */
-body.mode-youtoo ::-webkit-scrollbar{width:8px;height:8px}
+/* ---------- scrollbar ---------- */
+body.mode-youtoo ::-webkit-scrollbar{width:9px;height:9px}
 body.mode-youtoo ::-webkit-scrollbar-track{background:transparent}
-body.mode-youtoo ::-webkit-scrollbar-thumb{background:rgba(246,244,239,.12);border-radius:999px;border:2px solid transparent;background-clip:content-box}
-body.mode-youtoo ::-webkit-scrollbar-thumb:hover{background:rgba(246,244,239,.22);background-clip:content-box}
+body.mode-youtoo ::-webkit-scrollbar-thumb{
+  background:rgba(28,28,34,.12);
+  border-radius:999px;
+  border:2px solid transparent;
+  background-clip:content-box;
+}
+body.mode-youtoo ::-webkit-scrollbar-thumb:hover{
+  background:rgba(28,28,34,.22);
+  background-clip:content-box;
+}
 
-/* ambient artwork background softer */
-body.mode-youtoo .ambient-artwork-background{filter:blur(40px) saturate(1.15);opacity:.18}
+/* ---------- ambient artwork ---------- */
+body.mode-youtoo .ambient-artwork-background{
+  filter:blur(50px) saturate(1.05);
+  opacity:.15;
+}
 
-/* reduced motion */
+/* ---------- progress bar ---------- */
+body.mode-youtoo .prog-fill,body.mode-youtoo #progFill{
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  box-shadow:0 0 10px var(--accent-glow);
+  transition:width .1s linear;
+  border-radius:999px;
+}
+
+/* ---------- selection ---------- */
+body.mode-youtoo ::selection{
+  background:var(--accent);
+  color:#fff;
+}
+
+/* ---------- toasts ---------- */
+body.mode-youtoo .toast,
+body.mode-youtoo .nowarfy-toast{
+  border-radius:var(--radius-md);
+  background:var(--glass-strong);
+  backdrop-filter:blur(18px);
+  border:1px solid var(--border-strong);
+  box-shadow:var(--shadow-lg);
+  color:var(--text-white);
+}
+
+/* ---------- empty states ---------- */
+body.mode-youtoo .empty-state,
+body.mode-youtoo .empty-message{
+  color:var(--text-dim);
+  font-style:italic;
+}
+
+/* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion:reduce){
   body.mode-youtoo *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+
+/* ---------- mouse spotlight ---------- */
+body.mode-youtoo .library-card,
+body.mode-youtoo .video-card,
+body.mode-youtoo .playlist-card,
+body.mode-youtoo .home-card{
+  --mx:50%;--my:50%;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width:768px){
+  body.mode-youtoo .player-bar{padding-bottom:calc(10px + var(--safe-area-bottom,0px))}
+  body.mode-youtoo .nowarfy-device-dock{right:12px;bottom:calc(var(--player-height,90px)+12px+var(--safe-area-bottom,0px))}
 }
