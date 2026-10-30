@@ -42,16 +42,16 @@
         <aside class="sidebar" aria-label="NavegaciÃ³n principal de Nowarfy">
             <div class="logo">
                 <span class="brand-nowarfi">
-                    <img class="brand-nowarfi-mark" src="assets/nowarfy-logo-red-solid.png" width="32" height="32" decoding="async" alt=""> Nowarfy<sup class="brand-registered">Â®</sup>
+                    <img class="brand-nowarfi-mark" src="assets/nowarfy-logo-red-solid.png" width="32" height="32" decoding="async" alt=""> Nowarfy<sup class="brand-registered">®</sup>
                 </span>
                 <button type="button" class="brand-youtoo" onclick="hardResetNowarfy(event)" aria-label="Reiniciar y actualizar Nowarfy" title="Reiniciar y actualizar Nowarfy">
                     <span class="brand-lockup">
                         <img class="brand-lockup-mark" src="assets/nowarfy-logo-red-solid.png" width="32" height="32" decoding="async" alt="">
-                        <span class="brand-lockup-text"><strong>Nowarfy</strong><span>YouToo</span><sup class="brand-registered">Â®</sup></span>
+                        <span class="brand-lockup-text"><strong>Nowarfy</strong><span>YouToo</span><sup class="brand-registered">®</sup></span>
                     </span>
                 </button>
             </div>
-            <button type="button" class="nowarfy-mobile-action nowarfy-mobile-menu-toggle" id="nowarfyMobileMenuToggle" onclick="toggleNowarfyMobileNav()" aria-label="Abrir menÃº" aria-expanded="false"><i class="fas fa-bars"></i><span class="nowarfy-mobile-action-text">MenÃº</span></button>
+            <button type="button" class="nowarfy-mobile-action nowarfy-mobile-menu-toggle" id="nowarfyMobileMenuToggle" onclick="toggleNowarfyMobileNav()" aria-label="Abrir menú" aria-expanded="false"><i class="fas fa-bars"></i><span class="nowarfy-mobile-action-text">Menú</span></button>
             <button type="button" class="nowarfy-mobile-action nowarfy-mobile-account-toggle" onclick="openNowarfyAuth()" aria-label="Abrir cuenta"><i class="fas fa-user"></i><span class="nowarfy-mobile-action-text">Cuenta</span></button>
             
             <div class="nowarfy-nav-groups">
@@ -63,7 +63,7 @@
                         <li data-nav="channels" onclick="showSection('channels')"><i class="fas fa-satellite-dish"></i> <span>Canales</span></li>
                         <li data-nav="playlists" onclick="showSection('playlists')"><i class="fas fa-list-ul"></i> <span>Listas</span></li>
                         <li data-nav="videos" onclick="showSection('videos')"><i class="fas fa-clapperboard"></i> <span>Videos</span></li>
-                        <li data-nav="music" onclick="showSection('music')"><i class="fas fa-headphones"></i> <span>MÃºsica</span></li>
+                        <li data-nav="music" onclick="showSection('music')"><i class="fas fa-headphones"></i> <span>Música</span></li>
                     </ul>
                 </section>
                 <section class="nowarfy-nav-group" aria-label="Tu biblioteca">
@@ -100,7 +100,7 @@
                 <div class="search-wrap">
                     <i class="fas fa-magnifying-glass"></i>
                     <input type="text" class="search-input" id="searchInput" name="nowarfy-search" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="BuscÃ¡ videos, artistas o canciones..." oninput="handleSearchInput()" onkeydown="handleSearchKeydown(event)" aria-label="Buscar videos, artistas o canciones">
-                    <button type="button" class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Limpiar bÃºsqueda"><i class="fas fa-xmark"></i></button>
+                    <button type="button" class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Limpiar búsqueda"><i class="fas fa-xmark"></i></button>
                 </div>
             </div>
             <nav class="taste-rail" aria-label="CategorÃ­as para descubrir">
@@ -154,7 +154,7 @@
                             </div>
                         </div>
                         <div>
-                            <p class="video-stage-note">Datos extraÃ­dos de la ficha pÃºblica del video. Algunos videos pueden estar restringidos por su creador, regiÃ³n o YouTube.</p>
+                            <p class="video-stage-note">Datos extraÃ­dos de la ficha pública del video. Algunos videos pueden estar restringidos por su creador, regiÃ³n o YouTube.</p>
                             <div class="video-stage-actions">
                                 <button type="button" class="video-stage-channel" id="videoStageChannelBtn" onclick="openVideoStageChannel()" hidden><i class="fas fa-satellite-dish"></i> Ver canal</button>
                                 <button type="button" class="video-stage-close video-stage-close-primary" onclick="hideVideoStage(false, { manual: true })" aria-label="Ocultar video y conservar solo el audio"><i class="fas fa-eye-slash"></i><span>Ocultar video</span><small>ahorrar carga visual</small></button>
