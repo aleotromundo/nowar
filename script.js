@@ -31,6 +31,7 @@
             return;
         }
         const script = document.createElement('script');
+        script.charset = 'utf-8';
         let failed = false;
         const fail = () => {
             if (failed) return;

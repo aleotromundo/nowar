@@ -99,7 +99,7 @@
             <div class="search-container">
                 <div class="search-wrap">
                     <i class="fas fa-magnifying-glass"></i>
-                    <input type="text" class="search-input" id="searchInput" name="nowarfy-search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="BuscÃ¡ videos, artistas o canciones..." oninput="handleSearchInput()" onkeydown="handleSearchKeydown(event)" aria-label="Buscar videos, artistas o canciones">
+                    <input type="text" class="search-input" id="searchInput" name="nowarfy-search" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="BuscÃ¡ videos, artistas o canciones..." oninput="handleSearchInput()" onkeydown="handleSearchKeydown(event)" aria-label="Buscar videos, artistas o canciones">
                     <button type="button" class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Limpiar bÃºsqueda"><i class="fas fa-xmark"></i></button>
                 </div>
             </div>
@@ -364,7 +364,7 @@
     <div class="toast-container" id="toastContainer"></div>
 
 
-    <script src="script.js"></script>
+    <script src="script.js" charset="utf-8"></script>
     <script>
       (function(){
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;

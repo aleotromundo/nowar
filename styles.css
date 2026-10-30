@@ -598,7 +598,7 @@
         .brand-lockup-text { display: inline-flex; align-items: baseline; gap: 5px; color: #fff; font: 700 1.08rem/1 'Manrope', sans-serif; letter-spacing: -.045em; }
         .brand-lockup-text strong { color: #fff; font: 800 1em/1 'Sora', sans-serif; letter-spacing: -.065em; }
         .brand-lockup-text span { color: #f3f4f6; font: 700 .72em/1 'Manrope', sans-serif; letter-spacing: -.035em; }
-        .brand-registered { display: inline-block; margin-left: 0; color: rgba(255,255,255,.78); font: 700 .46em/1 'Manrope', sans-serif; letter-spacing: 0; transform: translateY(-.72em); }
+        .brand-registered { display: inline-block; margin-left: 0; color: rgba(255,255,255,.78); font: 700 .46em/1 system-ui, -apple-system, 'Segoe UI', sans-serif; letter-spacing: 0; transform: translateY(-.72em); }
         body.mode-youtoo .brand-youtoo { display: flex; }
         body.mode-youtoo .nav-links li { border-radius: 11px; padding: 11px 13px; }
         body.mode-youtoo .nav-links li.active { background: linear-gradient(90deg, rgba(29,185,84,.2), rgba(41,182,246,.05)); }
