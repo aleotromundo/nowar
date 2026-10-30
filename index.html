@@ -31,7 +31,6 @@
     <link rel="preload" href="styles-secondary.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="styles-secondary.css"></noscript>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="styles-modern.css">
     <link rel="stylesheet" href="styles-custom-playlists.css">
 
 </head>
@@ -100,7 +99,7 @@
             <div class="search-container">
                 <div class="search-wrap">
                     <i class="fas fa-magnifying-glass"></i>
-                    <input type="text" class="search-input" id="searchInput" placeholder="BuscÃ¡ videos, artistas o canciones..." oninput="handleSearchInput()" onkeydown="handleSearchKeydown(event)" aria-label="Buscar videos, artistas o canciones">
+                    <input type="text" class="search-input" id="searchInput" name="nowarfy-search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="BuscÃ¡ videos, artistas o canciones..." oninput="handleSearchInput()" onkeydown="handleSearchKeydown(event)" aria-label="Buscar videos, artistas o canciones">
                     <button type="button" class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Limpiar bÃºsqueda"><i class="fas fa-xmark"></i></button>
                 </div>
             </div>
