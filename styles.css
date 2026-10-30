@@ -174,10 +174,10 @@
         .library-rail-nav { display: inline-grid; width: 29px; height: 29px; place-items: center; border: 1px solid rgba(190,188,255,.2); border-radius: 50%; color: #e9e7ff; background: rgba(255,255,255,.045); cursor: pointer; }
         .library-rail-nav:hover { border-color: rgba(94,234,212,.62); color: #081016; background: #5eead4; }
         .library-rail-nav i { color: inherit; font-size: .7rem; }
-        .library-rail { display: flex; gap: 18px; overflow-x: auto; padding: 3px 2px 16px; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--accent) rgba(255,255,255,.08); }
+        .library-rail { display: flex; gap: 12px; overflow-x: auto; padding: 3px 2px 16px; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--accent) rgba(255,255,255,.08); }
         .library-rail::-webkit-scrollbar { height: 7px; }
         .library-rail::-webkit-scrollbar-thumb { border-radius: 20px; background: rgba(167,139,250,.65); }
-        .library-rail .library-card { flex: 0 0 calc((100% - 72px) / 5); min-width: 170px; scroll-snap-align: start; }
+        .library-rail .library-card { flex: 0 0 calc((100% - 36px) / 4); min-width: 170px; scroll-snap-align: start; aspect-ratio: 16/9; min-height: 0; }
         .featured-rail { position: relative; isolation: isolate; overflow: hidden; margin-top: 18px; padding: 17px 15px 8px; border: 1px solid rgba(190,188,255,.15); border-radius: 20px; box-shadow: 0 20px 44px rgba(0,0,0,.16); }
         .featured-rail::before { content: ''; position: absolute; z-index: -1; width: 250px; height: 250px; border-radius: 50%; right: -92px; top: -138px; background: radial-gradient(circle, rgba(255,255,255,.17), transparent 68%); filter: blur(1px); animation: featured-ambient-flow 16s ease-in-out infinite; pointer-events: none; }
         .featured-rail::after { content: ''; position: absolute; z-index: -1; inset: 0; opacity: .34; background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.06) 0 1px, transparent 1px 12px); pointer-events: none; }
@@ -195,7 +195,7 @@
         .home-top-layout > .home-welcome { margin: 0; min-width: 0; height: 100%; }
         .home-top-layout > .home-history-rail { min-width: 0; margin: 0; align-self: stretch; }
         .home-history-rail-top .library-rail { height: calc(100% - 42px); align-items: stretch; }
-        .home-history-rail-top .library-card { min-height: 168px; }
+        .home-history-rail-top .library-card { min-height: 0; }
         .home-welcome { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(18px, 3vw, 34px); align-items: center; margin: 4px 0 18px; padding: clamp(18px, 3vw, 28px) clamp(18px, 3.2vw, 32px); border: 1px solid rgba(29,185,84,.28); border-radius: 22px; background: radial-gradient(520px 180px at 8% 0%, rgba(29,185,84,.22), transparent 70%), linear-gradient(118deg, rgba(23,54,40,.92), rgba(13,24,25,.88) 68%, rgba(14,48,51,.72)); box-shadow: 0 22px 52px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06); }
         .home-welcome::after { content: ''; position: absolute; width: 260px; height: 260px; right: -88px; top: -142px; border-radius: 50%; background: radial-gradient(circle, rgba(94,234,212,.22), transparent 68%); pointer-events: none; }
         .home-welcome-copy { position: relative; z-index: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
@@ -224,7 +224,7 @@
         @media (max-width: 768px) { .home-resume-rail { display: none; } }
         @keyframes featured-ambient-flow { 0%, 100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(-32px,34px,0) scale(1.13); } }
         @media (prefers-reduced-motion: reduce) { .featured-rail::before { animation: none; } }
-        @media (max-width: 1180px) { .library-rail .library-card { flex-basis: calc((100% - 36px) / 3); } }
+        @media (max-width: 1180px) { .library-rail .library-card { flex-basis: calc((100% - 24px) / 4); } }
         @media (max-width: 700px) { .library-rail .library-card { flex-basis: 74vw; } .library-rail-hint { display: none; } }
         .discovery-intro { max-width: 720px; margin: 10px 0 24px; color: var(--text-gray); font-size: .9rem; line-height: 1.55; }
         .discovery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); gap: 14px; }
