@@ -711,14 +711,8 @@ function playQueueAt(idx, options = {}) {
 function getRadioStyle(seedSong) {
     const explicit = String(seedSong?.genre || '').trim().toLowerCase();
     if (explicit && explicit !== 'unknown') return explicit;
-    const artistName = String(seedSong?.artist || '').trim().toLowerCase();
-    const artistHint = typeof ARTIST_STYLE_HINTS !== 'undefined'
-        ? Object.entries(ARTIST_STYLE_HINTS).find(([artist]) => artistName === artist || artistName.includes(artist))?.[1]
-        : null;
-    if (artistHint) return artistHint;
-    const text = `${seedSong?.title || ''} ${seedSong?.description || ''} ${seedSong?.artist || ''} ${currentMood || ''}`.toLowerCase();
-    const styles = ['heavy metal', 'metalcore', 'nu metal', 'hard rock', 'alternative rock', 'punk rock', 'grunge', 'industrial metal', 'rock', 'metal'];
-    return styles.find(style => text.includes(style)) || (currentMood ? String(currentMood).toLowerCase() : 'rock metal');
+    const historySeed = typeof getTasteSeed === 'function' ? getTasteSeed() : '';
+    return String(currentMood || historySeed || seedSong?.artist || seedSong?.title || 'music').trim().toLowerCase();
 }
 
 async function fetchSameArtistTracks(seedSong, count) {
@@ -737,8 +731,8 @@ async function fetchSameArtistTracks(seedSong, count) {
     return raw.slice(0, count);
 }
 
-async function fetchRockMetalTracks(count, style = 'rock metal', seedSong = null) {
-    return fetchYouTubeSearch(`${style} official music`, 'video', { maxResults: Math.min(Math.max(count, 6), 20), reserveContext: 'radio', seed: seedSong });
+async function fetchRelatedMusicTracks(count, style = 'music', seedSong = null) {
+    return fetchYouTubeSearch(`${style} music`, 'video', { maxResults: Math.min(Math.max(count, 6), 20), reserveContext: 'radio', seed: seedSong });
 }
 
 async function fetchOpenverseGenreTracks(seedSong, count) {
@@ -803,7 +797,7 @@ async function fetchJamendoGenreTracks(seedSong, count) {
 }
 
 async function fetchSimilarArtistTracks(seedSong, count) {
-    if (!seedSong || !seedSong.artist) return fetchRockMetalTracks(count, getRadioStyle(seedSong), seedSong);
+    if (!seedSong || !seedSong.artist) return fetchRelatedMusicTracks(count, getRadioStyle(seedSong), seedSong);
     const artist = seedSong.artist;
     const style = getRadioStyle(seedSong);
     try {
@@ -866,7 +860,7 @@ async function buildAutomaticBatch(seed) {
         appendUniqueSongs(await fetchJamendoGenreTracks(seed, remaining()), added, QUEUE_BATCH);
     }
     if (remaining() > 0) {
-        appendUniqueSongs(await fetchRockMetalTracks(remaining(), getRadioStyle(seed), seed), added, QUEUE_BATCH);
+        appendUniqueSongs(await fetchRelatedMusicTracks(remaining(), getRadioStyle(seed), seed), added, QUEUE_BATCH);
     }
 
     return added;

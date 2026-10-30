@@ -542,7 +542,6 @@ async function fetchYouTubeLegacy(query, maxResults = 20) {
     } catch (e) { return []; }
 }
 
-const ROCK_METAL_DISCOVERY_QUERY = 'rock metal official music';
 const CONTENT_CATALOG_CACHE_KEY = 'nowarfy_catalog_cache_v1';
 const CONTENT_CATALOG_CACHE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 const REMOTE_CATALOG_CACHE_KEY = 'nowarfy_remote_catalog_cache_v1';
@@ -566,32 +565,23 @@ const EMERGENCY_VIDEO_CATALOG = [
     { title: 'ALL FOR METAL - Gods Of Metal (Official Music Video)', artist: 'Reigning Phoenix Music', channelTitle: 'Reigning Phoenix Music', url: '5A04DZNtH-w', img: 'https://i.ytimg.com/vi/5A04DZNtH-w/hqdefault.jpg', type: 'yt', resourceKind: 'youtube#video', description: 'Videoclip oficial de ALL FOR METAL.' }
 ];
 const EMERGENCY_PLAYLISTS = [];
-const GENRE_CHANNEL_LISTS = [
-    { title: 'Rock', icon: 'fa-guitar', query: 'rock official music channels', styleKey: 'rock', description: 'Rock clásico, alternativo y contemporáneo.' },
-    { title: 'Metal', icon: 'fa-hand-fist', query: 'metal official music channels', styleKey: 'metal', description: 'Metal clásico, extremo y moderno.' },
-    { title: 'Hardcore', icon: 'fa-bolt', query: 'hardcore punk official music channels', styleKey: 'hardcore', description: 'Hardcore, punk pesado y escenas afines.' },
-    { title: 'Punk', icon: 'fa-skull', query: 'punk rock official music channels', styleKey: 'punk', description: 'Punk, post-punk y espíritu independiente.' },
-    { title: 'Grunge', icon: 'fa-cloud', query: 'grunge alternative rock official channels', styleKey: 'grunge', description: 'Grunge, alternativo y los noventa.' },
-    { title: 'Stoner y Doom', icon: 'fa-mountain-sun', query: 'stoner doom metal official channels', styleKey: 'stoner', description: 'Riffs lentos, fuzz y peso atmosférico.' },
-    { title: 'Rock latino', icon: 'fa-earth-americas', query: 'rock latino official music channels', styleKey: 'latin rock', description: 'Rock en español y escenas latinoamericanas.' }
-];
 const EXPLORE_COLLECTIONS = [
-    { title: 'Conciertos y sesiones', icon: 'fa-tower-broadcast', query: 'rock metal live concert session', description: 'Shows en vivo, sesiones y escenarios.' },
-    { title: 'Videoclips oficiales', icon: 'fa-film', query: 'rock metal official music video', description: 'Estrenos y videoclips de artistas.' },
-    { title: 'Clásicos y rarezas', icon: 'fa-compact-disc', query: 'rock metal classic rare live', description: 'Archivo, tomas en vivo y joyas conocidas.' },
-    { title: 'Nuevas voces', icon: 'fa-sparkles', query: 'new rock metal bands official', description: 'Bandas y lanzamientos para descubrir.' },
-    { title: 'Covers y tributos', icon: 'fa-microphone-lines', query: 'rock metal cover tribute live', description: 'Interpretaciones y homenajes destacados.' },
-    { title: 'Sellos y medios', icon: 'fa-satellite-dish', query: 'rock metal record label music channel', description: 'Canales de sellos, festivales y medios.' }
+    { title: 'Conciertos y sesiones', icon: 'fa-tower-broadcast', query: 'music live concert session', description: 'Shows en vivo, sesiones y escenarios.' },
+    { title: 'Videoclips oficiales', icon: 'fa-film', query: 'official music video', description: 'Estrenos y videoclips de artistas.' },
+    { title: 'Clásicos y rarezas', icon: 'fa-compact-disc', query: 'classic songs rare live', description: 'Archivo, tomas en vivo y joyas conocidas.' },
+    { title: 'Nuevas voces', icon: 'fa-sparkles', query: 'new music artists official', description: 'Artistas y lanzamientos para descubrir.' },
+    { title: 'Covers y tributos', icon: 'fa-microphone-lines', query: 'music cover tribute live', description: 'Interpretaciones y homenajes destacados.' },
+    { title: 'Sellos y medios', icon: 'fa-satellite-dish', query: 'record label music channel', description: 'Canales de sellos, festivales y medios.' }
 ];
 const FREE_MUSIC_COLLECTIONS = [
-    { title: 'Rock libre', icon: 'fa-guitar', query: 'rock music', description: 'Pistas con licencia abierta, carátula y autor identificado.' },
-    { title: 'Metal instrumental libre', icon: 'fa-bolt', query: 'metal instrumental music', description: 'Instrumentales de metal que pasan el filtro de calidad.' },
-    { title: 'Punk y hardcore libre', icon: 'fa-hand-fist', query: 'punk hardcore music', description: 'Escenas libres de punk y hardcore, sin efectos ni bucles.' },
-    { title: 'Sesiones y guitarras libres', icon: 'fa-record-vinyl', query: 'live guitar music', description: 'Grabaciones musicales y sesiones con licencia abierta.' }
+    { title: 'Música libre', icon: 'fa-headphones', query: 'music', description: 'Pistas con licencia abierta, carátula y autor identificado.' },
+    { title: 'Instrumentales', icon: 'fa-music', query: 'instrumental music', description: 'Pistas instrumentales con licencia abierta.' },
+    { title: 'Música independiente', icon: 'fa-compact-disc', query: 'independent music', description: 'Artistas independientes con música disponible.' },
+    { title: 'Sesiones en vivo', icon: 'fa-record-vinyl', query: 'live music', description: 'Grabaciones musicales y sesiones con licencia abierta.' }
 ];
 const FREE_VIDEO_COLLECTIONS = [
     { title: 'Conciertos libres', icon: 'fa-tower-broadcast', query: 'music concert', description: 'Presentaciones audiovisuales con licencia abierta.' },
-    { title: 'Archivo musical libre', icon: 'fa-film', query: 'rock music', description: 'Documentos y clips musicales de dominio público o Creative Commons.' }
+    { title: 'Archivo musical libre', icon: 'fa-film', query: 'music', description: 'Documentos y clips musicales de dominio público o Creative Commons.' }
 ];
 const directCollectionCache = new Map();
 const remoteCatalogCache = new Map();
@@ -623,20 +613,22 @@ function writeRemoteCatalogCache(key, data) {
     } catch (_) {}
 }
 
-async function recoverWithRockMetal() {
-    const recovery = await fetchYouTubeSearch(ROCK_METAL_DISCOVERY_QUERY, 'video,playlist,channel', { maxResults: 20 });
-    if (recovery.length) {
-        renderYouTubeSearchResults(recovery, 'Sugerencias de rock y metal');
-        showToast('Sin coincidencias asociadas: te mostramos rock y metal', 'fa-guitar');
+async function recoverFromTasteHistory(excludeQuery, requestId) {
+    for (const query of getTasteDiscoveryQueries(excludeQuery)) {
+        const [youtubeResult, openverseResult] = await Promise.allSettled([
+            fetchYouTubeSearch(query, 'video,playlist,channel', { maxResults: 20, signal: activeSearchController?.signal }),
+            fetchOpenverseTracks(`${query} music`, 20, { signal: activeSearchController?.signal })
+        ]);
+        if (requestId !== activeSearchRequestId) return true;
+        const videos = youtubeResult.status === 'fulfilled' ? youtubeResult.value || [] : [];
+        const openverse = openverseResult.status === 'fulfilled' ? openverseResult.value || [] : [];
+        if (!videos.length && !openverse.length) continue;
+        if (videos.length) renderYouTubeSearchResults(videos, query);
+        if (openverse.length) renderOpenverseSearchResults(openverse, query);
+        showToast('Sin coincidencias exactas: sugerencias basadas en tu historial', 'fa-clock-rotate-left');
         return true;
     }
-    try {
-        await searchOpenverse('rock metal');
-        showToast('Sin coincidencias asociadas: te mostramos rock y metal', 'fa-guitar');
-        return true;
-    } catch (error) {
-        return false;
-    }
+    return false;
 }
 
 function mergeSearchResults(items) {
@@ -773,13 +765,13 @@ async function performSmartSearch(query, options = {}) {
         }
         if (!merged.length && !openverseTracks.length) {
             if (channelFilter) renderEmptyState(`Sin resultados para "${query}" en este canal`);
-            else if (!(await recoverWithRockMetal())) renderEmptyState(`Sin resultados para "${query}"`, 'No encontramos coincidencias ni propuestas musicales disponibles ahora.');
+            else if (!(await recoverFromTasteHistory(query, requestId))) renderEmptyState(`Sin resultados para "${query}"`, 'No encontramos coincidencias. Probá otra búsqueda o reproducí música para recibir sugerencias basadas en tu historial.');
         }
     } catch (e) {
         if (e?.name === 'AbortError' || requestId !== activeSearchRequestId) return;
         console.warn('No se pudo completar la búsqueda solicitada', e);
-        if (channelFilter || !(await recoverWithRockMetal())) {
-            renderEmptyState(`Sin resultados para "${query}"`, 'No encontramos coincidencias ni propuestas de rock y metal disponibles ahora.');
+        if (channelFilter || !(await recoverFromTasteHistory(query, requestId))) {
+            renderEmptyState(`Sin resultados para "${query}"`, 'No encontramos coincidencias. Probá otra búsqueda o reproducí música para recibir sugerencias basadas en tu historial.');
         }
     } finally {
         if (requestId === activeSearchRequestId) setCatalogLoading(false);
@@ -1584,28 +1576,11 @@ async function renderGenreChannels() {
             ...readTaste().channels.map(channelStableKey),
             ...(globalChannels?.items || []).map(channelStableKey)
         ].filter(Boolean));
-        const seed = currentList[0] || queue.find(item => item?._qid === currentPlayingQid) || homeVideos[0] || homeMusicVideos[0] || { title: getTasteSeed(), artist: getTasteSeed(), genre: currentMood || 'rock metal' };
+        const seed = currentList[0] || queue.find(item => item?._qid === currentPlayingQid) || homeVideos[0] || homeMusicVideos[0] || { title: getTasteSeed(), artist: getTasteSeed(), genre: currentMood || '' };
         const relatedStyle = getRadioStyle(seed);
         let rendered = hasHistory ? 1 : 0;
         rendered += globalChannels?.items?.length || 0;
         rendered += await renderGlobalChannelRail(`Canales relacionados · ${relatedStyle}`, 'Según tu escucha actual y la reserva global', { styleKey: relatedStyle, limit: 24, seen: renderedChannelKeys });
-        const settled = await Promise.allSettled(GENRE_CHANNEL_LISTS.map(async collection => {
-            const saved = await reserveGetGlobalCandidates({ source: 'youtube', kind: 'youtube#channel', styleKey: collection.styleKey, scope: 'search', limit: 24 });
-            if (saved.length >= 6) return saved;
-            const fresh = await fetchYouTubeSearch(collection.query, 'channel', { maxResults: 8, reserveContext: 'channels' });
-            return uniqueMediaByUrl([...saved, ...fresh.filter(item => item?.resourceKind === 'youtube#channel')], 24);
-        }));
-        settled.forEach((result, index) => {
-            const channels = result.status === 'fulfilled' ? itemsWithArtwork(uniqueMediaByUrl(result.value, 24)).filter(channel => {
-                const key = channelStableKey(channel);
-                if (!key || renderedChannelKeys.has(key)) return false;
-                renderedChannelKeys.add(key);
-                return true;
-            }) : [];
-            if (!channels.length) return;
-            rendered += channels.length;
-            renderChannelRow(channels, GENRE_CHANNEL_LISTS[index].title, GENRE_CHANNEL_LISTS[index].description);
-        });
         if (!rendered) renderEmptyState('No hay canales disponibles ahora', 'Probá volver a intentarlo cuando YouTube vuelva a responder o buscá un canal por nombre.');
     } finally {
         setCatalogLoading(false);
@@ -2064,7 +2039,7 @@ function returnFromPlaylist() {
         return;
     }
     if (state?.returnMode === 'home') { resetView(); return; }
-    performSmartSearch(state?.returnQuery || searchQuery || state?.playlist?.title || ROCK_METAL_DISCOVERY_QUERY);
+    performSmartSearch(state?.returnQuery || searchQuery || state?.playlist?.title || getTasteSeed() || 'music');
 }
 
 function renderOpenedPlaylist() {

@@ -505,6 +505,26 @@ function getTasteSeed() {
     return taste.searches[0] || taste.plays[0]?.artist || taste.channels[0]?.title || taste.plays[0]?.title || '';
 }
 
+function getTasteDiscoveryQueries(excludeQuery = '') {
+    const taste = readTaste();
+    if (!taste.personalization) return [];
+    const excluded = String(excludeQuery || '').trim().toLocaleLowerCase();
+    const seen = new Set(excluded ? [excluded] : []);
+    const queries = [];
+    const add = value => {
+        const query = String(value || '').trim();
+        const key = query.toLocaleLowerCase();
+        if (!query || seen.has(key)) return;
+        seen.add(key);
+        queries.push(query);
+    };
+    taste.searches.forEach(add);
+    taste.plays.slice(0, 12).forEach(item => add([item.artist, item.title].filter(Boolean).join(' ')));
+    taste.channels.slice(0, 6).forEach(item => add(item.title));
+    taste.playlists.slice(0, 6).forEach(item => add([item.artist, item.title].filter(Boolean).join(' ')));
+    return queries.slice(0, 4);
+}
+
 function getTasteTopics() {
     const taste = readTaste();
     const topics = [{ label: 'Todo', query: '', kind: 'home' }];
@@ -525,9 +545,7 @@ function getTasteTopics() {
     [
         ['Música', 'música'],
         ['Álbumes', 'álbum completo'],
-        ['Videos en vivo', 'música en vivo'],
-        ['Punk argentino', 'punk argentino'],
-        ['Rock latino', 'rock latino']
+        ['Videos en vivo', 'música en vivo']
     ].forEach(([label, query]) => add(label, query, false));
     return topics.slice(0, 10);
 }

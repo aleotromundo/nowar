@@ -20,7 +20,7 @@ function reserveCandidateKey(song) {
 function reserveStyleKey(song, seed = null) {
     const explicit = String(song?.genre || '').trim().toLowerCase();
     if (explicit && explicit !== 'unknown') return explicit;
-    return typeof getRadioStyle === 'function' ? getRadioStyle(seed || song) : 'rock metal';
+    return typeof getRadioStyle === 'function' ? getRadioStyle(seed || song) : 'music';
 }
 function normalizeReserveCandidate(song, { context = 'manual', seed = null, queryContext = '' } = {}) {
     if (!song?.url || !['yt', 'mp3', 'freevideo'].includes(song.type)) return null;
@@ -139,7 +139,7 @@ function reserveSyncGlobal(entries) {
     flushReserveGlobal();
 }
 function reserveQueryKey(source, query, styleKey = '', resourceTypes = '', channelId = '') {
-    return [source, resourceTypes || 'all', channelId || 'all', styleKey || 'rock metal', query].map(value => String(value || '').trim().toLowerCase()).join(':').slice(0, 512);
+    return [source, resourceTypes || 'all', channelId || 'all', styleKey || 'music', query].map(value => String(value || '').trim().toLowerCase()).join(':').slice(0, 512);
 }
 async function reserveGetQueryState({ source = 'youtube', query = '', styleKey = '', queryKey = '' } = {}) {
     const params = new URLSearchParams({ action: 'query', source, query, styleKey });
@@ -340,4 +340,3 @@ async function reserveTrim() {
         };
     } catch (error) {}
 }
-
