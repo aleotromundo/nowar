@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nowarfy-shell-v55';
+const CACHE_NAME = 'nowarfy-shell-v56';
 const NAVIGATION_TIMEOUT_MS = 5000;
 // Recursos que se sirven desde caché al instante y se revalidan en segundo plano.
 const REVALIDATED_PATHS = new Set([

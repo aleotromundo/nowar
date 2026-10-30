@@ -1104,3 +1104,7 @@
             .nowarfy-device-dock-fab { transition: none; }
             .nowarfy-device-dock-fab:hover { transform: none; }
         }
+
+/* fix palabras que se rompen */
+h1,h2,h3,.card-title,.section-title,.classic-title { overflow-wrap: break-word; word-break: normal; hyphens: none; }
+.brand-lockup-text, .brand-nowarfi { white-space: nowrap; }
