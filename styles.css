@@ -191,8 +191,8 @@
         .home-recommended-rail, .home-resume-rail { position: relative; overflow: hidden; margin-top: 18px; padding: 14px 15px 8px; border: 1px solid rgba(190,188,255,.14); border-radius: 17px; }
         .home-recommended-rail { background: radial-gradient(500px 230px at 8% -55%, rgba(94,234,212,.17), transparent 72%), linear-gradient(118deg, rgba(20,45,57,.62), rgba(17,18,35,.76)); }
         .home-resume-rail { background: radial-gradient(420px 190px at 12% -45%, rgba(167,139,250,.18), transparent 72%), linear-gradient(118deg, rgba(42,31,70,.62), rgba(17,18,35,.76)); }
-        .home-top-layout { display: grid; grid-template-columns: minmax(330px, .86fr) minmax(0, 1.45fr); gap: 18px; align-items: start; margin: 4px 0 18px; }
-        .home-top-layout > .home-welcome { margin: 0; min-width: 0; height: 100%; }
+        .home-top-layout { display: grid; grid-template-columns: minmax(280px, .7fr) minmax(0, 1.3fr); gap: 12px; align-items: start; margin: 4px 0 18px; }
+        .home-top-layout > .home-welcome { margin: 0; min-width: 0; height: auto; }
         .home-top-layout > .home-history-rail { min-width: 0; margin: 0; align-self: stretch; }
         .home-history-rail-top .library-rail { height: auto; align-items: start; }
         .home-history-rail-top .library-card { min-height: 0; }
