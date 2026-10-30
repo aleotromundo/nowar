@@ -121,7 +121,7 @@ function refreshNowarfyPairingQr() {
     const preview = document.getElementById('nowarfyQrPreview');
     const anchor = document.getElementById('nowarfyQrLink');
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=12&data=${encodeURIComponent(link)}`;
-    if (image) { image.src = qrUrl; image.alt = `Código QR para vincular ${nowarfyAuthUser ? 'otro dispositivo a tu cuenta' : 'un dispositivo con Nowarfy'}`; }
+    if (image) { image.src = qrUrl; image.alt = `Código QR para vincular ${nowarfyAuthUser ? 'otro dispositivo a tu cuenta de YouToo®' : 'un dispositivo con YouToo®'}`; }
     if (preview) preview.src = qrUrl;
     if (anchor) anchor.href = link;
 }

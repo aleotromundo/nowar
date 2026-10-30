@@ -281,7 +281,7 @@ function showYouTubeEmbedFallback(song, errorCode = '') {
         : Number(errorCode) === 101 || Number(errorCode) === 150
             ? 'El creador no permite la reproducción dentro de otras páginas.'
             : 'YouTube no pudo reproducirlo dentro del reproductor integrado.';
-    message.textContent = `${reason} Podés abrirlo en una ventana compacta oficial sin cerrar Nowarfy.`;
+    message.textContent = `${reason} Podés abrirlo en una ventana compacta oficial sin cerrar YouToo®.`;
     openButton.href = url;
     openButton.setAttribute('aria-label', `Ver ${song?.title || 'este video'} en YouTube`);
     popupButton.disabled = false;
@@ -302,7 +302,7 @@ function openYouTubeCompactWindow() {
     }
     youtubeCompactWindow = popup;
     try { popup.focus(); } catch (error) {}
-    showToast('YouTube se abrió en una ventana compacta; Nowarfy sigue abierto', 'fab fa-youtube');
+    showToast('YouTube se abrió en una ventana compacta; YouToo® sigue abierto', 'fab fa-youtube');
 }
 
 function showVideoStage(song, options = {}) {
@@ -577,7 +577,7 @@ function onYTError(event) {
     isPlaying = false;
     const song = currentQueueSong();
     showYouTubeEmbedFallback(song, event?.data);
-    showToast('No se pudo reproducir este video en Nowarfy; probando la siguiente pista', 'fab fa-youtube');
+    showToast('No se pudo reproducir este video en YouToo®; probando la siguiente pista', 'fab fa-youtube');
     updateIcon();
     updatePlaybackState();
     queueAutomaticAdvance('youtube-error');
@@ -591,7 +591,7 @@ function togglePlay() {
         void sendNowarfyCommand(intent, null, true);
         return;
     }
-    if (externalAudioFocusInterrupted) { showToast('Nowarfy cedió el audio a otra aplicación', 'fa-volume-high'); return; }
+    if (externalAudioFocusInterrupted) { showToast('YouToo® cedió el audio a otra aplicación', 'fa-volume-high'); return; }
     if (currentIndex === -1 || !queue[currentIndex]) return;
     if (!ytPlayer && !audioEl.src && !freeVideoEl.src) {
         const resume = pendingVideoResumeSession;

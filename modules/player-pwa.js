@@ -486,7 +486,7 @@ async function requestPwaInstall() {
     const result = await deferredInstallPrompt.userChoice;
     deferredInstallPrompt = null;
     installButton.hidden = true;
-    showToast(result.outcome === 'accepted' ? 'Nowarfy se instaló en este dispositivo' : 'Instalación cancelada', result.outcome === 'accepted' ? 'fa-circle-check' : 'fa-circle-xmark');
+    showToast(result.outcome === 'accepted' ? 'YouToo® se instaló en este dispositivo' : 'Instalación cancelada', result.outcome === 'accepted' ? 'fa-circle-check' : 'fa-circle-xmark');
 }
 
 let nowarfyHardResetInFlight = false;

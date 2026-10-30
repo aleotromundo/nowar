@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>YouToo</title>
+    <title>YouToo®</title>
     <meta name="theme-color" content="#ef4444">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -39,12 +39,12 @@
     <div class="ambient-artwork-background" id="ambientArtworkBackground" aria-hidden="true"></div>
     <div class="main-container">
         <!-- SIDEBAR -->
-        <aside class="sidebar" aria-label="Navegación principal de Nowarfy">
+        <aside class="sidebar" aria-label="Navegación principal de YouToo®">
             <div class="logo">
                 <span class="brand-nowarfi">
                     <img class="brand-nowarfi-mark" src="assets/nowarfy-logo-red-solid.png" width="32" height="32" decoding="async" alt=""> YouToo<sup class="brand-registered">®</sup>
                 </span>
-                <button type="button" class="brand-youtoo" onclick="hardResetNowarfy(event)" aria-label="Reiniciar y actualizar Nowarfy" title="Reiniciar y actualizar Nowarfy">
+                <button type="button" class="brand-youtoo" onclick="hardResetNowarfy(event)" aria-label="Reiniciar y actualizar YouToo®" title="Reiniciar y actualizar YouToo®">
                     <span class="brand-lockup">
                         <img class="brand-lockup-mark" src="assets/nowarfy-logo-red-solid.png" width="32" height="32" decoding="async" alt="">
                         <span class="brand-lockup-text"><strong>YouToo</strong><sup class="brand-registered">®</sup></span>
@@ -86,7 +86,7 @@
                 <strong><i class="fas fa-circle" id="nowarfyConnectionDot"></i> <span id="nowarfyConnectionLabel">Datos en este dispositivo</span></strong>
                 <span id="authDeviceStatus">La cuenta y sincronización se activarán solo si las elegís.</span>
                 <button type="button" id="nowarfyAuthButton" class="nowarfy-account-btn" onclick="openNowarfyAuth()"><i class="fas fa-user"></i> Usar cuenta o continuar anónimo</button>
-                <button type="button" id="pwaInstallBtn" class="nowarfy-install-btn" hidden><i class="fas fa-download"></i> Instalar Nowarfy</button>
+                <button type="button" id="pwaInstallBtn" class="nowarfy-install-btn" hidden><i class="fas fa-download"></i> Instalar YouToo®</button>
             </div>
             <button type="button" id="nowarfyQrButton" class="nowarfy-qr-launch" onclick="openNowarfyQr()" aria-haspopup="dialog" aria-controls="nowarfyQrModal" aria-label="Vincular otro dispositivo con código QR">
                 <img id="nowarfyQrPreview" src="assets/nowarfy-qr.png" width="48" height="48" decoding="async" alt="">
@@ -117,12 +117,12 @@
                             <div class="video-embed-fallback-card">
                                 <span class="video-embed-fallback-badge"><i class="fab fa-youtube"></i> Reproducción oficial</span>
                                 <h3 id="videoEmbedFallbackTitle">Este video necesita YouTube</h3>
-                                <p id="videoEmbedFallbackMessage">El creador no permite mostrarlo dentro de Nowarfy. Podés abrirlo en YouTube sin perder esta Playlist.</p>
+                                <p id="videoEmbedFallbackMessage">El creador no permite mostrarlo dentro de YouToo®. Podés abrirlo en YouTube sin perder esta Playlist.</p>
                                 <div class="video-embed-fallback-actions">
                                     <button type="button" id="videoEmbedPopupBtn" onclick="openYouTubeCompactWindow()"><i class="fas fa-up-right-and-down-left-from-center"></i> Abrir flotante</button>
                                     <a id="videoEmbedOpenBtn" class="video-embed-fallback-secondary" href="#" target="_blank" rel="noopener noreferrer"><i class="fas fa-arrow-up-right-from-square"></i> Ver en YouTube</a>
                                 </div>
-                                <small class="video-embed-fallback-footnote">La ventana compacta depende de la configuración de Chrome; Nowarfy queda abierto en la PWA.</small>
+                                <small class="video-embed-fallback-footnote">La ventana compacta depende de la configuración de Chrome; YouToo® queda abierto en la PWA.</small>
                             </div>
                         </div>
                     </div>
@@ -176,7 +176,7 @@
 
             <div id="loader" class="loader-wrap" style="display:flex" role="status" aria-live="polite" aria-busy="true">
                 <div class="loader-spinner" aria-hidden="true"></div>
-                <span id="loaderMessage">Iniciando YouToo...</span>
+                <span id="loaderMessage">Iniciando YouToo®...</span>
                 <button type="button" class="loader-retry" id="loaderRetry" onclick="window.retryNowarfyModules?.()" hidden>Reintentar</button>
             </div>
             <div id="dynamicSections"></div>
@@ -282,7 +282,7 @@
     <div class="nowarfy-auth-modal" id="nowarfyAuthModal" role="dialog" aria-modal="true" aria-labelledby="nowarfyAuthTitle" hidden onclick="if (event.target === this) closeNowarfyAuth()">
         <div class="nowarfy-auth-dialog">
             <button type="button" class="nowarfy-auth-close" onclick="closeNowarfyAuth()" aria-label="Cerrar cuenta"><i class="fas fa-xmark"></i></button>
-            <h2 id="nowarfyAuthTitle">Tu cuenta de YouToo</h2>
+            <h2 id="nowarfyAuthTitle">Tu cuenta de YouToo®</h2>
             <p id="nowarfyAuthIntro">Usá el modo anónimo para mantener todo en este dispositivo, o iniciá sesión para preparar la sincronización entre tus dispositivos.</p>
             <div id="nowarfyAuthGuestPanel" class="nowarfy-auth-account">
                 <div class="nowarfy-auth-form">
@@ -337,8 +337,8 @@
         <div class="nowarfy-qr-dialog">
             <button type="button" class="nowarfy-qr-close" onclick="closeNowarfyQr()" aria-label="Cerrar código QR"><i class="fas fa-xmark"></i></button>
             <h2 id="nowarfyQrTitle">Vinculá otro dispositivo</h2>
-            <p id="nowarfyQrDescription">Escaneá este código en tu celular. Se abrirá YouToo y podrás iniciar sesión para sincronizarlo con este reproductor.</p>
-            <img id="nowarfyQrImage" src="assets/nowarfy-qr.png" alt="Código QR para vincular otro dispositivo con Nowarfy">
+            <p id="nowarfyQrDescription">Escaneá este código en tu celular. Se abrirá YouToo® y podrás iniciar sesión para sincronizarlo con este reproductor.</p>
+            <img id="nowarfyQrImage" src="assets/nowarfy-qr.png" alt="Código QR para vincular otro dispositivo con YouToo®">
             <a class="nowarfy-qr-link" id="nowarfyQrLink" href="" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square"></i> Abrir enlace de pairing</a>
         </div>
     </div>

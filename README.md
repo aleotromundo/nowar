@@ -1,6 +1,6 @@
-# YouToo
+# YouToo®
 
-Biblioteca audiovisual de rock, metal, videos, música y canales públicos. PWA instalable construida como sitio estático (HTML/CSS/JS) con funciones serverless en Vercel para búsqueda, reservas y letras de canciones.
+Biblioteca audiovisual para buscar, descubrir y escuchar música y videos de múltiples fuentes. PWA instalable construida como sitio estático (HTML/CSS/JS) con funciones serverless en Vercel para búsqueda, reservas y letras de canciones.
 
 🔗 **Sitio en producción:** https://nowar-rose.vercel.app
 

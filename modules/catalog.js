@@ -152,7 +152,7 @@ async function renderKnowledgeBase() {
         container.innerHTML = `
             <section class="taste-data-panel knowledge-panel" aria-label="Base de conocimiento global">
                 <div class="section-header-back"><button type="button" class="video-stage-close" onclick="renderTasteData()"><i class="fas fa-arrow-left"></i> Volver a Tus datos</button></div>
-                <h2>Base de conocimiento de Nowarfy</h2>
+                <h2>Base de conocimiento de YouToo®</h2>
                 <p>Catálogo colectivo de URLs y metadatos descubiertos por todos los usuarios. Esta vista muestra la base completa; tus gustos solo cambian el orden y los filtros de las secciones personalizadas.</p>
                 <div class="taste-stats knowledge-summary">
                     <div class="taste-stat"><b>${formatCompactNumber(data.totalCandidates)}</b><span>Total de recursos globales</span></div>
@@ -980,7 +980,7 @@ function normalizeTasteTrack(item) {
     return {
         ...item,
         resourceKind: item.resourceKind || (item.type === 'yt' ? 'youtube#video' : ''),
-        artist: item.artist || item.channelTitle || 'Nowarfy',
+        artist: item.artist || item.channelTitle || 'YouToo®',
         channelTitle: item.channelTitle || item.artist || '',
         at: Number.isFinite(Number(item.at)) ? Number(item.at) : 0
     };

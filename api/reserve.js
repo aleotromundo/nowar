@@ -56,7 +56,7 @@ function asRow(entry) {
     artist: text(entry.artist, 300),
     description: text(entry.description, 4000),
     thumbnail_url: text(entry.img || entry.thumbnail || entry.thumbnailUrl || entry.thumbnail_url, 4000),
-    style_key: text(entry.styleKey || entry.style_key, 200) || 'rock metal',
+    style_key: text(entry.styleKey || entry.style_key, 200) || 'music',
     style_tokens: Array.isArray(entry.styleTokens || entry.style_tokens) ? (entry.styleTokens || entry.style_tokens).map(item => text(item, 80)).filter(Boolean).slice(0, 40) : [],
     radio_eligible: Boolean(entry.radioEligible ?? entry.radio_eligible),
     contexts: Array.isArray(entry.contexts) ? entry.contexts.map(item => text(item, 40)).filter(Boolean).slice(0, 20) : [text(entry.context, 40)].filter(Boolean),
@@ -81,7 +81,7 @@ function asRow(entry) {
 function asQueryRow(body = {}) {
   const source = text(body.source, 32);
   const query = text(body.query, 300);
-  const styleKey = text(body.styleKey || body.style_key, 200) || 'rock metal';
+  const styleKey = text(body.styleKey || body.style_key, 200) || 'music';
   const queryKey = text(body.queryKey || body.query_key, 512) || `${source}:${styleKey}:${query}`.toLowerCase();
   if (!queryKey || !query || !ALLOWED_QUERY_SOURCES.has(source)) return null;
   const status = ['ok', 'quota', 'error'].includes(body.status) ? body.status : 'ok';
@@ -110,7 +110,7 @@ function queryLookupUrl(req) {
   else {
     const source = text(req.query.source, 32);
     const query = text(req.query.query, 300);
-    const styleKey = text(req.query.styleKey || req.query.style_key, 200) || 'rock metal';
+    const styleKey = text(req.query.styleKey || req.query.style_key, 200) || 'music';
     if (!ALLOWED_QUERY_SOURCES.has(source) || !query) return null;
     params.set('source', `eq.${source}`);
     params.set('query', `eq.${query}`);
