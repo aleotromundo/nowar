@@ -634,9 +634,8 @@ function playQueueAt(idx, options = {}) {
             ytPlaybackIntent = !deferYTAutoplay && resumeSession?.wasPlaying !== false;
             const startSeconds = resumeSession && Number(resumeSession.position) > 0 ? Number(resumeSession.position) : 0;
             try {
-                const suggestedQuality = preferredYouTubeQuality();
-                if (ytPlaybackIntent) ytPlayer.loadVideoById({ videoId: song.url, startSeconds, suggestedQuality });
-                else ytPlayer.cueVideoById({ videoId: song.url, startSeconds, suggestedQuality });
+                if (ytPlaybackIntent) ytPlayer.loadVideoById({ videoId: song.url, startSeconds });
+                else ytPlayer.cueVideoById({ videoId: song.url, startSeconds });
                 if (ytPlaybackIntent) {
                     startSilentLoop();
                     requestYouTubePlayback('reused-iframe');

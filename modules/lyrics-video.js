@@ -2,12 +2,6 @@ function isVisualVideo(song) {
     return !!song && (song.type === 'yt' || song.type === 'freevideo');
 }
 
-function preferredYouTubeQuality() {
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    const slowConnection = connection?.saveData || /^(?:slow-)?2g|3g$/i.test(String(connection?.effectiveType || ''));
-    return slowConnection ? 'small' : 'medium';
-}
-
 function lyricsTextKey(value) {
     return normalizeSourceText(value)
         .normalize('NFKD')
@@ -463,7 +457,7 @@ function initYTPlayer(resourceId, isPlaylist = false, resumeSession = null, defe
         host: 'https://www.youtube-nocookie.com',
         height: '100%',
         width: '100%',
-        playerVars: { 'autoplay': deferAutoplay ? 0 : 1, 'controls': 1, 'playsinline': 1, 'enablejsapi': 1, 'rel': 0, 'modestbranding': 1, 'fs': 1, 'origin': window.location.origin, 'vq': preferredYouTubeQuality() },
+        playerVars: { 'autoplay': deferAutoplay ? 0 : 1, 'controls': 1, 'playsinline': 1, 'enablejsapi': 1, 'rel': 0, 'modestbranding': 1, 'fs': 1, 'origin': window.location.origin },
         events: { 'onReady': onYTReady, 'onStateChange': onYTStateChange, 'onError': onYTError }
     };
 
@@ -530,7 +524,6 @@ function onYTReady(event) {
     }
     const v = parseFloat(document.getElementById('volumeSlider').value);
     if (ytPlayer.setVolume) ytPlayer.setVolume(v * 100);
-    try { ytPlayer.setPlaybackQuality?.(preferredYouTubeQuality()); } catch (error) { /* YouTube puede ignorar la sugerencia */ }
     const song = currentQueueSong();
     if (song?.type === 'yt' && ytPlayer.getDuration) {
         renderVideoStageDetails({ ...song, duration: song.duration || ytPlayer.getDuration() });
