@@ -191,10 +191,10 @@
         .home-recommended-rail, .home-resume-rail { position: relative; overflow: hidden; margin-top: 18px; padding: 14px 15px 8px; border: 1px solid rgba(190,188,255,.14); border-radius: 17px; }
         .home-recommended-rail { background: radial-gradient(500px 230px at 8% -55%, rgba(94,234,212,.17), transparent 72%), linear-gradient(118deg, rgba(20,45,57,.62), rgba(17,18,35,.76)); }
         .home-resume-rail { background: radial-gradient(420px 190px at 12% -45%, rgba(167,139,250,.18), transparent 72%), linear-gradient(118deg, rgba(42,31,70,.62), rgba(17,18,35,.76)); }
-        .home-top-layout { display: grid; grid-template-columns: minmax(330px, .86fr) minmax(0, 1.45fr); gap: 18px; align-items: stretch; margin: 4px 0 18px; }
+        .home-top-layout { display: grid; grid-template-columns: minmax(330px, .86fr) minmax(0, 1.45fr); gap: 18px; align-items: start; margin: 4px 0 18px; }
         .home-top-layout > .home-welcome { margin: 0; min-width: 0; height: 100%; }
         .home-top-layout > .home-history-rail { min-width: 0; margin: 0; align-self: stretch; }
-        .home-history-rail-top .library-rail { height: calc(100% - 42px); align-items: stretch; }
+        .home-history-rail-top .library-rail { height: auto; align-items: start; }
         .home-history-rail-top .library-card { min-height: 0; }
         .home-welcome { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(18px, 3vw, 34px); align-items: center; margin: 4px 0 18px; padding: clamp(18px, 3vw, 28px) clamp(18px, 3.2vw, 32px); border: 1px solid rgba(29,185,84,.28); border-radius: 22px; background: radial-gradient(520px 180px at 8% 0%, rgba(29,185,84,.22), transparent 70%), linear-gradient(118deg, rgba(23,54,40,.92), rgba(13,24,25,.88) 68%, rgba(14,48,51,.72)); box-shadow: 0 22px 52px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06); }
         .home-welcome::after { content: ''; position: absolute; width: 260px; height: 260px; right: -88px; top: -142px; border-radius: 50%; background: radial-gradient(circle, rgba(94,234,212,.22), transparent 68%); pointer-events: none; }
