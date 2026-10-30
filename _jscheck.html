@@ -1,0 +1,14 @@
+<!doctype html>
+<meta charset="utf-8">
+<script>
+window.__errors = [];
+window.addEventListener('error', event => { window.__errors.push(String(event.message || 'error')); });
+</script>
+<script src="modules/core.js"></script>
+<pre id="out">running</pre>
+<script>
+setTimeout(() => {
+    const syntax = window.__errors.filter(message => /SyntaxError|Unexpected|Invalid or unexpected token/i.test(message));
+    document.getElementById('out').textContent = syntax.length ? ('SYNTAX FAIL: ' + syntax.join(' | ')) : ('No syntax errors; runtime messages: ' + window.__errors.slice(0, 4).join(' | '));
+}, 1200);
+</script>

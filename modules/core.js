@@ -46,6 +46,7 @@ let nowarfyPendingRemoteCommands = [];
 // idempotente en vez de `toggle`, para no pausar justo después de un traspaso.
 let nowarfyHandoffPendingUntil = 0;
 let nowarfyRoleRefreshAt = 0;
+let nowarfyRoleReconcileAt = 0;
 // "Sonar también acá": este equipo replica la reproducción del reproductor
 // principal. Es una preferencia local de cada dispositivo.
 const NOWARFY_MIRROR_KEY = 'nowarfy_mirror_playback_v1';
@@ -514,6 +515,7 @@ async function touchNowarfyRemoteDevice() {
 }
 async function refreshNowarfyRemoteDevices() {
     if (!nowarfySupabase || !nowarfyAuthUser) return [];
+    void reconcileNowarfyRemoteRole();
     const cutoff = new Date(Date.now() - 25000).toISOString();
     const result = await nowarfySupabase.from('youtoo_remote_devices').select('id,device_name,role,last_seen_at').eq('user_id', nowarfyAuthUser.id).gte('last_seen_at', cutoff).order('last_seen_at', { ascending: false });
     if (result.error) return nowarfyRemoteDevices;
@@ -1111,6 +1113,11 @@ async function executeNowarfyRemoteCommand(command) {
     nowarfyRemoteDiagLog('Comando recibido', String(type || 'sin tipo'));
     if (type === 'handoff') {
         const state = command.state || nowarfyRemoteSession?.state || {};
+        const shouldPlay = state.isPlaying !== false;
+        // Si este equipo ya está reproduciendo justo esa pista (por ejemplo,
+        // porque el polling y el comando de handoff llegaron casi juntos), no
+        // la reiniciamos.
+        if (shouldPlay && state.resourceId && nowarfyRemoteIsActuallyPlaying() && nowarfyMirrorLoadedUrl(currentQueueSong()) === String(state.resourceId)) return;
         if (Array.isArray(state.playlist) && state.playlist.length) updateRemoteControlsFromState(state, true);
         const targetUrl = state.resourceId || state.title;
         let idx = queue.findIndex(song => (state.currentQid && song._qid === state.currentQid) || (targetUrl && String(song.url) === String(targetUrl)));
@@ -1119,7 +1126,6 @@ async function executeNowarfyRemoteCommand(command) {
             queue.unshift(incoming); queueSeenKeys.add(songKey(incoming)); idx = 0;
         }
         if (idx >= 0) {
-            const shouldPlay = state.isPlaying !== false;
             nowarfyPendingHandoff = null;
             nowarfyHideHandoffPrompt();
             playbackStoppedByUser = !shouldPlay;
@@ -1235,6 +1241,46 @@ function nowarfyFlushPendingRemoteCommands() {
         // Los comandos viejos ya no representan lo que el usuario quiere ahora.
         if (Date.now() - Number(command._receivedAt || Date.now()) < 20000) void executeNowarfyRemoteCommand(command);
     });
+}
+// Respaldo por polling: si Realtime no entrega el cambio de sesión, este equipo
+// igual se entera en pocos segundos de que fue elegido como reproductor.
+async function reconcileNowarfyRemoteRole() {
+    if (!nowarfySupabase || !nowarfyAuthUser || !nowarfyRemoteSession?.id || !nowarfyRemoteDeviceId) return;
+    if (Date.now() - nowarfyRoleReconcileAt < 8000) return;
+    nowarfyRoleReconcileAt = Date.now();
+    const result = await nowarfySupabase.from('youtoo_remote_sessions').select('*').eq('id', nowarfyRemoteSession.id).maybeSingle();
+    if (result.error || !result.data) return;
+    const wasPlayer = nowarfyRemoteIsPlayer;
+    const isPlayerNow = result.data.active_device_id === nowarfyRemoteDeviceId;
+    if (wasPlayer === isPlayerNow) {
+        // El reproductor no se pisa su propia sesión con una lectura vieja.
+        if (!isPlayerNow) {
+            nowarfyRemoteSession = result.data;
+            if (result.data.state) updateRemoteControlsFromState(result.data.state);
+        }
+        return;
+    }
+    nowarfyRemoteSession = result.data;
+    nowarfyRemoteIsPlayer = isPlayerNow;
+    nowarfyDeviceDockPinned = true;
+    updateRemoteShadowTimer();
+    syncNowarfyRemoteTimers();
+    updateNowarfyAuthUI();
+    renderNowarfyDeviceDock();
+    nowarfyRemoteDiagLog('Rol reconciliado', `${wasPlayer ? 'reproductor' : 'control'} → ${nowarfyRemoteIsPlayer ? 'reproductor' : 'control'}`);
+    if (nowarfyRemoteIsPlayer) {
+        remoteStatus('Este dispositivo es el reproductor activo.');
+        const hasPendingHandoff = nowarfyPendingRemoteCommands.some(command => command.type === 'handoff');
+        if (!hasPendingHandoff) await executeNowarfyRemoteCommand({ type: 'handoff', state: result.data.state || remoteStateSnapshot() });
+        nowarfyFlushPendingRemoteCommands();
+    } else {
+        stopAll();
+        isPlaying = false;
+        updateIcon();
+        setTrackLoading(false);
+        if (result.data.state) updateRemoteControlsFromState(result.data.state);
+        remoteStatus('Control remoto conectado; el reproductor activo está en otro dispositivo.');
+    }
 }
 async function nowarfyHandleIncomingCommand(command) {
     if (!command?.type) return;
