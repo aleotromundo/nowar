@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>measure</title></head>
+<body>
+<pre id="out">loading</pre>
+<iframe id="f" src="/index.html" style="width:1440px;height:1000px;border:0"></iframe>
+<script>
+const out = document.getElementById('out');
+const f = document.getElementById('f');
+f.addEventListener('load', () => {
+  setTimeout(() => {
+    try {
+      const d = f.contentDocument;
+      const w = d.querySelector('.home-top-layout > .home-welcome');
+      const h = d.querySelector('.home-top-layout > .home-history-rail');
+      const rail = d.querySelector('.home-history-rail-top .library-rail');
+      const card = d.querySelector('.home-history-rail-top .library-card');
+      const rect = el => el ? {w: Math.round(el.getBoundingClientRect().width), h: Math.round(el.getBoundingClientRect().height)} : null;
+      out.textContent = JSON.stringify({
+        welcome: rect(w),
+        historyRail: rect(h),
+        libraryRail: rect(rail),
+        firstCard: rect(card),
+        layout: rect(d.querySelector('.home-top-layout'))
+      }, null, 2);
+    } catch (e) {
+      out.textContent = 'ERR ' + e.message;
+    }
+  }, 4000);
+});
+</script>
+</body></html>
