@@ -399,6 +399,38 @@ function setupVideoStageObserver() {
 }
 
 function setupVideoStageVisibilityAwareness() {
+    const frame = document.querySelector('#videoStage .video-frame');
+    frame?.addEventListener('dblclick', event => {
+        const target = event.target;
+        const isNativeVideo = target === freeVideoEl;
+        const isYouTubeFrame = target instanceof HTMLIFrameElement && target.closest('#yt-player-container');
+        if ((!isNativeVideo && !isYouTubeFrame) || !isVisualVideo(currentQueueSong())) return;
+
+        if (document.fullscreenElement || document.webkitFullscreenElement || freeVideoEl.webkitDisplayingFullscreen) {
+            const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || freeVideoEl.webkitExitFullscreen;
+            if (!exitFullscreen) {
+                showToast('No se pudo salir de pantalla completa', 'fa-triangle-exclamation');
+                return;
+            }
+            Promise.resolve(exitFullscreen.call(document.fullscreenElement || document.webkitFullscreenElement ? document : freeVideoEl)).catch(error => {
+                console.warn('[YouToo] No se pudo salir de pantalla completa', error);
+                showToast('No se pudo salir de pantalla completa', 'fa-triangle-exclamation');
+            });
+            return;
+        }
+
+        const fullscreenTarget = isNativeVideo ? freeVideoEl : target;
+        if (typeof fullscreenTarget.requestFullscreen === 'function') {
+            fullscreenTarget.requestFullscreen().catch(error => {
+                console.warn('[YouToo] No se pudo activar pantalla completa', error);
+                showToast('No se pudo activar pantalla completa', 'fa-triangle-exclamation');
+            });
+        } else if (isNativeVideo && typeof freeVideoEl.webkitEnterFullscreen === 'function') {
+            freeVideoEl.webkitEnterFullscreen();
+        } else {
+            showToast('Este navegador no permite pantalla completa para este video', 'fa-triangle-exclamation');
+        }
+    });
     document.addEventListener('visibilitychange', () => {
         const stage = document.getElementById('videoStage');
         const song = currentQueueSong();
@@ -424,7 +456,7 @@ function initYTPlayer(resourceId, isPlaylist = false, resumeSession = null, defe
         host: 'https://www.youtube-nocookie.com',
         height: '100%',
         width: '100%',
-        playerVars: { 'autoplay': deferAutoplay ? 0 : 1, 'controls': 1, 'playsinline': 1, 'enablejsapi': 1, 'rel': 0, 'modestbranding': 1, 'origin': window.location.origin },
+        playerVars: { 'autoplay': deferAutoplay ? 0 : 1, 'controls': 1, 'playsinline': 1, 'enablejsapi': 1, 'rel': 0, 'modestbranding': 1, 'fs': 1, 'origin': window.location.origin },
         events: { 'onReady': onYTReady, 'onStateChange': onYTStateChange, 'onError': onYTError }
     };
 
@@ -481,6 +513,14 @@ function armYouTubeStartupWatchdog(expectedUrl, attempt = 0) {
 
 function onYTReady(event) {
     if (event?.target && event.target !== ytPlayer) return;
+    const iframe = ytPlayer?.getIframe?.();
+    if (iframe) {
+        iframe.allowFullscreen = true;
+        iframe.setAttribute('allowfullscreen', '');
+        const permissions = new Set(String(iframe.getAttribute('allow') || '').split(';').map(permission => permission.trim()).filter(Boolean));
+        permissions.add('fullscreen');
+        iframe.setAttribute('allow', [...permissions].join('; '));
+    }
     const v = parseFloat(document.getElementById('volumeSlider').value);
     if (ytPlayer.setVolume) ytPlayer.setVolume(v * 100);
     const song = currentQueueSong();
