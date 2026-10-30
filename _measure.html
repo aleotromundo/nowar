@@ -10,22 +10,20 @@ f.addEventListener('load', () => {
   setTimeout(() => {
     try {
       const d = f.contentDocument;
-      const w = d.querySelector('.home-top-layout > .home-welcome');
-      const h = d.querySelector('.home-top-layout > .home-history-rail');
-      const rail = d.querySelector('.home-history-rail-top .library-rail');
-      const card = d.querySelector('.home-history-rail-top .library-card');
       const rect = el => el ? {w: Math.round(el.getBoundingClientRect().width), h: Math.round(el.getBoundingClientRect().height)} : null;
       out.textContent = JSON.stringify({
-        welcome: rect(w),
-        historyRail: rect(h),
-        libraryRail: rect(rail),
-        firstCard: rect(card),
+        welcome: rect(d.querySelector('.home-top-layout > .home-welcome')),
+        recommendedRailSection: rect(d.querySelector('.home-recommended-rail')),
+        recommendedRail: rect(d.querySelector('.home-recommended-rail .library-rail')),
+        firstCard: rect(d.querySelector('.home-recommended-rail .library-card')),
+        cardImg: rect(d.querySelector('.home-recommended-rail .card-img-wrap')),
+        cardTitle: rect(d.querySelector('.home-recommended-rail .card-title')),
         layout: rect(d.querySelector('.home-top-layout'))
       }, null, 2);
     } catch (e) {
       out.textContent = 'ERR ' + e.message;
     }
-  }, 4000);
+  }, 4500);
 });
 </script>
 </body></html>
