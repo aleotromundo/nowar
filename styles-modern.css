@@ -1,107 +1,93 @@
-/* styles-modern.css — capa estética 2026 (conservadora: no altera layout ni posicionamiento). */
+/* styles-modern.css — minimalista: plano, limpio, sin efectos. */
 :root{
-  --bg-dark:#0a0c11;
-  --text-white:#eceaf5;
-  --text-gray:#9a96b0;
-  --text-dim:#6a6680;
-  --accent:#e8a0c0;
-  --accent-hover:#f2b0d0;
-  --accent-glow:rgba(232,160,192,.45);
-  --accent-2:#9ee8d0;
-  --accent-2-glow:rgba(158,232,208,.35);
-  --border-soft:rgba(230,220,255,.09);
-  --border-strong:rgba(230,220,255,.18);
+  --bg-dark:#0b0d12;
+  --text-white:#e8e6f0;
+  --text-gray:#8a8698;
+  --text-dim:#5a5668;
+  --accent:#c9a0b0;
+  --accent-hover:#d9b0c0;
+  --accent-2:#90c8bc;
+  --border-soft:rgba(230,220,255,.06);
+  --border-strong:rgba(230,220,255,.12);
   --ease:cubic-bezier(.2,.8,.2,1);
-  --radius-sm:10px;
-  --radius-md:14px;
-  --radius-lg:20px;
-  --glass:rgba(16,18,28,.6);
-  --glass-strong:rgba(10,12,20,.82);
+  --radius-sm:8px;
+  --radius-md:12px;
+  --radius-lg:16px;
 }
 
-/* fondo suave (sin overlays que tape contenido) */
+/* fondo plano */
 body.mode-youtoo{
-  background:
-    radial-gradient(60% 50% at 10% -5%,rgba(232,160,192,.16),transparent 60%),
-    radial-gradient(45% 45% at 95% 0%,rgba(158,232,208,.12),transparent 65%),
-    var(--bg-dark);
-  background-attachment:fixed;
+  background:var(--bg-dark);
 }
 
-/* glass en superficies clave (sin transform) */
+/* superficies planas (sin glass ni blur) */
 body.mode-youtoo .player-bar,
 body.mode-youtoo .sidebar,
 body.mode-youtoo .queue-panel,
 body.mode-youtoo .nowarfy-nav-groups{
-  backdrop-filter:blur(18px) saturate(1.2);
-  -webkit-backdrop-filter:blur(18px) saturate(1.2);
+  background:rgba(14,16,24,.92);
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  border-color:var(--border-soft);
 }
 body.mode-youtoo .player-bar{
-  background:var(--glass-strong);
+  box-shadow:none;
   border-top:1px solid var(--border-soft);
-  box-shadow:0 -1px 0 var(--border-soft),0 -20px 50px -20px rgba(0,0,0,.7);
 }
-body.mode-youtoo .player-bar::before{
-  background:linear-gradient(90deg,transparent,var(--accent-glow),var(--accent-2-glow),transparent);
-  opacity:.8;
-}
-body.mode-youtoo .sidebar{
-  background:var(--glass-strong);
-  border-right:1px solid var(--border-soft);
-}
+body.mode-youtoo .player-bar::before{display:none}
+body.mode-youtoo .sidebar{border-right:1px solid var(--border-soft)}
 body.mode-youtoo .nowarfy-nav-groups{
-  background:rgba(230,220,255,.03);
+  background:rgba(230,220,255,.02);
   border:1px solid var(--border-soft);
   border-radius:var(--radius-lg);
   margin:10px 12px;
   padding:12px 8px;
 }
 body.mode-youtoo .queue-panel{
-  background:var(--glass-strong);
+  background:rgba(14,16,24,.95);
   border:1px solid var(--border-soft);
   border-radius:var(--radius-lg) var(--radius-lg) 0 0;
-  box-shadow:0 -20px 50px -20px rgba(0,0,0,.75);
+  box-shadow:none;
 }
 
 /* nav */
 body.mode-youtoo .nowarfy-nav-label{color:var(--text-dim);font-size:10px;margin:14px 12px 8px;letter-spacing:.2em}
 body.mode-youtoo .nowarfy-nav-group{
-  background:rgba(230,220,255,.02);
+  background:transparent;
   border:1px solid var(--border-soft);
   border-radius:var(--radius-md);
   margin:8px 10px;
   padding:10px 6px;
-  transition:background .25s var(--ease),border-color .25s var(--ease);
+  transition:border-color .2s var(--ease),background .2s var(--ease);
 }
 body.mode-youtoo .nowarfy-nav-group:hover{
-  background:rgba(230,220,255,.04);
+  background:rgba(230,220,255,.03);
   border-color:var(--border-strong);
 }
 body.mode-youtoo .nav-links li a,
 body.mode-youtoo .nav-links button{
   border-radius:var(--radius-sm);
-  transition:background .2s var(--ease),color .2s var(--ease),transform .2s var(--ease);
+  transition:background .15s var(--ease),color .15s var(--ease);
   color:var(--text-gray);
 }
 body.mode-youtoo .nav-links li a:hover,
 body.mode-youtoo .nav-links button:hover{
-  background:rgba(232,160,192,.1);
+  background:rgba(230,220,255,.05);
   color:var(--text-white);
-  transform:translateX(3px);
 }
 body.mode-youtoo .nav-links li.active a,
 body.mode-youtoo .nav-links li.active button{
-  background:linear-gradient(90deg,rgba(232,160,192,.2),transparent);
+  background:rgba(201,160,176,.12);
   color:var(--text-white);
   box-shadow:inset 2px 0 0 var(--accent);
 }
 
-/* botones */
+/* botones (sin glow ni lift) */
 body.mode-youtoo .btn-control,
 body.mode-youtoo .btn-play,
 body.mode-youtoo #queueToggleBtn{
   border-radius:50%;
-  transition:transform .2s var(--ease),background .2s,box-shadow .2s,border-color .2s;
+  transition:background .15s var(--ease),color .15s var(--ease);
   background:rgba(230,220,255,.06);
   border:1px solid var(--border-soft);
   color:var(--text-gray);
@@ -109,43 +95,35 @@ body.mode-youtoo #queueToggleBtn{
 body.mode-youtoo .btn-control:hover,
 body.mode-youtoo .btn-play:hover,
 body.mode-youtoo #queueToggleBtn:hover{
-  transform:translateY(-2px) scale(1.05);
   background:rgba(230,220,255,.12);
   color:var(--text-white);
-  box-shadow:0 0 16px -4px var(--accent-glow);
 }
 body.mode-youtoo .btn-play{
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  color:#fff;
+  background:var(--accent);
+  color:#1a1418;
   border:none;
-  box-shadow:0 0 20px -6px var(--accent-glow);
 }
 body.mode-youtoo .btn-play:hover{
-  background:linear-gradient(135deg,var(--accent-hover),var(--accent-2));
-  box-shadow:0 0 28px -4px var(--accent-glow);
+  background:var(--accent-hover);
 }
 
-/* tarjetas */
+/* tarjetas (planas, sin glass ni hover lift) */
 body.mode-youtoo .library-card,
 body.mode-youtoo .video-card,
 body.mode-youtoo .playlist-card,
 body.mode-youtoo .home-card{
   border-radius:var(--radius-md);
   border:1px solid var(--border-soft);
-  background:var(--glass);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  transition:transform .3s var(--ease),border-color .3s,box-shadow .3s,background .3s;
+  background:rgba(14,16,24,.7);
+  transition:border-color .2s var(--ease),background .2s var(--ease);
   overflow:hidden;
 }
 body.mode-youtoo .library-card:hover,
 body.mode-youtoo .video-card:hover,
 body.mode-youtoo .playlist-card:hover,
 body.mode-youtoo .home-card:hover{
-  transform:translateY(-3px);
   border-color:var(--border-strong);
-  box-shadow:0 12px 32px -12px rgba(0,0,0,.6),0 0 20px -8px var(--accent-glow);
-  background:rgba(230,220,255,.06);
+  background:rgba(20,22,32,.85);
 }
 
 /* inputs */
@@ -155,14 +133,14 @@ body.mode-youtoo input[type="text"]{
   border-radius:var(--radius-md);
   background:rgba(230,220,255,.04);
   border:1px solid var(--border-soft);
-  transition:border-color .2s,background .2s,box-shadow .2s;
+  transition:border-color .2s var(--ease),background .2s var(--ease);
   color:var(--text-white);
 }
 body.mode-youtoo .search-container:focus-within,
 body.mode-youtoo input:focus{
   border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(232,160,192,.18);
   background:rgba(230,220,255,.07);
+  box-shadow:none;
 }
 
 /* modales */
@@ -172,45 +150,42 @@ body.mode-youtoo .nowarfy-device-dock-panel,
 body.mode-youtoo .modal,
 body.mode-youtoo .dialog{
   border-radius:var(--radius-lg);
-  background:var(--glass-strong);
-  backdrop-filter:blur(22px);
-  -webkit-backdrop-filter:blur(22px);
+  background:rgba(12,14,22,.96);
+  backdrop-filter:none;
   border:1px solid var(--border-strong);
-  box-shadow:0 24px 60px -20px rgba(0,0,0,.8);
+  box-shadow:0 16px 48px -16px rgba(0,0,0,.7);
 }
 
 /* dock fab */
 body.mode-youtoo .nowarfy-device-dock-fab{
   border-radius:999px;
-  background:var(--glass-strong);
-  backdrop-filter:blur(16px);
+  background:rgba(12,14,22,.95);
   border:1px solid var(--border-strong);
-  box-shadow:0 10px 28px -10px rgba(0,0,0,.6);
-  transition:transform .22s var(--ease),box-shadow .22s;
+  box-shadow:none;
+  transition:background .2s var(--ease);
   color:var(--text-white);
 }
 body.mode-youtoo .nowarfy-device-dock-fab:hover{
-  transform:translateY(-3px);
-  box-shadow:0 16px 40px -10px rgba(0,0,0,.7);
+  background:rgba(20,22,32,.98);
 }
 
-/* focus */
+/* focus (sutil) */
 body.mode-youtoo *:focus-visible{
-  outline:2px solid var(--accent-2);
+  outline:1px solid var(--accent-2);
   outline-offset:2px;
-  border-radius:6px;
-  box-shadow:0 0 0 4px var(--accent-2-glow);
+  border-radius:4px;
+  box-shadow:none;
 }
 
-/* transitions */
+/* transitions (mínimas) */
 body.mode-youtoo button,
 body.mode-youtoo a,
 body.mode-youtoo .btn-control{
-  transition:transform .2s var(--ease),background .2s var(--ease),color .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease);
+  transition:background .15s var(--ease),color .15s var(--ease),border-color .15s var(--ease);
 }
 
-/* scrollbar */
-body.mode-youtoo ::-webkit-scrollbar{width:9px;height:9px}
+/* scrollbar (fino, sin gradiente) */
+body.mode-youtoo ::-webkit-scrollbar{width:8px;height:8px}
 body.mode-youtoo ::-webkit-scrollbar-track{background:transparent}
 body.mode-youtoo ::-webkit-scrollbar-thumb{
   background:rgba(230,220,255,.12);
@@ -219,20 +194,20 @@ body.mode-youtoo ::-webkit-scrollbar-thumb{
   background-clip:content-box;
 }
 body.mode-youtoo ::-webkit-scrollbar-thumb:hover{
-  background:rgba(230,220,255,.25);
+  background:rgba(230,220,255,.22);
   background-clip:content-box;
 }
 
-/* ambient artwork */
+/* ambient artwork (discreto) */
 body.mode-youtoo .ambient-artwork-background{
-  filter:blur(50px) saturate(1.1);
-  opacity:.2;
+  filter:blur(40px) saturate(1);
+  opacity:.12;
 }
 
-/* progress bar */
+/* progress bar (plano) */
 body.mode-youtoo .prog-fill,body.mode-youtoo #progFill{
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));
-  box-shadow:0 0 12px var(--accent-glow);
+  background:var(--accent);
+  box-shadow:none;
   transition:width .1s linear;
   border-radius:999px;
 }
@@ -240,18 +215,18 @@ body.mode-youtoo .prog-fill,body.mode-youtoo #progFill{
 /* selection */
 body.mode-youtoo ::selection{
   background:var(--accent);
-  color:#fff;
+  color:#1a1418;
 }
 
 /* toasts */
 body.mode-youtoo .toast,
 body.mode-youtoo .nowarfy-toast{
   border-radius:var(--radius-md);
-  background:var(--glass-strong);
-  backdrop-filter:blur(18px);
+  background:rgba(12,14,22,.96);
   border:1px solid var(--border-strong);
-  box-shadow:0 16px 40px -16px rgba(0,0,0,.7);
+  box-shadow:0 8px 24px -8px rgba(0,0,0,.6);
   color:var(--text-white);
+  backdrop-filter:none;
 }
 
 /* empty states */
