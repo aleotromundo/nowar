@@ -260,9 +260,25 @@
     <div class="nowarfy-handoff-prompt" id="nowarfyHandoffPrompt" hidden role="status" aria-live="polite">
         <div>
             <strong>El audio llegó a este dispositivo</strong>
-            <small>Por la política de autoplay, tocá “Desbloquear audio” una vez. Después, este dispositivo seguirá reproduciendo y los demás conservarán el control remoto.</small>
+            <small>El navegador pidió una interacción para habilitar el sonido. Tocá “Desbloquear audio” una vez; después este equipo seguirá reproduciendo y los demás conservarán el control remoto.</small>
         </div>
         <button type="button" aria-label="Desbloquear audio en este dispositivo" onclick="unlockNowarfyHandoff()"><i class="fas fa-volume-high"></i> Desbloquear audio</button>
+    </div>
+
+    <div class="nowarfy-device-dock" id="nowarfyDeviceDock" hidden>
+        <div class="nowarfy-device-dock-panel" id="nowarfyDeviceDockPanel" hidden role="dialog" aria-label="Elegir dispositivo de reproducción">
+            <div class="nowarfy-device-dock-head">
+                <strong>Reproducir en</strong>
+                <button type="button" class="nowarfy-device-dock-close" onclick="toggleNowarfyDeviceDock(false)" aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="nowarfy-device-dock-list" id="nowarfyDeviceDockList"></div>
+            <button type="button" class="nowarfy-device-dock-mirror" id="nowarfyDeviceDockMirror" aria-pressed="false" onclick="toggleNowarfyMirrorPlayback()"><i class="fas fa-volume-low"></i> Sonar también acá</button>
+            <small class="nowarfy-device-dock-hint">Elegir un equipo mueve la reproducción. «Sonar también acá» suma este equipo como segundo parlante con la misma pista.</small>
+        </div>
+        <button type="button" class="nowarfy-device-dock-fab" id="nowarfyDeviceDockButton" onclick="toggleNowarfyDeviceDock()" aria-expanded="false" aria-controls="nowarfyDeviceDockPanel" title="Cambiar de dispositivo">
+            <i class="fas fa-tower-broadcast" aria-hidden="true"></i>
+            <span id="nowarfyDeviceDockLabel">Dispositivos</span>
+        </button>
     </div>
 
     <div class="nowarfy-auth-modal" id="nowarfyAuthModal" role="dialog" aria-modal="true" aria-labelledby="nowarfyAuthTitle" hidden onclick="if (event.target === this) closeNowarfyAuth()">

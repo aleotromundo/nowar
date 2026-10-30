@@ -769,6 +769,37 @@
         .nowarfy-handoff-prompt strong { font-size: .82rem; }
         .nowarfy-handoff-prompt small { display: block; margin-top: 3px; color: #b8bad0; line-height: 1.35; }
         .nowarfy-handoff-prompt button { border: 0; border-radius: 11px; padding: 10px 13px; color: #10111d; background: var(--accent-2); font-weight: 800; white-space: nowrap; cursor: pointer; }
+        .nowarfy-device-dock { position: fixed; z-index: 10003; right: 20px; bottom: calc(var(--player-height) + 18px + var(--safe-area-bottom)); display: flex; flex-direction: column; align-items: flex-end; }
+        .nowarfy-device-dock[hidden], .nowarfy-device-dock-panel[hidden] { display: none !important; }
+        .nowarfy-device-dock-fab { display: inline-flex; align-items: center; gap: 8px; max-width: min(78vw, 280px); padding: 10px 15px; border: 1px solid rgba(94,234,212,.42); border-radius: 999px; color: #eafffb; background: rgba(20,22,40,.96); box-shadow: 0 14px 34px rgba(0,0,0,.44); font: 800 .72rem 'Manrope', sans-serif; cursor: pointer; transition: transform .18s var(--ease), border-color .18s var(--ease), background .18s var(--ease); }
+        .nowarfy-device-dock-fab:hover { transform: translateY(-1px); background: rgba(28,31,54,.98); }
+        .nowarfy-device-dock-fab:focus-visible { outline: 2px solid #5eead4; outline-offset: 3px; }
+        .nowarfy-device-dock-fab i { color: #5eead4; font-size: .8rem; }
+        .nowarfy-device-dock-fab span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .nowarfy-device-dock-fab.is-player { border-color: rgba(94,234,212,.7); background: rgba(94,234,212,.16); }
+        .nowarfy-device-dock-fab.is-mirror { border-color: rgba(167,139,250,.65); }
+        .nowarfy-device-dock-fab.is-mirror i { color: #c4b5fd; }
+        .nowarfy-device-dock-panel { width: min(88vw, 308px); margin-bottom: 10px; padding: 14px; border: 1px solid rgba(190,188,255,.18); border-radius: 16px; color: #f4f4ff; background: rgba(21,22,40,.98); box-shadow: 0 22px 54px rgba(0,0,0,.52); }
+        .nowarfy-device-dock-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .nowarfy-device-dock-head strong { font-size: .78rem; letter-spacing: .01em; }
+        .nowarfy-device-dock-close { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid rgba(255,255,255,.12); border-radius: 8px; color: #cfd2e6; background: rgba(255,255,255,.05); cursor: pointer; }
+        .nowarfy-device-dock-close:hover { background: rgba(255,255,255,.12); }
+        .nowarfy-device-dock-list { display: grid; gap: 6px; max-height: 216px; overflow-y: auto; overscroll-behavior: contain; }
+        .nowarfy-dock-device { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 10px; border: 1px solid rgba(255,255,255,.09); border-radius: 11px; color: inherit; background: rgba(255,255,255,.03); font: inherit; text-align: left; cursor: pointer; transition: border-color .16s ease, background .16s ease; }
+        .nowarfy-dock-device:hover { border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.07); }
+        .nowarfy-dock-device.is-active { border-color: rgba(94,234,212,.6); background: rgba(94,234,212,.11); }
+        .nowarfy-dock-device-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; flex: 0 0 auto; border-radius: 9px; color: #5eead4; background: rgba(94,234,212,.1); }
+        .nowarfy-dock-device-text { display: grid; gap: 1px; min-width: 0; }
+        .nowarfy-dock-device-text strong { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: .73rem; font-weight: 800; }
+        .nowarfy-dock-device-text small { color: #9fa6c2; font-size: .62rem; font-weight: 700; }
+        .nowarfy-dock-device.is-active .nowarfy-dock-device-text small { color: #5eead4; }
+        .nowarfy-dock-device em { margin-left: auto; flex: 0 0 auto; color: #8f94b5; font-size: .55rem; font-style: normal; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+        .nowarfy-device-dock-mirror { display: inline-flex; align-items: center; justify-content: center; gap: 7px; width: 100%; margin-top: 10px; padding: 9px 10px; border: 1px solid rgba(167,139,250,.38); border-radius: 10px; color: #ede9fe; background: rgba(167,139,250,.12); font: 800 .7rem 'Manrope', sans-serif; cursor: pointer; }
+        .nowarfy-device-dock-mirror:hover { background: rgba(167,139,250,.2); }
+        .nowarfy-device-dock-mirror[aria-pressed="true"] { border-color: rgba(167,139,250,.8); background: rgba(167,139,250,.26); }
+        .nowarfy-device-dock-mirror:disabled { border-color: rgba(255,255,255,.1); color: #9fa6c2; background: rgba(255,255,255,.04); cursor: default; }
+        .nowarfy-device-dock-hint { display: block; margin-top: 8px; color: #8c92ad; font-size: .6rem; line-height: 1.45; }
+        .nowarfy-dock-empty { padding: 8px 2px; color: #9fa6c2; font-size: .68rem; }
         .nowarfy-device-list { display:grid; gap:6px; max-height:180px; overflow:auto; }
         .nowarfy-device-option { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; text-align:left; padding:10px 12px !important; font-size:.78rem; border: 1px solid rgba(255,255,255,.1) !important; transition: all .2s ease; }
         .nowarfy-device-option:hover { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.2) !important; }
@@ -1043,15 +1074,33 @@
             .nowarfy-handoff-prompt {
                 bottom: calc(14px + var(--safe-area-bottom));
             }
+            .nowarfy-device-dock {
+                right: 12px;
+                bottom: calc(var(--player-height) + 12px + var(--safe-area-bottom));
+                max-width: calc(100vw - 24px);
+            }
+            .nowarfy-device-dock-fab {
+                max-width: min(72vw, 240px);
+                padding: 9px 13px;
+            }
+            .nowarfy-device-dock-panel {
+                width: min(92vw, 320px);
+            }
         }
         @media (prefers-reduced-transparency: reduce) {
             .search-container,
             .player-bar,
             .queue-panel,
             .nowarfy-nav-groups,
-            .nowarfy-handoff-prompt {
+            .nowarfy-handoff-prompt,
+            .nowarfy-device-dock-fab,
+            .nowarfy-device-dock-panel {
                 backdrop-filter: none;
                 -webkit-backdrop-filter: none;
                 background: rgba(17,18,35,.98);
             }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .nowarfy-device-dock-fab { transition: none; }
+            .nowarfy-device-dock-fab:hover { transform: none; }
         }

@@ -584,9 +584,14 @@ function onYTError(event) {
 }
 
 function togglePlay() {
-    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) { void sendNowarfyCommand('toggle', null, true); return; }
+    if (nowarfyAuthUser && nowarfyRemoteSession && !nowarfyRemoteIsPlayer) {
+        // Justo después de un traspaso, "play" es idempotente y evita pausar el
+        // equipo que acaba de arrancar por la orden anterior.
+        const intent = Date.now() < nowarfyHandoffPendingUntil ? 'play' : 'toggle';
+        void sendNowarfyCommand(intent, null, true);
+        return;
+    }
     if (externalAudioFocusInterrupted) { showToast('Nowarfy cedió el audio a otra aplicación', 'fa-volume-high'); return; }
-    nowarfyAudioUnlocked = true;
     if (currentIndex === -1 || !queue[currentIndex]) return;
     if (!ytPlayer && !audioEl.src && !freeVideoEl.src) {
         const resume = pendingVideoResumeSession;

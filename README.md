@@ -70,7 +70,13 @@ El modo remoto usa un modelo de **un reproductor y N controles** (tipo Spotify C
 
 Transporte: `BroadcastChannel` para pestañas del mismo navegador y Supabase Realtime para dispositivos distintos; si ninguno confirma, el comando se inserta en la tabla. El reproductor publica su estado cada 3 s con `position` + `positionAt`, así los controles calculan el progreso sin depender de su propio reloj.
 
-Los controles **no reproducen audio**: solo reflejan el estado. Para que un dispositivo reproduzca hay que elegirlo en *Cuenta → Elegir dispositivo de reproducción*, y el navegador exige una interacción previa en ese dispositivo (política de autoplay).
+Los controles **no reproducen audio por defecto**: solo reflejan el estado. Para que un dispositivo reproduzca hay que elegirlo en *Cuenta → Elegir dispositivo de reproducción* o desde el acceso flotante de dispositivos (ver abajo), y el navegador puede exigir una interacción previa en ese dispositivo (política de autoplay). Si la exige, aparece el aviso **Desbloquear audio** en el equipo que recibió la reproducción; un toque alcanza y el control remoto sigue funcionando.
+
+### Acceso flotante y sonido en ambos equipos
+
+Después de elegir un dispositivo queda un botón flotante (abajo a la derecha, sobre la barra del reproductor) con el nombre del equipo activo. Desde ahí se puede volver a cambiar de dispositivo sin pasar por *Cuenta*.
+
+El botón **Sonar también acá** (solo en los controles, no en el reproductor principal) activa una copia local opt-in: ese equipo reproduce la misma pista, pausa y posición que el reproductor principal. La sincronización es aproximada (se corrige si la deriva supera ~3,5 s y depende del estado que llega cada 3 s), no es audio sincronizado muestra a muestra. La preferencia se guarda por dispositivo en `nowarfy_mirror_playback_v1`. El equipo espejo no publica estado para no pisar al reproductor principal.
 
 ### Diagnóstico de sincronización
 

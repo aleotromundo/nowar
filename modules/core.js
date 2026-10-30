@@ -42,9 +42,35 @@ let nowarfyProgressSource = null;
 let nowarfyAudioUnlocked = false;
 let nowarfyPendingHandoff = null;
 let nowarfyPendingRemoteCommands = [];
+// Ventana en la que el botón de play del control remoto se manda como `play`
+// idempotente en vez de `toggle`, para no pausar justo después de un traspaso.
+let nowarfyHandoffPendingUntil = 0;
+let nowarfyRoleRefreshAt = 0;
+// "Sonar también acá": este equipo replica la reproducción del reproductor
+// principal. Es una preferencia local de cada dispositivo.
+const NOWARFY_MIRROR_KEY = 'nowarfy_mirror_playback_v1';
+let nowarfyMirrorEnabled = localStorage.getItem(NOWARFY_MIRROR_KEY) === '1';
+let nowarfyMirrorBusy = false;
+let nowarfyMirrorLastSeekAt = 0;
+let nowarfyMirrorPendingUrl = '';
+let nowarfyMirrorPendingUntil = 0;
+// Una vez que elegís un dispositivo, el acceso flotante queda a mano aunque
+// el otro equipo se desconecte un momento.
+let nowarfyDeviceDockPinned = false;
 const NOWARFY_REMOTE_DEVICE_STALE_MS = 2 * 60 * 1000;
 const NOWARFY_REMOTE_DEVICE_KEY = 'nowarfy_remote_device_key_v1';
 const nowarfyRemoteDeviceKey = localStorage.getItem(NOWARFY_REMOTE_DEVICE_KEY) || (() => { const key = (crypto.randomUUID?.() || `${Date.now()}-${Math.random()}-${Math.random()}`).replace(/-/g, ''); localStorage.setItem(NOWARFY_REMOTE_DEVICE_KEY, key); return key; })();
+
+// La política de autoplay solo permite iniciar audio tras una interacción real
+// con esta página. Cualquier toque o tecla cuenta y el navegador lo recuerda
+// hasta recargar. Si había un traspaso esperando, se reanuda en ese momento.
+function nowarfyMarkAudioUnlocked() {
+    nowarfyAudioUnlocked = true;
+    if (nowarfyPendingHandoff) void unlockNowarfyHandoff();
+}
+['pointerdown', 'keydown', 'touchend'].forEach(type => {
+    window.addEventListener(type, nowarfyMarkAudioUnlocked, { capture: true, passive: true });
+});
 
 // --- DIAGNÓSTICO DE SINCRONIZACIÓN (solo lectura) ---
 // No altera el protocolo remoto: únicamente observa el estado que ya circula.
@@ -424,8 +450,7 @@ async function setupNowarfyRemoteControl() {
                     nowarfyRemoteSeenCommandIds.set(message.commandId, Date.now());
                     for (const [id, timestamp] of nowarfyRemoteSeenCommandIds) if (Date.now() - timestamp > 60000) nowarfyRemoteSeenCommandIds.delete(id);
                 }
-                if (nowarfyRemoteIsPlayer) void executeNowarfyRemoteCommand(command);
-                else nowarfyPendingRemoteCommands.push(command);
+                void nowarfyHandleIncomingCommand(command);
             } else if (message.type === 'remote-state') {
                 if (message.senderDeviceId === nowarfyRemoteDeviceId || nowarfyRemoteIsPlayer || !message.state) return;
                 updateRemoteControlsFromState(message.state);
@@ -445,8 +470,7 @@ async function setupNowarfyRemoteControl() {
                     nowarfyRemoteSeenCommandIds.set(message.commandId, Date.now());
                     for (const [id, timestamp] of nowarfyRemoteSeenCommandIds) if (Date.now() - timestamp > 60000) nowarfyRemoteSeenCommandIds.delete(id);
                 }
-                if (nowarfyRemoteIsPlayer) void executeNowarfyRemoteCommand(command);
-                else nowarfyPendingRemoteCommands.push(command);
+                void nowarfyHandleIncomingCommand(command);
             })
             .on('broadcast', { event: 'remote-state' }, packet => {
                 const message = packet?.payload || packet || {};
@@ -460,12 +484,14 @@ async function setupNowarfyRemoteControl() {
                 updateRemoteShadowTimer();
                 if (wasPlayer !== nowarfyRemoteIsPlayer) nowarfyRemoteDiagLog('Cambio de rol', `${wasPlayer ? 'reproductor' : 'control'} → ${nowarfyRemoteIsPlayer ? 'reproductor' : 'control'} · v${payload.new.version ?? 0}`);
                 if (wasPlayer && !nowarfyRemoteIsPlayer) { stopAll(); isPlaying = false; updateIcon(); setTrackLoading(false); }
+                if (wasPlayer !== nowarfyRemoteIsPlayer) { syncNowarfyRemoteTimers(); renderNowarfyDeviceDock(); }
                 updateNowarfyAuthUI();
                 if (payload.new.state) updateRemoteControlsFromState(payload.new.state);
-                if (nowarfyRemoteIsPlayer && nowarfyPendingRemoteCommands.length) { const pending = nowarfyPendingRemoteCommands.splice(0); pending.forEach(command => void executeNowarfyRemoteCommand(command)); }
+                nowarfyFlushPendingRemoteCommands();
+                if (!nowarfyRemoteIsPlayer && nowarfyMirrorEnabled) applyNowarfyMirrorState(payload.new.state || nowarfyRemoteShadowState);
                 remoteStatus(nowarfyRemoteIsPlayer ? 'Este dispositivo es el reproductor activo.' : 'Control remoto conectado; el reproductor activo está en otro dispositivo.');
             })
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'youtoo_remote_commands', filter: `user_id=eq.${nowarfyAuthUser.id}` }, payload => { const command = payload.new.command || {}; if (command.commandId && nowarfyRemoteSeenCommandIds.has(command.commandId)) return; if (command.commandId) nowarfyRemoteSeenCommandIds.set(command.commandId, Date.now()); if (payload.new.device_id !== nowarfyRemoteDeviceId && (!command.targetDeviceId || command.targetDeviceId === nowarfyRemoteDeviceId)) { if (nowarfyRemoteIsPlayer) void executeNowarfyRemoteCommand(command); else nowarfyPendingRemoteCommands.push(command); } })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'youtoo_remote_commands', filter: `user_id=eq.${nowarfyAuthUser.id}` }, payload => { const command = payload.new.command || {}; if (command.commandId && nowarfyRemoteSeenCommandIds.has(command.commandId)) return; if (command.commandId) nowarfyRemoteSeenCommandIds.set(command.commandId, Date.now()); if (payload.new.device_id !== nowarfyRemoteDeviceId && (!command.targetDeviceId || command.targetDeviceId === nowarfyRemoteDeviceId)) void nowarfyHandleIncomingCommand(command); })
             .on('postgres_changes', { event: '*', schema: 'public', table: NOWARFY_TASTE_TABLE, filter: `user_id=eq.${nowarfyAuthUser.id}` }, payload => { if (!nowarfyTasteSyncInFlight) void loadNowarfyTaste(); })
             .subscribe(status => { nowarfyRemoteBroadcastReady = status === 'SUBSCRIBED'; if (status === 'SUBSCRIBED') { updateNowarfyAuthUI(); remoteStatus(nowarfyRemoteIsPlayer ? 'Este dispositivo es el reproductor activo.' : 'Control remoto conectado; elegí otro dispositivo como reproductor.'); } });
         if (!nowarfyRemoteIsPlayer && nowarfyRemoteSession?.state) updateRemoteControlsFromState(nowarfyRemoteSession.state);
@@ -513,6 +539,7 @@ async function refreshNowarfyRemoteDevices() {
         }).join('') : '<small>No hay dispositivos activos.</small>';
     }
     updateNowarfyAuthUI();
+    renderNowarfyDeviceDock();
     return nowarfyRemoteDevices;
 }
 function toggleNowarfyDevicePicker() {
@@ -521,7 +548,180 @@ function toggleNowarfyDevicePicker() {
     picker.hidden = !picker.hidden;
     if (!picker.hidden) void refreshNowarfyRemoteDevices();
 }
-async function teardownNowarfyRemoteControl() { if (nowarfyRemoteDiagTimer) { clearInterval(nowarfyRemoteDiagTimer); nowarfyRemoteDiagTimer = null; } const diagPanel = document.getElementById('nowarfyRemoteDiag'); if (diagPanel) diagPanel.open = false; if (nowarfyRemoteStateTimer) clearInterval(nowarfyRemoteStateTimer); if (nowarfyDeviceRefreshTimer) clearInterval(nowarfyDeviceRefreshTimer); nowarfyRemoteStateTimer = null; nowarfyDeviceRefreshTimer = null; if (nowarfyRemoteShadowTimer) clearInterval(nowarfyRemoteShadowTimer); nowarfyRemoteShadowTimer = null; nowarfyRemoteDevices = []; nowarfyRemoteBroadcastReady = false; nowarfyBroadcastChannelReady = false; nowarfyRemoteSeenCommandIds.clear(); if (nowarfyBroadcastChannel) { nowarfyBroadcastChannel.close(); nowarfyBroadcastChannel = null; } if (nowarfyRemoteChannel && nowarfySupabase) await nowarfySupabase.removeChannel(nowarfyRemoteChannel); nowarfyRemoteChannel = null; nowarfyRemoteSession = null; nowarfyRemoteShadowSong = null; nowarfyRemoteShadowState = null; nowarfyRemoteDeviceId = null; nowarfyRemoteIsPlayer = false; }
+
+// --- Acceso flotante para cambiar de dispositivo ---
+function nowarfyShortDeviceName(name) {
+    const value = String(name || '').trim();
+    if (!value) return 'Dispositivo';
+    const [kind, os] = value.split(' · ');
+    return os ? `${kind} · ${os}` : value;
+}
+function nowarfyActiveDeviceLabel() {
+    if (nowarfyRemoteIsPlayer) return 'Reproduciendo acá';
+    const active = nowarfyRemoteDevices.find(device => device.id === nowarfyRemoteSession?.active_device_id);
+    return active ? `En ${nowarfyShortDeviceName(active.device_name)}` : 'Dispositivos';
+}
+function renderNowarfyDeviceDock() {
+    const dock = document.getElementById('nowarfyDeviceDock');
+    if (!dock) return;
+    const show = !!nowarfyAuthUser && !!nowarfyRemoteSession && (nowarfyDeviceDockPinned || nowarfyRemoteDevices.length > 1);
+    dock.hidden = !show;
+    if (!show) { toggleNowarfyDeviceDock(false); return; }
+    const label = document.getElementById('nowarfyDeviceDockLabel');
+    if (label) label.textContent = nowarfyActiveDeviceLabel();
+    const button = document.getElementById('nowarfyDeviceDockButton');
+    if (button) {
+        button.classList.toggle('is-player', nowarfyRemoteIsPlayer);
+        button.classList.toggle('is-mirror', !nowarfyRemoteIsPlayer && nowarfyMirrorEnabled);
+        button.title = nowarfyRemoteIsPlayer ? 'Este equipo reproduce · cambiar de dispositivo' : `${nowarfyActiveDeviceLabel()} · cambiar de dispositivo`;
+    }
+    const list = document.getElementById('nowarfyDeviceDockList');
+    if (list) {
+        const items = nowarfyRemoteDevices.map((device) => {
+            const isActive = device.id === nowarfyRemoteSession?.active_device_id;
+            const isCurrent = device.id === nowarfyRemoteDeviceId;
+            const status = isActive ? 'Reproduciendo' : isCurrent ? 'Reproducir en este equipo' : 'Disponible';
+            return `<button type="button" class="nowarfy-dock-device${isActive ? ' is-active' : ''}" onclick="selectNowarfyPlaybackDevice('${device.id}')" aria-current="${isActive ? 'true' : 'false'}">
+                <span class="nowarfy-dock-device-icon"><i class="fas ${isActive ? 'fa-volume-high' : 'fa-display'}"></i></span>
+                <span class="nowarfy-dock-device-text"><strong>${escapeHtml(nowarfyShortDeviceName(device.device_name))}</strong><small>${status}</small></span>
+                ${isCurrent ? '<em>este equipo</em>' : ''}
+            </button>`;
+        }).join('');
+        list.innerHTML = items || '<small class="nowarfy-dock-empty">No hay otros dispositivos activos ahora.</small>';
+    }
+    const mirror = document.getElementById('nowarfyDeviceDockMirror');
+    if (mirror) {
+        mirror.setAttribute('aria-pressed', String(!nowarfyRemoteIsPlayer && nowarfyMirrorEnabled));
+        mirror.disabled = nowarfyRemoteIsPlayer;
+        mirror.innerHTML = nowarfyRemoteIsPlayer
+            ? '<i class="fas fa-volume-high"></i> Este equipo ya reproduce'
+            : `<i class="fas ${nowarfyMirrorEnabled ? 'fa-volume-high' : 'fa-volume-low'}"></i> ${nowarfyMirrorEnabled ? 'Dejar de sonar acá' : 'Sonar también acá'}`;
+    }
+}
+function toggleNowarfyDeviceDock(force) {
+    const panel = document.getElementById('nowarfyDeviceDockPanel');
+    const button = document.getElementById('nowarfyDeviceDockButton');
+    if (!panel) return;
+    const open = typeof force === 'boolean' ? force : panel.hidden;
+    panel.hidden = !open;
+    if (button) button.setAttribute('aria-expanded', String(open));
+    if (open) { renderNowarfyDeviceDock(); void refreshNowarfyRemoteDevices(); }
+}
+document.addEventListener('pointerdown', (event) => {
+    const dock = document.getElementById('nowarfyDeviceDock');
+    if (!dock || dock.hidden || !(event.target instanceof Element)) return;
+    if (event.target.closest('#nowarfyDeviceDock')) return;
+    toggleNowarfyDeviceDock(false);
+}, true);
+
+// --- "Sonar también acá" ---
+// El reproductor principal manda el estado; este equipo lo imita (pista,
+// pausa y posición). No publica estado para no pisar al principal.
+function nowarfyMirrorExpectedPosition(state) {
+    const duration = Number(state?.duration || 0);
+    const capturedAt = Number(state?.positionAt) || Date.parse(state?.updatedAt) || Date.now();
+    const elapsed = state?.isPlaying === false ? 0 : Math.max(0, (Date.now() - capturedAt) / 1000);
+    const position = Math.max(0, Number(state?.position || 0) + elapsed);
+    return duration > 0 ? Math.min(duration, position) : position;
+}
+// Qué tiene cargado este equipo de verdad. No alcanza con mirar la cola:
+// el control remoto copia la lista del reproductor principal y la pista
+// puede estar en currentIndex sin que el audio local la haya cargado aún.
+function nowarfyMirrorLoadedUrl(song) {
+    if (!song) return '';
+    if (song.type === 'yt') {
+        try {
+            const data = ytPlayer?.getVideoData?.();
+            if (data?.video_id) return String(data.video_id);
+            const url = ytPlayer?.getVideoUrl?.() || '';
+            const match = String(url).match(/[?&]v=([^&]+)/);
+            return match ? decodeURIComponent(match[1]) : '';
+        } catch (_) { return ''; }
+    }
+    if (typeof activeAudioEl === 'undefined' || !activeAudioEl) return '';
+    return String(activeAudioEl.currentSrc || activeAudioEl.src || '');
+}
+async function applyNowarfyMirrorState(state) {
+    if (!state || !nowarfyMirrorEnabled || nowarfyRemoteIsPlayer || nowarfyMirrorBusy) return;
+    const url = String(state.resourceId || '');
+    if (!url) return;
+    const localSong = Array.isArray(queue) && currentIndex >= 0 ? queue[currentIndex] : null;
+    if (!localSong) return;
+    const loaded = nowarfyMirrorLoadedUrl(localSong);
+    const sameTrack = loaded === String(localSong.url);
+    if (!sameTrack) {
+        const idx = Array.isArray(queue) ? queue.findIndex(song => String(song.url) === url) : -1;
+        if (idx < 0) return;
+        // Evita reiniciar la misma carga si el estado remoto vuelve a llegar
+        // antes de que el medio termine de estar listo.
+        if (nowarfyMirrorPendingUrl === url && Date.now() < nowarfyMirrorPendingUntil) return;
+        nowarfyMirrorPendingUrl = url;
+        nowarfyMirrorPendingUntil = Date.now() + 12000;
+        nowarfyMirrorBusy = true;
+        try {
+            playQueueAt(idx, {
+                deferAutoplay: state.isPlaying === false,
+                resumeSession: { ...state, wasPlaying: state.isPlaying !== false }
+            });
+        } finally { nowarfyMirrorBusy = false; }
+        return;
+    }
+    nowarfyMirrorPendingUrl = '';
+    if (state.isPlaying === false) {
+        if (localSong.type === 'yt') {
+            ytPlaybackIntent = false;
+            try { ytPlayer?.pauseVideo?.(); } catch (_) {}
+        } else if (typeof activeAudioEl !== 'undefined' && activeAudioEl && !activeAudioEl.paused) {
+            try { activeAudioEl.pause(); } catch (_) {}
+        }
+        return;
+    }
+    const expected = nowarfyMirrorExpectedPosition(state);
+    if (localSong.type === 'yt') {
+        let ytState = null;
+        try { ytState = ytPlayer?.getPlayerState?.(); } catch (_) { ytState = null; }
+        if (ytState !== window.YT?.PlayerState?.PLAYING && ytState !== window.YT?.PlayerState?.BUFFERING) {
+            playbackStoppedByUser = false;
+            ytPlaybackIntent = true;
+            try { ytPlayer?.playVideo?.(); } catch (_) {}
+        }
+        const actual = Number(ytPlayer?.getCurrentTime?.() || 0);
+        if (actual > 0 && Math.abs(actual - expected) > 3.5 && Date.now() - nowarfyMirrorLastSeekAt > 6000) {
+            nowarfyMirrorLastSeekAt = Date.now();
+            try { ytPlayer?.seekTo?.(expected, true); } catch (_) {}
+        }
+        return;
+    }
+    if (typeof activeAudioEl === 'undefined' || !activeAudioEl) return;
+    if (activeAudioEl.paused) {
+        playbackStoppedByUser = false;
+        const attempt = activeAudioEl.play();
+        if (attempt?.catch) attempt.catch(() => {});
+    }
+    if (Math.abs((Number(activeAudioEl.currentTime) || 0) - expected) > 3.5 && Date.now() - nowarfyMirrorLastSeekAt > 6000) {
+        nowarfyMirrorLastSeekAt = Date.now();
+        try { activeAudioEl.currentTime = Math.max(0, Math.min(expected, Number(activeAudioEl.duration) || expected)); } catch (_) {}
+    }
+}
+async function toggleNowarfyMirrorPlayback() {
+    if (nowarfyRemoteIsPlayer) { showToast('Este equipo ya es el reproductor principal', 'fa-circle-info'); return; }
+    nowarfyMirrorEnabled = !nowarfyMirrorEnabled;
+    try { localStorage.setItem(NOWARFY_MIRROR_KEY, nowarfyMirrorEnabled ? '1' : '0'); } catch (_) {}
+    // El clic en el botón es la interacción que habilita el audio.
+    nowarfyAudioUnlocked = true;
+    renderNowarfyDeviceDock();
+    if (nowarfyMirrorEnabled) {
+        const state = nowarfyRemoteShadowState || nowarfyRemoteSession?.state;
+        showToast('Este equipo también va a reproducir el audio', 'fa-volume-high');
+        nowarfyMirrorLastSeekAt = 0;
+        if (state) await applyNowarfyMirrorState(state);
+    } else {
+        try { activeAudioEl?.pause?.(); } catch (_) {}
+        if (ytPlayer?.pauseVideo) { try { ytPlaybackIntent = false; ytPlayer.pauseVideo(); } catch (_) {} }
+        showToast('Este equipo dejó de reproducir en paralelo', 'fa-volume-xmark');
+    }
+}
+async function teardownNowarfyRemoteControl() { if (nowarfyRemoteDiagTimer) { clearInterval(nowarfyRemoteDiagTimer); nowarfyRemoteDiagTimer = null; } const diagPanel = document.getElementById('nowarfyRemoteDiag'); if (diagPanel) diagPanel.open = false; if (nowarfyRemoteStateTimer) clearInterval(nowarfyRemoteStateTimer); if (nowarfyDeviceRefreshTimer) clearInterval(nowarfyDeviceRefreshTimer); nowarfyRemoteStateTimer = null; nowarfyDeviceRefreshTimer = null; if (nowarfyRemoteShadowTimer) clearInterval(nowarfyRemoteShadowTimer); nowarfyRemoteShadowTimer = null; nowarfyRemoteDevices = []; nowarfyRemoteBroadcastReady = false; nowarfyBroadcastChannelReady = false; nowarfyRemoteSeenCommandIds.clear(); if (nowarfyBroadcastChannel) { nowarfyBroadcastChannel.close(); nowarfyBroadcastChannel = null; } if (nowarfyRemoteChannel && nowarfySupabase) await nowarfySupabase.removeChannel(nowarfyRemoteChannel); nowarfyRemoteChannel = null; nowarfyRemoteSession = null; nowarfyRemoteShadowSong = null; nowarfyRemoteShadowState = null; nowarfyRemoteDeviceId = null; nowarfyRemoteIsPlayer = false; renderNowarfyDeviceDock(); }
 async function claimNowarfyPlayer() { return selectNowarfyPlaybackDevice(nowarfyRemoteDeviceId); }
 async function selectNowarfyPlaybackDevice(deviceId) {
     if (nowarfyClaimInFlight) return;
@@ -539,6 +739,7 @@ async function selectNowarfyPlaybackDevice(deviceId) {
         if (result.error) throw result.error;
         if (!result.data || result.data.active_device_id !== deviceId) throw new Error('Supabase no confirmó el dispositivo elegido.');
         nowarfyRemoteSession = result.data;
+        nowarfyDeviceDockPinned = true;
         nowarfyRemoteDiagLog('Handoff solicitado', `→ ${nowarfyRemoteDiagShortId(deviceId)} · v${result.data.version ?? 0}`);
         const wasLocalPlayer = nowarfyRemoteIsPlayer;
         nowarfyRemoteIsPlayer = deviceId === nowarfyRemoteDeviceId;
@@ -553,8 +754,19 @@ async function selectNowarfyPlaybackDevice(deviceId) {
             await touchNowarfyRemoteDevice();
             await executeNowarfyRemoteCommand({ type: 'handoff', state: nextState });
         } else {
-            const handoff = await nowarfySupabase.from('youtoo_remote_commands').insert({ session_id: nowarfyRemoteSession.id, user_id: nowarfyAuthUser.id, device_id: nowarfyRemoteDeviceId, command: { type: 'handoff', targetDeviceId: deviceId, state: nextState } });
+            const handoffCommand = { type: 'handoff', targetDeviceId: deviceId, state: nextState };
+            const handoffId = `handoff-${nowarfyRemoteDeviceId}-${Date.now()}`;
+            // El broadcast llega al instante; el insert queda como respaldo para
+            // cuando el realtime de la tabla de comandos no está disponible.
+            if (nowarfyBroadcastChannelReady && nowarfyBroadcastChannel) {
+                try { nowarfyBroadcastChannel.postMessage({ type: 'remote-command', senderDeviceId: nowarfyRemoteDeviceId, commandId: handoffId, command: handoffCommand }); } catch (_) {}
+            }
+            if (nowarfyRemoteBroadcastReady && nowarfyRemoteChannel) {
+                try { await nowarfyRemoteChannel.send({ type: 'broadcast', event: 'remote-command', payload: { commandId: handoffId, senderDeviceId: nowarfyRemoteDeviceId, command: handoffCommand } }); } catch (_) {}
+            }
+            const handoff = await nowarfySupabase.from('youtoo_remote_commands').insert({ session_id: nowarfyRemoteSession.id, user_id: nowarfyAuthUser.id, device_id: nowarfyRemoteDeviceId, command: handoffCommand });
             if (handoff.error) throw handoff.error;
+            nowarfyHandoffPendingUntil = Date.now() + 6000;
         }
         remoteStatus(nowarfyRemoteIsPlayer ? 'Este dispositivo es el reproductor activo.' : 'Reproducción enviada al dispositivo elegido.');
         updateNowarfyAuthUI();
@@ -647,6 +859,7 @@ function updateRemoteControlsFromState(state, forceQueue = false) {
     }
     const volume = document.getElementById('volumeSlider');
     if (volume && document.activeElement !== volume && Number.isFinite(Number(state.volume))) { volume.value = Number(state.volume) / 100; volume.style.background = `linear-gradient(to right, var(--accent) ${Number(state.volume)}%, #535353 ${Number(state.volume)}%)`; }
+    if (nowarfyMirrorEnabled && !nowarfyRemoteIsPlayer) void applyNowarfyMirrorState(state);
 }
 function nowarfyRemoteDiagLog(label, detail = '') {
     nowarfyRemoteDiagEvents.unshift({ at: Date.now(), label, detail });
@@ -776,18 +989,120 @@ function applyOptimisticUpdate(type, value) {
         }
     }
 }
+function nowarfyHideHandoffPrompt() { const prompt = document.getElementById('nowarfyHandoffPrompt'); if (prompt) prompt.hidden = true; }
 function showNowarfyHandoffPrompt() { const prompt = document.getElementById('nowarfyHandoffPrompt'); if (prompt) prompt.hidden = false; }
+function nowarfyRemoteIsActuallyPlaying() {
+    let song = null;
+    try { song = currentQueueSong?.() || null; } catch (_) { song = null; }
+    if (song?.type === 'yt') {
+        try {
+            const state = ytPlayer?.getPlayerState?.();
+            return state === window.YT?.PlayerState?.PLAYING || state === window.YT?.PlayerState?.BUFFERING;
+        } catch (_) { return false; }
+    }
+    return typeof activeAudioEl !== 'undefined' && !!activeAudioEl && !activeAudioEl.paused;
+}
+// El navegador bloquea el audio remoto hasta que haya una interacción real en
+// este equipo. Devolver true significa que el error ya está explicado al usuario.
+function nowarfyHandleAutoplayBlocked(error) {
+    if (!nowarfyRemoteIsPlayer) return false;
+    if (error?.name && error.name !== 'NotAllowedError' && error.name !== 'AbortError') return false;
+    nowarfyAudioUnlocked = false;
+    isPlaying = false;
+    nowarfyPendingHandoff = (typeof currentIndex === 'number' && currentIndex >= 0 && queue[currentIndex])
+        ? { idx: currentIndex, state: remoteStateSnapshot() }
+        : null;
+    try { updateIcon(); } catch (_) {}
+    try { updatePlaybackState?.(); } catch (_) {}
+    try { setTrackLoading?.(false); } catch (_) {}
+    showNowarfyHandoffPrompt();
+    remoteStatus('El navegador bloqueó el audio en este equipo: tocá «Desbloquear audio».');
+    nowarfyRemoteDiagLog('Audio bloqueado', 'política de autoplay');
+    void publishNowarfyRemoteState();
+    return true;
+}
+function nowarfyRetryRemotePlayback() {
+    let song = null;
+    try { song = currentQueueSong?.() || null; } catch (_) { song = null; }
+    if (!song) return false;
+    if (song.type === 'yt') {
+        if (!ytPlayer?.playVideo) return false;
+        try {
+            playbackStoppedByUser = false;
+            ytPlaybackIntent = true;
+            ytPlayer.playVideo();
+            return true;
+        } catch (_) { return false; }
+    }
+    if (typeof activeAudioEl === 'undefined' || !activeAudioEl) return false;
+    const attempt = activeAudioEl.play();
+    if (attempt?.catch) attempt.catch(() => nowarfyHandleAutoplayBlocked());
+    return true;
+}
+// Vigila que el traspaso remoto realmente arranque. Si el navegador lo bloquea,
+// muestra el aviso en este equipo y refleja la pausa en el control.
+function nowarfyWatchRemotePlayback(attempt = 0) {
+    const delays = [1800, 2500, 5000, 6000];
+    const expectedUrl = (() => { try { return currentQueueSong?.()?.url || ''; } catch (_) { return ''; } })();
+    window.setTimeout(() => {
+        if (!nowarfyRemoteIsPlayer) return;
+        let song = null;
+        try { song = currentQueueSong?.() || null; } catch (_) { song = null; }
+        if ((song?.url || '') !== expectedUrl) return;
+        if (playbackStoppedByUser) return;
+        if (nowarfyRemoteIsActuallyPlaying()) { nowarfyHideHandoffPrompt(); return; }
+        // La API de YouTube puede estar cargando todavía; no declarar bloqueo antes de tiempo.
+        if (song?.type === 'yt' && !ytPlayer && attempt < delays.length - 1) { nowarfyWatchRemotePlayback(attempt + 1); return; }
+        if (attempt < delays.length - 1) {
+            nowarfyRetryRemotePlayback();
+            nowarfyWatchRemotePlayback(attempt + 1);
+            return;
+        }
+        nowarfyHandleAutoplayBlocked();
+    }, delays[Math.min(attempt, delays.length - 1)]);
+}
 async function unlockNowarfyHandoff() {
     nowarfyAudioUnlocked = true;
-    const prompt = document.getElementById('nowarfyHandoffPrompt'); if (prompt) prompt.hidden = true;
-    const pending = nowarfyPendingHandoff; nowarfyPendingHandoff = null;
-    if (!pending) return;
-    const song = queue[pending.idx];
+    const pending = nowarfyPendingHandoff;
+    nowarfyPendingHandoff = null;
+    if (!pending && nowarfyRemoteIsActuallyPlaying()) { nowarfyHideHandoffPrompt(); return; }
+    let song = pending && queue[pending.idx] ? queue[pending.idx] : null;
+    if (!song) { try { song = currentQueueSong?.() || null; } catch (_) { song = null; } }
+    const position = Number(pending?.state?.position) || 0;
     try {
-        if (song?.type === 'yt' && ytPlayer?.playVideo) ytPlayer.playVideo();
-        else if (activeAudioEl) { await activeAudioEl.play(); if (Number(pending.state.position) > 0) activeAudioEl.currentTime = Number(pending.state.position) || 0; }
-        isPlaying = true; updateIcon(); await publishNowarfyRemoteState();
-    } catch (error) { isPlaying = false; updateIcon(); remoteStatus('El navegador no permitió iniciar el audio en este dispositivo.'); }
+        if (!song) { nowarfyHideHandoffPrompt(); return; }
+        if (pending && currentIndex !== pending.idx) {
+            playbackStoppedByUser = false;
+            playQueueAt(pending.idx, { resumeSession: { ...(pending.state || {}), wasPlaying: true } });
+        } else if (song.type === 'yt') {
+            playbackStoppedByUser = false;
+            ytPlaybackIntent = true;
+            if (ytPlayer?.playVideo) {
+                if (position > 0) { try { ytPlayer.seekTo(position, true); } catch (_) {} }
+                ytPlayer.playVideo();
+            } else {
+                playQueueAt(currentIndex, pending ? { resumeSession: { ...(pending.state || {}), wasPlaying: true } } : {});
+            }
+        } else if (typeof activeAudioEl !== 'undefined' && activeAudioEl?.src) {
+            playbackStoppedByUser = false;
+            if (position > 0) { try { activeAudioEl.currentTime = position; } catch (_) {} }
+            await activeAudioEl.play();
+        } else {
+            playbackStoppedByUser = false;
+            playQueueAt(currentIndex, pending ? { resumeSession: { ...(pending.state || {}), wasPlaying: true } } : {});
+        }
+        isPlaying = true;
+        updateIcon();
+        try { updatePlaybackState?.(); } catch (_) {}
+        nowarfyHideHandoffPrompt();
+        await publishNowarfyRemoteState();
+    } catch (error) {
+        nowarfyPendingHandoff = pending || nowarfyPendingHandoff;
+        isPlaying = false;
+        try { updateIcon(); } catch (_) {}
+        remoteStatus('El navegador no permitió iniciar el audio en este dispositivo. Probá tocar el botón otra vez.');
+        showNowarfyHandoffPrompt();
+    }
 }
 async function executeNowarfyRemoteCommand(command) {
     if (!nowarfyRemoteIsPlayer) return;
@@ -805,13 +1120,16 @@ async function executeNowarfyRemoteCommand(command) {
         }
         if (idx >= 0) {
             const shouldPlay = state.isPlaying !== false;
-            const deferAutoplay = shouldPlay && !nowarfyAudioUnlocked;
-            nowarfyPendingHandoff = deferAutoplay ? { idx, state } : null;
+            nowarfyPendingHandoff = null;
+            nowarfyHideHandoffPrompt();
             playbackStoppedByUser = !shouldPlay;
-            playQueueAt(idx, { deferAutoplay, resumeSession: { ...state, wasPlaying: shouldPlay && !deferAutoplay } });
+            // Intentamos reproducir siempre: si el navegador ya tiene interacción
+            // (lo normal), arranca sin tocar nada. Si la bloquea, el vigilante
+            // muestra el aviso en este equipo y avisa al control remoto.
+            playQueueAt(idx, { resumeSession: { ...state, wasPlaying: shouldPlay } });
             const volume = Math.max(0, Math.min(100, Number(state.volume ?? 80))) / 100;
             setVolume(volume);
-            if (deferAutoplay) showNowarfyHandoffPrompt();
+            if (shouldPlay) nowarfyWatchRemotePlayback(0);
             if (!shouldPlay && state.type !== 'yt' && Number(state.position) > 0) window.setTimeout(() => { if (activeAudioEl) activeAudioEl.currentTime = Number(state.position) || 0; }, 250);
         }
         return;
@@ -838,6 +1156,7 @@ async function executeNowarfyRemoteCommand(command) {
         // Reproducir desde el índice especificado (para soporte de playlists)
         const playIdx = Math.max(0, Math.min(idx + startIndex, queue.length - 1));
         playQueueAt(playIdx, { sourceIdx: playIdx, resumeSession: { wasPlaying: true } });
+        nowarfyWatchRemotePlayback(0);
         await publishNowarfyRemoteState();
         return;
     }
@@ -863,10 +1182,16 @@ async function executeNowarfyRemoteCommand(command) {
         await publishNowarfyRemoteState();
         return;
     }
-    if (type === 'toggle') togglePlay();
-    else if (type === 'next') nextSong(true);
-    else if (type === 'prev') prevSong();
-    else if (type === 'volume') setVolume(Math.max(0, Math.min(100, Number(command.value))) / 100);
+    if (type === 'toggle') {
+        togglePlay();
+        if (isPlaying) nowarfyWatchRemotePlayback(0);
+    } else if (type === 'next') {
+        nextSong(true);
+        nowarfyWatchRemotePlayback(0);
+    } else if (type === 'prev') {
+        prevSong();
+        nowarfyWatchRemotePlayback(0);
+    } else if (type === 'volume') setVolume(Math.max(0, Math.min(100, Number(command.value))) / 100);
     else if (type === 'seekPercent') commitSeek(Math.max(0, Math.min(100, Number(command.value))) / 100);
     else if (type === 'seekDelta') {
         const delta = Number(command.value) || 0;
@@ -874,8 +1199,58 @@ async function executeNowarfyRemoteCommand(command) {
         if (song?.type === 'yt' && ytPlayer?.getCurrentTime) ytPlayer.seekTo(Math.max(0, ytPlayer.getCurrentTime() + delta), true);
         else if (activeAudioEl) activeAudioEl.currentTime = Math.max(0, Math.min(activeAudioEl.duration || 0, activeAudioEl.currentTime + delta));
     } else if (type === 'pause' && isPlaying) togglePlay();
-    else if (type === 'play' && !isPlaying) togglePlay();
+    else if (type === 'play' && !isPlaying) {
+        togglePlay();
+        if (isPlaying) nowarfyWatchRemotePlayback(0);
+    }
     await publishNowarfyRemoteState();
+}
+
+// Si el realtime de la tabla de sesiones no está habilitado (o llega tarde), un
+// comando dirigido a este equipo es la señal para volver a leer quién manda.
+async function refreshNowarfyRemoteRole() {
+    if (!nowarfySupabase || !nowarfyRemoteSession?.id || !nowarfyRemoteDeviceId) return nowarfyRemoteIsPlayer;
+    if (Date.now() - nowarfyRoleRefreshAt < 1200) return nowarfyRemoteIsPlayer;
+    nowarfyRoleRefreshAt = Date.now();
+    const result = await nowarfySupabase.from('youtoo_remote_sessions').select('*').eq('id', nowarfyRemoteSession.id).maybeSingle();
+    if (result.error || !result.data) return nowarfyRemoteIsPlayer;
+    nowarfyRemoteSession = result.data;
+    const wasPlayer = nowarfyRemoteIsPlayer;
+    nowarfyRemoteIsPlayer = result.data.active_device_id === nowarfyRemoteDeviceId;
+    if (!wasPlayer && nowarfyRemoteIsPlayer) {
+        nowarfyRemoteDiagLog('Rol recuperado', 'este equipo es reproductor');
+        updateRemoteShadowTimer();
+        syncNowarfyRemoteTimers();
+        updateNowarfyAuthUI();
+        renderNowarfyDeviceDock();
+        remoteStatus('Este dispositivo es el reproductor activo.');
+        if (result.data.state) updateRemoteControlsFromState(result.data.state);
+    }
+    return nowarfyRemoteIsPlayer;
+}
+function nowarfyFlushPendingRemoteCommands() {
+    if (!nowarfyRemoteIsPlayer || !nowarfyPendingRemoteCommands.length) return;
+    const pending = nowarfyPendingRemoteCommands.splice(0);
+    pending.forEach(command => {
+        // Los comandos viejos ya no representan lo que el usuario quiere ahora.
+        if (Date.now() - Number(command._receivedAt || Date.now()) < 20000) void executeNowarfyRemoteCommand(command);
+    });
+}
+async function nowarfyHandleIncomingCommand(command) {
+    if (!command?.type) return;
+    if (nowarfyRemoteIsPlayer) { await executeNowarfyRemoteCommand(command); return; }
+    const targeted = command.targetDeviceId && command.targetDeviceId === nowarfyRemoteDeviceId;
+    // Los comandos de reproducción merecen una verificación de rol: si el
+    // realtime de sesiones falló, esta lectura evita que el play se pierda.
+    if (targeted || ['handoff', 'playSong', 'play', 'toggle'].includes(command.type)) {
+        if (await refreshNowarfyRemoteRole()) { await executeNowarfyRemoteCommand(command); return; }
+    }
+    // Solo se guardan los comandos dirigidos a este equipo (por ejemplo, un
+    // handoff): los comandos generales son para el reproductor, no para todos
+    // los controles, y no deben ejecutarse si este equipo asume el rol después.
+    if (!targeted) return;
+    nowarfyPendingRemoteCommands.push({ ...command, _receivedAt: Date.now() });
+    if (nowarfyPendingRemoteCommands.length > 20) nowarfyPendingRemoteCommands.splice(0, nowarfyPendingRemoteCommands.length - 20);
 }
 
 function initRailDragScroll() {

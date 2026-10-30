@@ -665,7 +665,11 @@ function playQueueAt(idx, options = {}) {
                 if (media === activeAudioEl && currentQueueSong()?.type === 'freevideo') renderVideoStageDetails({ ...song, duration: media.duration || song.duration });
             };
             media.load();
-            if (shouldAutoplayFreeVideo) media.play().catch(e => { setTrackLoading(false); showToast('No se pudo reproducir este video libre', 'fa-triangle-exclamation'); });
+            if (shouldAutoplayFreeVideo) media.play().catch(e => {
+                if (nowarfyHandleAutoplayBlocked?.(e)) return;
+                setTrackLoading(false);
+                showToast('No se pudo reproducir este video libre', 'fa-triangle-exclamation');
+            });
             else setTrackLoading(false);
         };
         const preparedFreeVideo = nowarfyPrepareDirectMedia(freeVideoEl, song.url);
@@ -686,7 +690,11 @@ function playQueueAt(idx, options = {}) {
             media.dataset.queueId = String(song._qid);
             bindDirectAudioEvents(media);
             media.onloadedmetadata = () => applyResumeSessionToMedia(media, song, resumeSession);
-            if (shouldAutoplayAudio) media.play().catch(e => { setTrackLoading(false); showToast('No se pudo reproducir esta pista', 'fa-triangle-exclamation'); });
+            if (shouldAutoplayAudio) media.play().catch(e => {
+                if (nowarfyHandleAutoplayBlocked?.(e)) return;
+                setTrackLoading(false);
+                showToast('No se pudo reproducir esta pista', 'fa-triangle-exclamation');
+            });
             else setTrackLoading(false);
         };
         const preparedDirect = nowarfyPrepareDirectMedia(audioEl, song.url);
