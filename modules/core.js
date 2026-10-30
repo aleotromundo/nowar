@@ -853,7 +853,8 @@ function updateRemoteControlsFromState(state, forceQueue = false) {
         }
     }
     if (!nowarfyRemoteIsPlayer && state.resourceId) {
-        const nextShadow = { type: state.type || 'yt', url: state.resourceId, title: state.title || 'Reproduciendo en otro dispositivo', artist: state.artist || '', img: state.img || '', channelId: state.channelId || '' };
+        const currentQueueItem = Array.isArray(queue) && currentIndex >= 0 ? queue[currentIndex] : null;
+        const nextShadow = { _qid: currentQueueItem?._qid || state.currentQid || null, type: state.type || 'yt', url: state.resourceId, title: state.title || 'Reproduciendo en otro dispositivo', artist: state.artist || '', img: state.img || '', channelId: state.channelId || '' };
         if (!nowarfyRemoteShadowSong || nowarfyRemoteShadowSong.url !== nextShadow.url || nowarfyRemoteShadowSong.title !== nextShadow.title) { nowarfyRemoteShadowSong = nextShadow; updateNowPlaying(nextShadow); }
         isPlaying = !!state.isPlaying;
         updateIcon();

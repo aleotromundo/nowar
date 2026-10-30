@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nowarfy YouToo — música real, sin límites</title>
+<meta name="description" content="Nowarfy reúne artistas, canales y videos en un solo reproductor. Escuchá gratis; pasá a Pro para sincronizar equipos, listas ilimitadas, letras y ecualizador.">
+<link rel="icon" href="https://nowar-rose.vercel.app/assets/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0b0e; --card:#101318; --line:#22262e;
+    --text:#f6f4ef; --muted:#9a978f;
+    --red:#e02531; --orange:#f4571f; --teal:#22d3a5;
+    --grad:linear-gradient(100deg,#e02531,#f4571f);
+    --display:"Anton","Arial Narrow",sans-serif;
+    --sans:"Manrope",ui-sans-serif,system-ui,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+  /* grain */
+  body::before{content:"";position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+  a{color:inherit}
+  img{max-width:100%}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+  .mono{font-family:var(--mono);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:500}
+  .display{font-family:var(--display);font-weight:400;text-transform:uppercase;line-height:.9}
+  .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  /* header */
+  .header{position:sticky;top:0;z-index:40;background:rgba(10,11,14,.86);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+  .header .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;height:64px}
+  .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+  .brand img{width:34px;height:34px;border-radius:50%;transition:transform .3s}
+  .brand:hover img{transform:rotate(-8deg)}
+  .brand-name{display:flex;flex-direction:column;line-height:1}
+  .brand-name b{font-family:var(--display);font-size:19px;letter-spacing:.02em;text-transform:uppercase;font-weight:400}
+  .brand-name i{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--muted);font-style:normal;text-transform:uppercase}
+  .nav{display:flex;gap:26px}
+  .nav a{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--muted)}
+  .nav a:hover{color:var(--text)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;border:1px solid transparent;cursor:pointer}
+  .btn-light{background:var(--text);color:var(--bg)}
+  .btn-light:hover{background:var(--red);color:#fff}
+  .btn-primary{background:var(--red);color:#fff}
+  .btn-primary:hover{background:#c81f2a}
+  .btn-ghost{border-color:var(--line);color:var(--text);background:transparent}
+  .btn-ghost:hover{border-color:rgba(246,244,239,.4)}
+  .btn-sm{padding:9px 14px}
+
+  /* marquee */
+  .marquee{display:flex;overflow:hidden;border-bottom:1px solid var(--line);background:rgba(16,19,24,.55);padding:12px 0}
+  .marquee-track{display:flex;width:max-content;animation:slide 34s linear infinite}
+  .marquee span{display:flex;align-items:center;gap:16px;padding-right:16px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+  .marquee i{width:4px;height:4px;border-radius:50%;background:var(--red);display:block}
+  @keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* hero */
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+  .hero::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(60% 55% at 12% -5%,rgba(224,37,49,.28),transparent 60%),
+               radial-gradient(45% 45% at 92% 8%,rgba(34,211,165,.18),transparent 65%)}
+  .hero::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.6;
+    background-image:linear-gradient(to right,rgba(246,244,239,.045) 1px,transparent 1px),
+                     linear-gradient(to bottom,rgba(246,244,239,.045) 1px,transparent 1px);
+    background-size:72px 72px}
+  .hero .wrap{position:relative;z-index:1;display:grid;gap:56px;grid-template-columns:1.12fr .88fr;align-items:center;padding-top:72px;padding-bottom:84px}
+  .eyebrow{display:flex;align-items:center;gap:10px}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.85)}}
+  h1{font-family:var(--display);font-weight:400;text-transform:uppercase;line-height:.9;letter-spacing:.005em;margin:26px 0 0;font-size:clamp(46px,8.4vw,104px)}
+  h1 em{font-style:normal;color:var(--red)}
+  .lede{color:var(--muted);font-size:16px;max-width:520px;margin:26px 0 0;line-height:1.6}
+  .cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+  .meta{display:flex;flex-wrap:wrap;gap:12px 24px;margin-top:38px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .meta span{display:flex;align-items:center;gap:8px}
+  .meta b{width:4px;height:4px;border-radius:50%;background:rgba(246,244,239,.4);display:block}
+  .meta .hi{color:var(--text)}
+  .meta .hi b{background:var(--teal)}
+
+  /* player */
+  .player-wrap{position:relative;max-width:520px;margin:0 auto;width:100%}
+  .disc{position:absolute;right:-24px;top:-32px;width:160px;height:160px;border-radius:50%;border:1px solid var(--line);
+    background:conic-gradient(from 0deg,#1b1f26,#0d1014,#232830,#0d1014,#1b1f26);opacity:.8}
+  .disc::after{content:"";position:absolute;inset:64px;border-radius:50%;background:rgba(224,37,49,.25);border:1px solid var(--line)}
+  .player{position:relative;transform:rotate(-2deg);transition:transform .5s;border:1px solid var(--line);background:rgba(16,19,24,.88);box-shadow:8px 8px 0 0 rgba(4,5,7,.85);backdrop-filter:blur(8px)}
+  .player:hover{transform:rotate(0)}
+  .player-top{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line)}
+  .player-top .l{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .player-top img{width:16px;height:16px}
+  .player-top .d{display:flex;gap:6px}
+  .player-top .d i{width:6px;height:6px;border-radius:50%;display:block}
+  .player-body{padding:12px;display:grid;gap:12px}
+  .searchbar{display:flex;align-items:center;gap:8px;border:1px solid var(--line);padding:9px 12px;background:rgba(10,11,14,.6);font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .tile{border:1px solid var(--line);overflow:hidden;background:rgba(34,38,46,.3)}
+  .tile .art{aspect-ratio:1/1;background:
+    radial-gradient(60% 60% at 12% 0%,rgba(224,37,49,.3),transparent 60%),
+    radial-gradient(45% 45% at 92% 10%,rgba(34,211,165,.2),transparent 65%),#151922}
+  .tile .meta2{padding:8px;display:grid;gap:6px}
+  .skel{height:4px;border-radius:99px;background:rgba(246,244,239,.25)}
+  .skel.s{width:55%;background:rgba(246,244,239,.12)}
+  .player-bar{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line);background:rgba(10,11,14,.7)}
+  .cover{width:30px;height:30px;background:linear-gradient(100deg,#22d3a5,#2ec4d6);flex:none}
+  .lines{flex:1;display:grid;gap:6px}
+  .play{width:26px;height:26px;border-radius:50%;background:var(--teal);color:#0a0b0e;display:flex;align-items:center;justify-content:center;font-size:9px;flex:none}
+  .eq{display:flex;align-items:flex-end;gap:3px;height:16px}
+  .eq i{width:3px;border-radius:99px;background:var(--teal);display:block;transform-origin:bottom;animation:bar 1.1s ease-in-out infinite}
+  @keyframes bar{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+
+  /* sections */
+  section{padding:72px 0;border-bottom:1px solid var(--line)}
+  .label{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+  .label b{color:var(--red);font-weight:500}
+  .label s{display:block;width:32px;height:1px;background:var(--line);text-decoration:none}
+  .label span{color:var(--muted)}
+  h2{font-family:var(--display);font-weight:400;text-transform:uppercase;line-height:.92;margin:20px 0 0;font-size:clamp(30px,4.6vw,54px)}
+  .sub{color:var(--muted);font-size:14px;line-height:1.65;max-width:340px}
+
+  .bento{display:grid;gap:12px;grid-template-columns:repeat(12,1fr);margin-top:44px}
+  .cell{position:relative;border:1px solid var(--line);background:rgba(16,19,24,.4);padding:24px;display:flex;flex-direction:column;justify-content:space-between;transition:background .3s,border-color .3s}
+  .cell:hover{border-color:rgba(246,244,239,.25);background:rgba(16,19,24,.7)}
+  .cell .top{display:flex;align-items:flex-start;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--muted)}
+  .cell .ico{color:var(--teal);font-size:14px}
+  .cell h3{margin:0;font-size:18px;font-weight:600;letter-spacing:-.01em}
+  .cell.big h3{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:clamp(28px,3.4vw,42px);line-height:.95}
+  .cell p{margin:10px 0 0;color:var(--muted);font-size:13.5px;line-height:1.65;max-width:430px}
+  .cell .body{margin-top:36px}
+  .cell.big{grid-column:span 7;grid-row:span 2}
+  .cell.big .body{margin-top:88px}
+  .cell.sm{grid-column:span 5}
+  .cell.wide{grid-column:span 12;flex-direction:row;align-items:center;justify-content:space-between;gap:32px}
+  .cell.wide .body{margin-top:0;display:flex;flex-direction:column;align-items:flex-start}
+  .cell.wide .top{justify-content:flex-end;gap:16px;align-items:center}
+  .tag{display:inline-block;margin-top:12px;border:1px solid rgba(34,211,165,.3);padding:3px 8px;font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal)}
+  .bars{display:flex;align-items:flex-end;gap:3px;margin-top:32px;opacity:.7}
+  .bars i{width:100%;background:rgba(246,244,239,.2);display:block}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:44px}
+  .step{background:var(--bg);padding:26px;transition:background .3s}
+  .step:hover{background:rgba(16,19,24,.6)}
+  .step .num{font-family:var(--display);font-size:64px;line-height:1;color:transparent;-webkit-text-stroke:1.5px rgba(246,244,239,.35);transition:color .3s}
+  .step:hover .num{color:var(--red);-webkit-text-stroke:0}
+  .step h3{margin:22px 0 0;font-size:16px}
+  .step p{margin:8px 0 0;color:var(--muted);font-size:13.5px;line-height:1.65}
+
+  .band{background:var(--grad);border-bottom:1px solid var(--line);padding:56px 0}
+  .band .wrap{display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap}
+  .band h2{color:#0a0b0e;margin:12px 0 0;font-size:clamp(30px,4.4vw,52px);max-width:520px}
+  .band .mono{color:rgba(10,11,14,.7)}
+  .band p{color:rgba(10,11,14,.8);font-size:14px;line-height:1.65;max-width:360px;margin:0 0 18px}
+
+  .plans{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:44px}
+  .plan{position:relative;border:1px solid var(--line);background:rgba(16,19,24,.4);padding:30px;display:flex;flex-direction:column;gap:22px;transition:transform .4s}
+  .plan.pro{border-color:rgba(224,37,49,.5);background:var(--card);box-shadow:0 24px 60px -24px rgba(224,37,49,.5)}
+  .plan.pro:hover{transform:translateY(-4px)}
+  .plan .idx{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .plan .badge{position:absolute;right:24px;top:24px;background:var(--grad);color:#fff;padding:4px 9px;font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase}
+  .plan h3{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:30px;margin:8px 0 0;letter-spacing:.02em}
+  .plan .tagline{margin:8px 0 0;color:var(--muted);font-size:13.5px;max-width:28ch}
+  .price{display:flex;align-items:baseline;gap:8px}
+  .price strong{font-family:var(--display);font-weight:400;font-size:46px;line-height:1}
+  .price span{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .plan .note{margin:-12px 0 0;color:var(--muted);font-size:12px}
+  .plan ul{list-style:none;margin:0;padding:22px 0 0;border-top:1px solid var(--line);display:grid;gap:12px;flex:1}
+  .plan li{display:flex;gap:12px;color:var(--muted);font-size:13.5px;line-height:1.6}
+  .plan li b{color:var(--teal);font-weight:400;flex:none}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;border:1px solid var(--line)}
+  th,td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line)}
+  thead th{background:rgba(16,19,24,.6);font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:500}
+  thead th.c,td.c{text-align:center}
+  tbody tr:last-child td{border-bottom:0}
+  td{color:var(--muted)}
+  td.hi{color:var(--teal);font-family:var(--mono);font-size:12px}
+
+  details{border-bottom:1px solid var(--line);padding:2px 0}
+  summary{cursor:pointer;padding:18px 0;font-size:15px;font-weight:500;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";color:var(--muted);font-size:18px}
+  details[open] summary::after{content:"–"}
+  details p{margin:0 0 18px;color:var(--muted);font-size:13.5px;max-width:640px;line-height:1.7}
+  .q-index{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--muted);margin-right:16px}
+
+  footer{border-top:1px solid var(--line);background:rgba(16,19,24,.3);position:relative;overflow:hidden}
+  .foot{display:flex;justify-content:space-between;gap:32px;flex-wrap:wrap;padding:56px 0 32px}
+  .foot p{color:var(--muted);font-size:13px;margin:14px 0 0;max-width:320px;line-height:1.7}
+  .foot-links{display:flex;gap:64px}
+  .foot-links div{display:grid;gap:10px}
+  .foot-links strong{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:500}
+  .foot-links a{color:var(--muted);text-decoration:none;font-size:13.5px}
+  .foot-links a:hover{color:var(--text)}
+  .wordmark{font-family:var(--display);text-transform:uppercase;font-size:18.5vw;line-height:.86;color:transparent;-webkit-text-stroke:1.5px rgba(246,244,239,.35);white-space:nowrap;user-select:none;margin:36px 0 10px}
+  .legal{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);padding:18px 0;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+  @media (max-width:980px){
+    .hero .wrap{grid-template-columns:1fr;padding-top:48px;padding-bottom:64px}
+    .cell.big,.cell.sm{grid-column:span 12;grid-row:auto}
+    .cell.big .body{margin-top:40px}
+    .cell.wide{flex-direction:column;align-items:flex-start}
+    .steps{grid-template-columns:1fr}
+    .plans{grid-template-columns:1fr}
+    .nav{display:none}
+    section{padding:52px 0}
+    .disc{display:none}
+  }
+  @media (max-width:560px){
+    .foot-links{gap:36px}
+    table{font-size:12.5px}
+    th,td{padding:10px 12px}
+    .btn{padding:12px 18px}
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <img src="https://nowar-rose.vercel.app/assets/nowarfy-logo-red-solid.png" alt="Nowarfy">
+      <span class="brand-name"><b>Nowarfy</b><i>YouToo</i></span>
+    </a>
+    <nav class="nav">
+      <a href="#funciones">Funciones</a>
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#planes">Planes</a>
+    </nav>
+    <a class="btn btn-light btn-sm" href="https://nowar-rose.vercel.app" target="_blank" rel="noreferrer">Abrir app ↗</a>
+  </div>
+</header>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>Rock <i></i></span><span>Metal <i></i></span><span>En vivo <i></i></span><span>Letras <i></i></span><span>Multidispositivo <i></i></span><span>Sin límites <i></i></span>
+    <span>Rock <i></i></span><span>Metal <i></i></span><span>En vivo <i></i></span><span>Letras <i></i></span><span>Multidispositivo <i></i></span><span>Sin límites <i></i></span>
+  </div>
+</div>
+
+<main id="top">
+
+  <section class="hero" style="padding:0;border-bottom:1px solid var(--line)">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow"><span class="dot"></span><span class="mono" style="color:var(--muted)">Biblioteca audiovisual · 2026</span></div>
+        <h1>Música real,<br><em>sin límites.</em></h1>
+        <p class="lede">Artistas, canales y videos en un solo reproductor. Escuchá desde cualquier equipo, seguí la letra y ajustá el sonido a tu manera.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://nowar-rose.vercel.app" target="_blank" rel="noreferrer">▶ Escuchar gratis</a>
+          <a class="btn btn-ghost" href="#planes">Ver planes →</a>
+        </div>
+        <div class="meta">
+          <span><b></b>Sin instalar</span>
+          <span><b></b>Sin cuenta obligatoria</span>
+          <span class="hi"><b></b>Pro US$ 4,99/mes</span>
+        </div>
+      </div>
+
+      <div class="player-wrap" aria-hidden="true">
+        <div class="disc"></div>
+        <div class="player">
+          <div class="player-top">
+            <div class="l"><img src="https://nowar-rose.vercel.app/assets/nowarfy-logo-red-solid.png" alt="">Clásico</div>
+            <div class="d"><i style="background:#e02531"></i><i style="background:#22d3a5"></i><i style="background:#3a4150"></i></div>
+          </div>
+          <div class="player-body">
+            <div class="searchbar">⌕ Buscá videos, artistas o canciones</div>
+            <div class="tiles">
+              <div class="tile"><div class="art"></div><div class="meta2"><div class="skel"></div><div class="skel s"></div></div></div>
+              <div class="tile"><div class="art"></div><div class="meta2"><div class="skel"></div><div class="skel s"></div></div></div>
+              <div class="tile"><div class="art"></div><div class="meta2"><div class="skel"></div><div class="skel s"></div></div></div>
+              <div class="tile"><div class="art"></div><div class="meta2"><div class="skel"></div><div class="skel s"></div></div></div>
+              <div class="tile"><div class="art"></div><div class="meta2"><div class="skel"></div><div class="skel s"></div></div></div>
+              <div class="tile"><div class="art"></div><div class="meta2"><div class="skel"></div><div class="skel s"></div></div></div>
+            </div>
+          </div>
+          <div class="player-bar">
+            <span class="cover"></span>
+            <span class="lines"><span class="skel"></span><span class="skel s"></span></span>
+            <span style="color:var(--muted);font-size:11px">⏮</span>
+            <span class="play">II</span>
+            <span style="color:var(--muted);font-size:11px">⏭</span>
+            <span class="eq">
+              <i style="height:10px;animation-delay:0ms"></i><i style="height:16px;animation-delay:110ms"></i>
+              <i style="height:8px;animation-delay:220ms"></i><i style="height:14px;animation-delay:330ms"></i>
+              <i style="height:6px;animation-delay:440ms"></i><i style="height:12px;animation-delay:550ms"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="funciones">
+    <div class="wrap">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap">
+        <div>
+          <div class="label"><b>01</b><s></s><span>Funciones</span></div>
+          <h2>Todo lo que ya hace,<br>en un solo lugar</h2>
+        </div>
+        <p class="sub">Un reproductor pensado para escuchar seguido: catálogo, letras, control remoto y sonido propio.</p>
+      </div>
+
+      <div class="bento">
+        <article class="cell big">
+          <div class="top"><span>01</span><span class="ico">⌕</span></div>
+          <div class="body">
+            <h3>Catálogo real</h3>
+            <p>Rock, metal y música en vivo tomados de fuentes públicas. Buscás un artista, un canal o un tema y suena. Cada reproducción devuelve el crédito a su creador.</p>
+          </div>
+          <div class="bars">
+            <i style="height:12px"></i><i style="height:28px"></i><i style="height:18px"></i><i style="height:40px"></i><i style="height:22px"></i><i style="height:34px"></i><i style="height:16px"></i><i style="height:44px"></i><i style="height:26px"></i><i style="height:14px"></i><i style="height:36px"></i><i style="height:20px"></i><i style="height:46px"></i><i style="height:24px"></i><i style="height:12px"></i><i style="height:30px"></i><i style="height:42px"></i><i style="height:18px"></i><i style="height:32px"></i><i style="height:22px"></i>
+          </div>
+        </article>
+
+        <article class="cell sm">
+          <div class="top"><span>02</span><span class="ico">¶</span></div>
+          <div class="body">
+            <h3>Letras verificadas</h3>
+            <p>Letra sincronizada y cruzada por artista, título y duración. Nada de transcripciones inventadas.</p>
+            <span class="tag">Pro</span>
+          </div>
+        </article>
+
+        <article class="cell sm">
+          <div class="top"><span>03</span><span class="ico">⇄</span></div>
+          <div class="body">
+            <h3>Varios equipos</h3>
+            <p>Elegís qué equipo reproduce y controlás desde el otro. También pueden sonar dos a la vez.</p>
+            <span class="tag">Pro</span>
+          </div>
+        </article>
+
+        <article class="cell wide">
+          <div class="body">
+            <h3>Ecualizador</h3>
+            <p>Diez bandas, curvas guardadas por dispositivo, cuando la pista expone su audio.</p>
+          </div>
+          <div class="top"><span class="tag" style="margin:0">Pro</span><span>04</span><span class="ico">≡</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="como-funciona" style="background:rgba(16,19,24,.2)">
+    <div class="wrap">
+      <div class="label"><b>02</b><s></s><span>Cómo funciona</span></div>
+      <h2>Tres pasos y suena</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="num">01</div>
+          <h3>Entrá y buscá</h3>
+          <p>Abrilo en el navegador o instalalo como app. Sin cuenta obligatoria: el modo anónimo funciona desde el primer segundo.</p>
+        </div>
+        <div class="step">
+          <div class="num">02</div>
+          <h3>Armá tu cola</h3>
+          <p>Sumá temas, movelos, guardá lo que te gusta. La radio automática sigue sola cuando no querés decidir.</p>
+        </div>
+        <div class="step">
+          <div class="num">03</div>
+          <h3>Elegí dónde suena</h3>
+          <p>Vinculás el celular con un código y pasás la reproducción de una pantalla a otra sin cortar la música.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" style="padding:56px 0">
+    <div class="wrap">
+      <div>
+        <div class="mono">Gratis para siempre</div>
+        <h2>Empezá gratis, pasá a Pro cuando lo necesites</h2>
+      </div>
+      <div>
+        <p>Pro suma equipos sincronizados, listas ilimitadas, letras y ecualizador por US$ 4,99 al mes, o US$ 39,99 al año (US$ 3,33/mes).</p>
+        <a class="btn" style="background:#0a0b0e;color:#f6f4ef" href="#planes">Comparar planes ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="planes">
+    <div class="wrap">
+      <div class="label"><b>03</b><s></s><span>Planes</span></div>
+      <h2>Elegí cómo escuchar</h2>
+
+      <div class="plans">
+        <div class="plan">
+          <div>
+            <div class="idx">01 / Base</div>
+            <h3>Gratis</h3>
+            <p class="tagline">Para escuchar todos los días desde un equipo.</p>
+          </div>
+          <div class="price"><strong>US$ 0</strong><span>siempre</span></div>
+          <ul>
+            <li><b>✓</b> Catálogo completo de artistas, canales y videos</li>
+            <li><b>✓</b> Cola de reproducción y radio automática</li>
+            <li><b>✓</b> 1 dispositivo</li>
+            <li><b>✓</b> 3 listas guardadas</li>
+          </ul>
+          <a class="btn btn-ghost" href="https://nowar-rose.vercel.app" target="_blank" rel="noreferrer">Empezar gratis</a>
+        </div>
+
+        <div class="plan pro">
+          <span class="badge">Recomendado</span>
+          <div>
+            <div class="idx">02 / Completo</div>
+            <h3>Pro</h3>
+            <p class="tagline">Para escuchar en todos lados, con tu sonido.</p>
+          </div>
+          <div class="price"><strong>US$ 4,99</strong><span>por mes</span></div>
+          <p class="note">O US$ 39,99 al año, equivalente a US$ 3,33 por mes.</p>
+          <ul>
+            <li><b>✓</b> Todo lo del plan Gratis</li>
+            <li><b>✓</b> Hasta 5 dispositivos sincronizados</li>
+            <li><b>✓</b> Listas ilimitadas</li>
+            <li><b>✓</b> Letras verificadas</li>
+            <li><b>✓</b> Ecualizador de 10 bandas</li>
+          </ul>
+          <a class="btn btn-primary" href="https://nowar-rose.vercel.app" target="_blank" rel="noreferrer">Probar Pro</a>
+        </div>
+      </div>
+
+      <div style="margin-top:56px">
+        <table>
+          <thead>
+            <tr><th>Función</th><th class="c">Gratis</th><th class="c" style="color:#e02531">Pro</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Escuchar música y videos</td><td class="c">✓</td><td class="c hi">✓</td></tr>
+            <tr><td>Búsqueda de artistas y canales</td><td class="c">✓</td><td class="c hi">✓</td></tr>
+            <tr><td>Dispositivos sincronizados</td><td class="c">1</td><td class="c hi">Hasta 5</td></tr>
+            <tr><td>Listas guardadas</td><td class="c">3</td><td class="c hi">Ilimitadas</td></tr>
+            <tr><td>Letras verificadas</td><td class="c">—</td><td class="c hi">✓</td></tr>
+            <tr><td>Ecualizador de 10 bandas</td><td class="c">—</td><td class="c hi">✓</td></tr>
+            <tr><td>Control remoto entre equipos</td><td class="c">—</td><td class="c hi">✓</td></tr>
+          </tbody>
+        </table>
+        <p style="color:var(--muted);font-size:12px;margin-top:20px">Los precios están en dólares. Podés cancelar cuando quieras y mantenés Pro hasta el final del período pagado.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="preguntas">
+    <div class="wrap" style="display:grid;grid-template-columns:.8fr 1.2fr;gap:40px;align-items:start" id="faq-grid">
+      <div>
+        <div class="label"><b>04</b><s></s><span>Preguntas</span></div>
+        <h2>Lo que<br>suelen<br>preguntar</h2>
+        <p class="sub" style="margin-top:22px">Si falta algo, el diagnóstico de sincronización y el código del proyecto están abiertos.</p>
+      </div>
+      <div>
+        <details>
+          <summary><span><span class="q-index">01</span>¿Necesito una cuenta para escuchar?</span></summary>
+          <p>No. El modo anónimo guarda todo en tu dispositivo. La cuenta sirve para sincronizar equipos y conservar tus listas cuando cambiás de pantalla.</p>
+        </details>
+        <details>
+          <summary><span><span class="q-index">02</span>¿De dónde sale la música?</span></summary>
+          <p>De fuentes públicas como YouTube, Openverse y Jamendo. Cada video y cada canción pertenece a su creador; Nowarfy los ordena en un solo reproductor.</p>
+        </details>
+        <details>
+          <summary><span><span class="q-index">03</span>¿Qué cambia con Pro?</span></summary>
+          <p>Pro suma dispositivos sincronizados, listas ilimitadas, letras verificadas y ecualizador. El plan gratuito mantiene la escucha completa con un dispositivo y tres listas.</p>
+        </details>
+        <details>
+          <summary><span><span class="q-index">04</span>¿Puedo cancelar cuando quiera?</span></summary>
+          <p>Sí. Al cancelar seguís con Pro hasta el final del período que ya pagaste y después volvés al plan gratuito, sin trámites.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <a class="brand" href="#top">
+          <img src="https://nowar-rose.vercel.app/assets/nowarfy-logo-red-solid.png" alt="Nowarfy">
+          <span class="brand-name"><b>Nowarfy</b><i>YouToo</i></span>
+        </a>
+        <p>Biblioteca audiovisual de rock, metal y música en vivo. El contenido pertenece a sus creadores.</p>
+      </div>
+      <div class="foot-links">
+        <div>
+          <strong>Producto</strong>
+          <a href="#funciones">Funciones</a>
+          <a href="#planes">Planes</a>
+          <a href="https://nowar-rose.vercel.app" target="_blank" rel="noreferrer">Abrir la app</a>
+        </div>
+        <div>
+          <strong>Ayuda</strong>
+          <a href="#preguntas">Preguntas</a>
+          <a href="https://github.com/aleotromundo/nowar" target="_blank" rel="noreferrer">Código</a>
+        </div>
+      </div>
+    </div>
+    <p class="wordmark">Nowarfy</p>
+    <div class="legal"><span>Todos los derechos reservados</span><span>Hecho para escuchar fuerte</span></div>
+  </div>
+</footer>
+
+<style>
+  @media (max-width:980px){
+    #faq-grid{grid-template-columns:1fr !important}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .marquee-track,.eq i,.eyebrow .dot{animation:none !important}
+  }
+</style>
+</body>
+</html>
