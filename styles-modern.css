@@ -1,0 +1,203 @@
+/* styles-modern.css — capa estética 2026 (liquid glass + bento + micro-interacciones).
+   Se carga después de styles.css, por lo que sobrescribe sin tocar la lógica. */
+:root{
+  --bg-black:#07080b;
+  --bg-dark:#0b0d12;
+  --bg-card:rgba(16,19,24,.55);
+  --bg-hover:rgba(246,244,239,.04);
+  --text-white:#f6f4ef;
+  --text-gray:#9a978f;
+  --text-dim:#6b6860;
+  --accent:#e02531;
+  --accent-hover:#ff3a47;
+  --accent-glow:rgba(224,37,49,.45);
+  --accent-2:#22d3a5;
+  --border-soft:rgba(246,244,239,.08);
+  --border-strong:rgba(246,244,239,.16);
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --radius-sm:10px;
+  --radius-md:16px;
+  --radius-lg:22px;
+  --glass:rgba(16,19,24,.55);
+  --glass-strong:rgba(10,12,16,.78);
+}
+
+/* ambient background */
+body.mode-youtoo{
+  background:
+    radial-gradient(60% 50% at 10% -10%,rgba(224,37,49,.18),transparent 60%),
+    radial-gradient(45% 45% at 95% 0%,rgba(34,211,165,.12),transparent 65%),
+    var(--bg-dark);
+}
+body.mode-youtoo::before{opacity:.035}
+
+/* glass surfaces */
+body.mode-youtoo .sidebar,
+body.mode-youtoo .nowarfy-nav-groups,
+body.mode-youtoo .queue-panel,
+body.mode-youtoo .player-bar{
+  backdrop-filter:blur(22px) saturate(1.25);
+  -webkit-backdrop-filter:blur(22px) saturate(1.25);
+  background:var(--glass-strong);
+  border-color:var(--border-soft);
+}
+body.mode-youtoo .player-bar{
+  box-shadow:0 -1px 0 var(--border-soft),0 -24px 60px -24px rgba(0,0,0,.6);
+}
+body.mode-youtoo .sidebar{
+  box-shadow:1px 0 0 var(--border-soft);
+}
+
+/* nav groups & items */
+body.mode-youtoo .nowarfy-nav-group{
+  background:rgba(246,244,239,.02);
+  border:1px solid var(--border-soft);
+  border-radius:var(--radius-md);
+  margin:8px 10px;
+  padding:10px 8px;
+  transition:background .25s var(--ease),border-color .25s var(--ease);
+}
+body.mode-youtoo .nowarfy-nav-group:hover{
+  background:rgba(246,244,239,.035);
+  border-color:var(--border-strong);
+}
+body.mode-youtoo .nowarfy-nav-label{
+  font-family:var(--mono, "JetBrains Mono", monospace);
+  letter-spacing:.22em;
+  color:var(--text-dim);
+}
+body.mode-youtoo .nav-links li a,
+body.mode-youtoo .nav-links button{
+  border-radius:var(--radius-sm);
+  transition:background .2s var(--ease),color .2s var(--ease),transform .2s var(--ease);
+}
+body.mode-youtoo .nav-links li a:hover,
+body.mode-youtoo .nav-links button:hover{
+  background:rgba(246,244,239,.06);
+  transform:translateX(2px);
+}
+body.mode-youtoo .nav-links li.active a,
+body.mode-youtoo .nav-links li.active button{
+  background:linear-gradient(90deg,rgba(224,37,49,.18),transparent);
+  color:var(--text-white);
+  border-left:2px solid var(--accent);
+}
+
+/* buttons */
+body.mode-youtoo .btn-control,
+body.mode-youtoo .btn-play,
+body.mode-youtoo #queueToggleBtn{
+  border-radius:50%;
+  transition:transform .2s var(--ease),background .2s var(--ease),box-shadow .2s var(--ease);
+}
+body.mode-youtoo .btn-control:hover,
+body.mode-youtoo .btn-play:hover{
+  transform:translateY(-2px) scale(1.04);
+}
+body.mode-youtoo .btn-play{
+  background:var(--accent);
+  box-shadow:0 8px 24px -8px var(--accent-glow);
+}
+body.mode-youtoo .btn-play:hover{
+  background:var(--accent-hover);
+  box-shadow:0 12px 28px -8px var(--accent-glow);
+}
+
+/* cards */
+body.mode-youtoo .library-card,
+body.mode-youtoo .video-card,
+body.mode-youtoo .playlist-card,
+body.mode-youtoo .home-card{
+  border-radius:var(--radius-md);
+  border:1px solid var(--border-soft);
+  background:var(--glass);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  transition:transform .3s var(--ease),border-color .3s,box-shadow .3s;
+  overflow:hidden;
+}
+body.mode-youtoo .library-card:hover,
+body.mode-youtoo .video-card:hover,
+body.mode-youtoo .playlist-card:hover,
+body.mode-youtoo .home-card:hover{
+  transform:translateY(-4px);
+  border-color:var(--border-strong);
+  box-shadow:0 20px 40px -20px rgba(0,0,0,.6);
+}
+
+/* inputs / search */
+body.mode-youtoo .search-container,
+body.mode-youtoo input[type="search"],
+body.mode-youtoo input[type="text"]{
+  border-radius:var(--radius-md);
+  background:rgba(246,244,239,.04);
+  border:1px solid var(--border-soft);
+  transition:border-color .2s,background .2s,box-shadow .2s;
+}
+body.mode-youtoo .search-container:focus-within,
+body.mode-youtoo input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(224,37,49,.18);
+  background:rgba(246,244,239,.06);
+}
+
+/* queue panel */
+body.mode-youtoo .queue-panel{
+  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow:0 -24px 60px -20px rgba(0,0,0,.7);
+}
+
+/* modals / dialogs */
+body.mode-youtoo .nowarfy-auth-dialog,
+body.mode-youtoo .nowarfy-qr-dialog,
+body.mode-youtoo .nowarfy-device-dock-panel{
+  border-radius:var(--radius-lg);
+  background:var(--glass-strong);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--border-strong);
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.8);
+}
+
+/* dock fab */
+body.mode-youtoo .nowarfy-device-dock-fab{
+  border-radius:999px;
+  background:var(--glass-strong);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--border-strong);
+  box-shadow:0 12px 32px -12px rgba(0,0,0,.6);
+  transition:transform .2s var(--ease),box-shadow .2s;
+}
+body.mode-youtoo .nowarfy-device-dock-fab:hover{
+  transform:translateY(-2px);
+  box-shadow:0 18px 40px -12px rgba(0,0,0,.7);
+}
+
+/* focus rings */
+body.mode-youtoo *:focus-visible{
+  outline:2px solid var(--accent-2);
+  outline-offset:2px;
+  border-radius:6px;
+}
+
+/* smooth transitions global */
+body.mode-youtoo button,
+body.mode-youtoo a,
+body.mode-youtoo .btn-control{
+  transition:transform .2s var(--ease),background .2s var(--ease),color .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease);
+}
+
+/* scrollbar refined */
+body.mode-youtoo ::-webkit-scrollbar{width:8px;height:8px}
+body.mode-youtoo ::-webkit-scrollbar-track{background:transparent}
+body.mode-youtoo ::-webkit-scrollbar-thumb{background:rgba(246,244,239,.12);border-radius:999px;border:2px solid transparent;background-clip:content-box}
+body.mode-youtoo ::-webkit-scrollbar-thumb:hover{background:rgba(246,244,239,.22);background-clip:content-box}
+
+/* ambient artwork background softer */
+body.mode-youtoo .ambient-artwork-background{filter:blur(40px) saturate(1.15);opacity:.18}
+
+/* reduced motion */
+@media (prefers-reduced-motion:reduce){
+  body.mode-youtoo *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
