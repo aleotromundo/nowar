@@ -365,20 +365,5 @@
 
 
     <script src="script.js" charset="utf-8"></script>
-    <script>
-      (function(){
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        var sel = '.library-card,.video-card,.playlist-card,.home-card,.search-result-card,.radio-card';
-        document.addEventListener('mousemove', function(e){
-          var cards = document.querySelectorAll(sel);
-          for (var i=0;i<cards.length;i++){
-            var r = cards[i].getBoundingClientRect();
-            if (e.clientX < r.left-80 || e.clientX > r.right+80 || e.clientY < r.top-80 || e.clientY > r.bottom+80) continue;
-            cards[i].style.setProperty('--mx', (e.clientX - r.left) + 'px');
-            cards[i].style.setProperty('--my', (e.clientY - r.top) + 'px');
-          }
-        }, { passive:true });
-      })();
-    </script>
 </body>
 </html>

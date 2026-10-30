@@ -1,4 +1,4 @@
-/* OPT-110: estilos críticos de la ruta inicial. */
+﻿/* OPT-110: estilos crÃ­ticos de la ruta inicial. */
         :root {
             --bg-black: #000000;
             --bg-dark: #121212;
@@ -144,7 +144,7 @@
         .search-clear:hover { background: rgba(0,0,0,0.25); }
         .search-clear.show { display: flex; }
 
-        /* Estados de Ánimo */
+        /* Estados de Ãnimo */
         .mood-selector { display: flex; gap: 12px; margin-bottom: 30px; flex-wrap: wrap; }
         .mood-btn {
             flex: 1; min-width: 130px; padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); cursor: pointer;
@@ -445,7 +445,7 @@
         .volume-slider:hover::-webkit-slider-thumb { transform: scale(1.2); }
         .volume-slider::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: #fff; border: none; cursor: pointer; }
 
-        /* --- SPINNER ORIGINAL DE CARGA DE PISTA (no confundir con el de búsqueda) --- */
+        /* --- SPINNER ORIGINAL DE CARGA DE PISTA (no confundir con el de bÃºsqueda) --- */
         .orbit-spinner {
             --s: 18px; --d: 4px;
             width: var(--s); height: var(--s); position: relative; flex-shrink: 0;
@@ -545,7 +545,7 @@
             .btn-control { font-size: 0.8rem; }
             .progress-bar span { display: none; }
         }
-        /* Reproductor mobile: información arriba, controles y progreso abajo, sin apretar botones. */
+        /* Reproductor mobile: informaciÃ³n arriba, controles y progreso abajo, sin apretar botones. */
         @media (max-width: 768px) {
             :root { --player-height: 138px; }
             body { padding-top: var(--safe-area-top); }
@@ -585,10 +585,10 @@
             .progress-bar span { display: block; }
         }
 
-        /* --- MODO YOUTOO: exploración audiovisual original --- */
+        /* --- MODO YOUTOO: exploraciÃ³n audiovisual original --- */
         body.mode-youtoo { --bg-black: #070a0b; --bg-dark: #101516; --bg-card: #18211f; --bg-hover: #24322e; --accent: #1db954; --accent-hover: #1ed760; --accent-glow: rgba(29,185,84,.34); --accent-2: #29b6f6; --border-soft: rgba(180,220,202,.13); }
         body.mode-youtoo .sidebar { width: 265px; background: rgba(10,10,18,.94); padding: 21px 17px; gap: 28px; }
-        body.mode-youtoo .sidebar::after { content: 'VIDEO · AUDIO · CREADORES'; color: #72738f; font-weight: 800; font-size: .58rem; letter-spacing: .13em; margin-top: auto; padding: 0 10px 6px; }
+        body.mode-youtoo .sidebar::after { content: 'VIDEO Â· AUDIO Â· CREADORES'; color: #72738f; font-weight: 800; font-size: .58rem; letter-spacing: .13em; margin-top: auto; padding: 0 10px 6px; }
         body.mode-youtoo .logo { font-size: 1.5rem; padding: 0 10px; }
         body.mode-youtoo .brand-nowarfi { display: none; }
         .brand-youtoo { display: none; align-items: center; min-width: 0; border: 0; padding: 0; margin: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
@@ -738,7 +738,7 @@
         @media (max-width: 430px) { .knowledge-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .knowledge-candidate-card { padding: 6px 6px 9px; border-radius: 11px; } .knowledge-candidate-badge { font-size: .5rem; } .knowledge-candidate-title { font-size: .67rem; } .knowledge-candidate-artist { font-size: .61rem; } .knowledge-candidate-meta { font-size: .54rem; } .knowledge-candidate-key { font-size: .49rem; } }
         .taste-action.primary { border-color: rgba(94,234,212,.4); color: #09111a; background: #5eead4; }
         .taste-action.danger { border-color: rgba(255,123,144,.35); color: #ffc2cd; }
-        /* Navegación completa de Nowarfy: solo estado local y acciones ya disponibles en el cliente. */
+        /* NavegaciÃ³n completa de Nowarfy: solo estado local y acciones ya disponibles en el cliente. */
         body.mode-youtoo .sidebar { min-height: 0; padding: 18px 14px calc(var(--player-height) + 18px); gap: 16px; overflow-y: auto; overscroll-behavior: contain; scroll-padding-bottom: calc(var(--player-height) + 18px); }
         body.mode-youtoo .logo { display: flex; align-items: center; min-height: 38px; }
         .brand-youtoo small { color: #8f90aa; font: 800 .62rem 'Manrope', sans-serif; letter-spacing: .08em; }
@@ -844,7 +844,7 @@
             .video-stage-info { padding: 15px; }
             .video-stage { scroll-margin-top: 70px; }
         }
-        /* --- Pulido visual YouToo: profundidad, atmósfera y superficies suaves --- */
+        /* --- Pulido visual YouToo: profundidad, atmÃ³sfera y superficies suaves --- */
         body.mode-youtoo {
             --bg-black: #070a0b;
             --bg-dark: #0b1211;
@@ -982,7 +982,7 @@
             body.mode-youtoo .nav-links { display: grid; grid-template-columns: 1fr; gap: 4px; }
             body.mode-youtoo .nav-links li { display: flex; align-items: center; gap: 9px; min-height: 42px; padding: 9px 10px; font-size: .78rem; }
             body.mode-youtoo .nav-links li span { display: inline; }
-            /* Gana a la regla heredada del layout horizontal móvil que ocultaba estos textos. */
+            /* Gana a la regla heredada del layout horizontal mÃ³vil que ocultaba estos textos. */
             body.mode-youtoo .nowarfy-nav-group .nav-links li span { display: inline; }
             /* La regla horizontal anterior tiene mayor especificidad; esta la vence dentro del panel. */
             body.mode-youtoo .nowarfy-nav-group .nav-links { display: grid; grid-template-columns: 1fr; flex-direction: column; width: 100%; }
@@ -1020,8 +1020,8 @@
         }
 
         /* MOBILE BASELINE: overrides finales y deliberadamente agrupados para evitar
-           que las reglas responsive anteriores dejen zonas táctiles o alturas
-           diferentes según el orden de carga del CSS. */
+           que las reglas responsive anteriores dejen zonas tÃ¡ctiles o alturas
+           diferentes segÃºn el orden de carga del CSS. */
         @media (max-width: 768px) {
             body.mode-youtoo .content-area {
                 padding-bottom: calc(var(--player-height) + 34px + var(--safe-area-bottom));
@@ -1105,6 +1105,3 @@
             .nowarfy-device-dock-fab:hover { transform: none; }
         }
 
-/* fix palabras que se rompen */
-h1,h2,h3,.card-title,.section-title,.classic-title { overflow-wrap: break-word; word-break: normal; hyphens: none; }
-.brand-lockup-text, .brand-nowarfi { white-space: nowrap; }
