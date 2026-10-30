@@ -46,6 +46,14 @@ const NOWARFY_REMOTE_DEVICE_STALE_MS = 2 * 60 * 1000;
 const NOWARFY_REMOTE_DEVICE_KEY = 'nowarfy_remote_device_key_v1';
 const nowarfyRemoteDeviceKey = localStorage.getItem(NOWARFY_REMOTE_DEVICE_KEY) || (() => { const key = (crypto.randomUUID?.() || `${Date.now()}-${Math.random()}-${Math.random()}`).replace(/-/g, ''); localStorage.setItem(NOWARFY_REMOTE_DEVICE_KEY, key); return key; })();
 
+// --- DIAGNÓSTICO DE SINCRONIZACIÓN (solo lectura) ---
+// No altera el protocolo remoto: únicamente observa el estado que ya circula.
+let nowarfyRemoteDiagTimer = null;
+let nowarfyRemoteLastStateAt = 0;
+let nowarfyRemoteLastPublishAt = 0;
+let nowarfyRemoteLastCommandLabel = '';
+const nowarfyRemoteDiagEvents = [];
+
 function authStatus(message, isError = false, loading = false) {
     const target = document.getElementById('nowarfyAuthStatus');
     if (!target) return;
@@ -271,12 +279,16 @@ function openNowarfyAuth() {
         void initNowarfyAuth();
     }
     modal.querySelector('input:not([disabled])')?.focus();
+    // Si el diagnóstico quedó abierto, retoma el refresco al reabrir el modal.
+    if (document.getElementById('nowarfyRemoteDiag')?.open) onNowarfyRemoteDiagToggle();
 }
 function closeNowarfyAuth() {
     const modal = document.getElementById('nowarfyAuthModal');
     if (!modal || modal.hidden) return;
     modal.hidden = true;
     document.body.classList.remove('auth-modal-open');
+    // El diagnóstico no debe seguir refrescando con el modal cerrado.
+    if (nowarfyRemoteDiagTimer) { clearInterval(nowarfyRemoteDiagTimer); nowarfyRemoteDiagTimer = null; }
     authStatus('');
 }
 async function submitNowarfyAuth(mode) {
@@ -446,6 +458,7 @@ async function setupNowarfyRemoteControl() {
                 nowarfyRemoteSession = payload.new;
                 nowarfyRemoteIsPlayer = payload.new.active_device_id === nowarfyRemoteDeviceId;
                 updateRemoteShadowTimer();
+                if (wasPlayer !== nowarfyRemoteIsPlayer) nowarfyRemoteDiagLog('Cambio de rol', `${wasPlayer ? 'reproductor' : 'control'} → ${nowarfyRemoteIsPlayer ? 'reproductor' : 'control'} · v${payload.new.version ?? 0}`);
                 if (wasPlayer && !nowarfyRemoteIsPlayer) { stopAll(); isPlaying = false; updateIcon(); setTrackLoading(false); }
                 updateNowarfyAuthUI();
                 if (payload.new.state) updateRemoteControlsFromState(payload.new.state);
@@ -508,7 +521,7 @@ function toggleNowarfyDevicePicker() {
     picker.hidden = !picker.hidden;
     if (!picker.hidden) void refreshNowarfyRemoteDevices();
 }
-async function teardownNowarfyRemoteControl() { if (nowarfyRemoteStateTimer) clearInterval(nowarfyRemoteStateTimer); if (nowarfyDeviceRefreshTimer) clearInterval(nowarfyDeviceRefreshTimer); nowarfyRemoteStateTimer = null; nowarfyDeviceRefreshTimer = null; if (nowarfyRemoteShadowTimer) clearInterval(nowarfyRemoteShadowTimer); nowarfyRemoteShadowTimer = null; nowarfyRemoteDevices = []; nowarfyRemoteBroadcastReady = false; nowarfyBroadcastChannelReady = false; nowarfyRemoteSeenCommandIds.clear(); if (nowarfyBroadcastChannel) { nowarfyBroadcastChannel.close(); nowarfyBroadcastChannel = null; } if (nowarfyRemoteChannel && nowarfySupabase) await nowarfySupabase.removeChannel(nowarfyRemoteChannel); nowarfyRemoteChannel = null; nowarfyRemoteSession = null; nowarfyRemoteShadowSong = null; nowarfyRemoteShadowState = null; nowarfyRemoteDeviceId = null; nowarfyRemoteIsPlayer = false; }
+async function teardownNowarfyRemoteControl() { if (nowarfyRemoteDiagTimer) { clearInterval(nowarfyRemoteDiagTimer); nowarfyRemoteDiagTimer = null; } const diagPanel = document.getElementById('nowarfyRemoteDiag'); if (diagPanel) diagPanel.open = false; if (nowarfyRemoteStateTimer) clearInterval(nowarfyRemoteStateTimer); if (nowarfyDeviceRefreshTimer) clearInterval(nowarfyDeviceRefreshTimer); nowarfyRemoteStateTimer = null; nowarfyDeviceRefreshTimer = null; if (nowarfyRemoteShadowTimer) clearInterval(nowarfyRemoteShadowTimer); nowarfyRemoteShadowTimer = null; nowarfyRemoteDevices = []; nowarfyRemoteBroadcastReady = false; nowarfyBroadcastChannelReady = false; nowarfyRemoteSeenCommandIds.clear(); if (nowarfyBroadcastChannel) { nowarfyBroadcastChannel.close(); nowarfyBroadcastChannel = null; } if (nowarfyRemoteChannel && nowarfySupabase) await nowarfySupabase.removeChannel(nowarfyRemoteChannel); nowarfyRemoteChannel = null; nowarfyRemoteSession = null; nowarfyRemoteShadowSong = null; nowarfyRemoteShadowState = null; nowarfyRemoteDeviceId = null; nowarfyRemoteIsPlayer = false; }
 async function claimNowarfyPlayer() { return selectNowarfyPlaybackDevice(nowarfyRemoteDeviceId); }
 async function selectNowarfyPlaybackDevice(deviceId) {
     if (nowarfyClaimInFlight) return;
@@ -526,6 +539,7 @@ async function selectNowarfyPlaybackDevice(deviceId) {
         if (result.error) throw result.error;
         if (!result.data || result.data.active_device_id !== deviceId) throw new Error('Supabase no confirmó el dispositivo elegido.');
         nowarfyRemoteSession = result.data;
+        nowarfyRemoteDiagLog('Handoff solicitado', `→ ${nowarfyRemoteDiagShortId(deviceId)} · v${result.data.version ?? 0}`);
         const wasLocalPlayer = nowarfyRemoteIsPlayer;
         nowarfyRemoteIsPlayer = deviceId === nowarfyRemoteDeviceId;
         updateRemoteShadowTimer();
@@ -559,6 +573,7 @@ async function releaseNowarfyPlayer() { if (!nowarfySupabase || !nowarfyRemoteSe
 async function publishNowarfyRemoteState() {
     if (!nowarfySupabase || !nowarfyRemoteSession || !nowarfyRemoteIsPlayer) return;
     const state = remoteStateSnapshot();
+    nowarfyRemoteLastPublishAt = Date.now();
     const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
     // Enviar primero por BroadcastChannel para respuesta instantánea en tabs del mismo navegador
     if (nowarfyBroadcastChannelReady && nowarfyBroadcastChannel) {
@@ -609,6 +624,7 @@ function updateRemoteShadowProgress() {
 }
 function updateRemoteControlsFromState(state, forceQueue = false) {
     if (!state) return;
+    if (!nowarfyRemoteIsPlayer) nowarfyRemoteLastStateAt = Date.now();
     if (!nowarfyRemoteIsPlayer) nowarfyRemoteShadowState = { ...state };
     if ((!nowarfyRemoteIsPlayer || forceQueue) && Array.isArray(state.playlist) && state.playlist.length) {
         const remoteQueue = state.playlist.map(item => ({ ...item, _qid: item._qid || queueIdCounter++ })).filter(item => item.url);
@@ -632,6 +648,70 @@ function updateRemoteControlsFromState(state, forceQueue = false) {
     const volume = document.getElementById('volumeSlider');
     if (volume && document.activeElement !== volume && Number.isFinite(Number(state.volume))) { volume.value = Number(state.volume) / 100; volume.style.background = `linear-gradient(to right, var(--accent) ${Number(state.volume)}%, #535353 ${Number(state.volume)}%)`; }
 }
+function nowarfyRemoteDiagLog(label, detail = '') {
+    nowarfyRemoteDiagEvents.unshift({ at: Date.now(), label, detail });
+    if (nowarfyRemoteDiagEvents.length > 6) nowarfyRemoteDiagEvents.length = 6;
+}
+function nowarfyRemoteDiagAge(timestamp) {
+    if (!timestamp) return '—';
+    const seconds = Math.max(0, Math.round((Date.now() - timestamp) / 1000));
+    return seconds < 1 ? 'ahora' : `hace ${seconds}s`;
+}
+function nowarfyRemoteDiagShortId(value) {
+    return value ? String(value).slice(0, 8) : '—';
+}
+function onNowarfyRemoteDiagToggle() {
+    const panel = document.getElementById('nowarfyRemoteDiag');
+    if (nowarfyRemoteDiagTimer) { clearInterval(nowarfyRemoteDiagTimer); nowarfyRemoteDiagTimer = null; }
+    if (!panel || !panel.open) return;
+    renderNowarfyRemoteDiag();
+    // Solo refresca mientras el panel está abierto y visible en este dispositivo.
+    nowarfyRemoteDiagTimer = setInterval(renderNowarfyRemoteDiag, 500);
+    nowarfyRemoteDiagLog('Diagnóstico abierto', `${nowarfyRemoteDevices.length} dispositivos visibles`);
+}
+function renderNowarfyRemoteDiag() {
+    if (!document.getElementById('nowarfyRemoteDiagLog')) return;
+    const set = (id, value) => { const el = document.getElementById(id); if (el && el.textContent !== value) el.textContent = value; };
+    // El snapshot toca el reproductor; si un módulo aún no cargó, el panel no debe romperse.
+    let state = null;
+    try { state = nowarfyRemoteIsPlayer ? remoteStateSnapshot() : (nowarfyRemoteShadowState || nowarfyRemoteSession?.state || null); } catch (_) { state = nowarfyRemoteShadowState || null; }
+    const duration = Number(state?.duration) || 0;
+    const position = Number(state?.position) || 0;
+    const heartbeat = nowarfyRemoteIsPlayer ? nowarfyRemoteLastPublishAt : nowarfyRemoteLastStateAt;
+    set('ndRol', !nowarfyAuthUser ? 'sin sesión' : nowarfyRemoteIsPlayer ? 'reproductor' : 'control');
+    set('ndDevice', nowarfyRemoteDiagShortId(nowarfyRemoteDeviceId));
+    set('ndSession', nowarfyRemoteDiagShortId(nowarfyRemoteSession?.id));
+    set('ndVersion', nowarfyRemoteSession ? String(nowarfyRemoteSession.version ?? 0) : '—');
+    set('ndRealtime', nowarfyRemoteBroadcastReady ? 'conectado' : 'sin conexión');
+    set('ndTabs', nowarfyBroadcastChannelReady ? 'activo' : 'no');
+    set('ndState', state ? `${format(position)} / ${format(duration)} · ${nowarfyRemoteIsPlayer ? 'publicado' : 'recibido'} ${nowarfyRemoteDiagAge(heartbeat)}` : '—');
+    set('ndQueue', `${Array.isArray(queue) ? queue.length : 0} en cola · ${nowarfyPendingRemoteCommands.length} pendientes`);
+    set('ndCommand', nowarfyRemoteLastCommandLabel || '—');
+    const list = document.getElementById('nowarfyRemoteDiagLog');
+    list.innerHTML = nowarfyRemoteDiagEvents.length
+        ? nowarfyRemoteDiagEvents.map(event => `<li><time>${new Date(event.at).toLocaleTimeString()}</time> <strong>${escapeHtml(event.label)}</strong>${event.detail ? ` <span>${escapeHtml(event.detail)}</span>` : ''}</li>`).join('')
+        : '<li class="is-empty">Todavía no hay eventos.</li>';
+}
+async function copyNowarfyRemoteDiag() {
+    const panel = document.getElementById('nowarfyRemoteDiag');
+    if (!panel) return;
+    const labels = [...panel.querySelectorAll('.nowarfy-remote-diag-grid span')].map(el => el.textContent);
+    const values = [...panel.querySelectorAll('.nowarfy-remote-diag-grid code')].map(el => el.textContent);
+    const events = nowarfyRemoteDiagEvents.map(event => `${new Date(event.at).toLocaleTimeString()} ${event.label} ${event.detail}`.replace(/\s+$/, ''));
+    const text = [
+        `Nowarfy · diagnóstico remoto · ${new Date().toISOString()}`,
+        ...labels.map((label, index) => `${label}: ${values[index] || '—'}`),
+        '',
+        'Eventos:',
+        ...(events.length ? events : ['sin eventos'])
+    ].join('\n');
+    try {
+        await navigator.clipboard.writeText(text);
+        showToast('Diagnóstico copiado al portapapeles', 'fa-copy');
+    } catch (_) {
+        showToast('No se pudo copiar el diagnóstico', 'fa-triangle-exclamation');
+    }
+}
 async function sendNowarfyCommand(type, value = null, optimisticUpdate = false) {
     if (!nowarfySupabase || !nowarfyAuthUser || !nowarfyRemoteSession) return;
     if (nowarfyRemoteIsPlayer) { 
@@ -646,6 +726,8 @@ async function sendNowarfyCommand(type, value = null, optimisticUpdate = false) 
     
     const commandId = `${nowarfyRemoteDeviceId || 'device'}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const command = { type, value, commandId };
+    nowarfyRemoteLastCommandLabel = `${type}${value === null || value === undefined ? '' : ` (${typeof value === 'object' ? 'objeto' : value})`} · enviado`;
+    nowarfyRemoteDiagLog('Comando enviado', `${type} → ${nowarfyRemoteDiagShortId(nowarfyRemoteSession.active_device_id)}`);
     const isRealtimeCommand = ['volume', 'seekPercent', 'seekDelta'].includes(type);
     let broadcastSent = false;
     // Enviar primero por BroadcastChannel para respuesta instantánea en tabs del mismo navegador
@@ -710,6 +792,8 @@ async function unlockNowarfyHandoff() {
 async function executeNowarfyRemoteCommand(command) {
     if (!nowarfyRemoteIsPlayer) return;
     const type = command.type;
+    nowarfyRemoteLastCommandLabel = `${type}${command.value === null || command.value === undefined ? '' : ' (valor)'} · recibido`;
+    nowarfyRemoteDiagLog('Comando recibido', String(type || 'sin tipo'));
     if (type === 'handoff') {
         const state = command.state || nowarfyRemoteSession?.state || {};
         if (Array.isArray(state.playlist) && state.playlist.length) updateRemoteControlsFromState(state, true);

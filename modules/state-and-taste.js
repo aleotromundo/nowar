@@ -112,10 +112,37 @@ let nowarfyTasteSyncTimer = null;
 let nowarfyTasteSyncInFlight = false;
 const EMPTY_TASTE = Object.freeze({ version: 3, personalization: true, searches: [], plays: [], channels: [], playlists: [] });
 
-const audioEl = document.getElementById('audio-element');
-const nextAudioEl = document.getElementById('audio-element-next');
-const freeVideoEl = document.getElementById('freeVideoPlayer');
+// Son `let` porque el ecualizador puede necesitar reemplazar el elemento cuando
+// una pista sin CORS quedaría en silencio al pasar por Web Audio.
+let audioEl = document.getElementById('audio-element');
+let nextAudioEl = document.getElementById('audio-element-next');
+let freeVideoEl = document.getElementById('freeVideoPlayer');
 let activeAudioEl = audioEl;
+
+// Un <audio> conectado a Web Audio queda ruteado para siempre. Si después llega
+// una pista de otro origen sin CORS, el navegador la reproduce en silencio y no
+// hay forma de deshacerlo. Reemplazar el elemento devuelve la reproducción normal.
+function nowarfyRebuildMediaElement(media) {
+    if (!media || !media.parentNode) return media;
+    const fresh = document.createElement(media.tagName.toLowerCase());
+    Array.from(media.attributes).forEach(attr => {
+        if (attr.name === 'src' || attr.name === 'crossorigin') return;
+        if (attr.name.startsWith('data-')) return;
+        fresh.setAttribute(attr.name, attr.value);
+    });
+    fresh.volume = media.volume;
+    fresh.muted = media.muted;
+    try { media.pause(); } catch (_) {}
+    media.removeAttribute('src');
+    try { media.load(); } catch (_) {}
+    media.replaceWith(fresh);
+    if (media === audioEl) audioEl = fresh;
+    if (media === nextAudioEl) nextAudioEl = fresh;
+    if (media === freeVideoEl) freeVideoEl = fresh;
+    if (media === activeAudioEl) activeAudioEl = fresh;
+    document.dispatchEvent(new CustomEvent('nowarfy:media-rebuilt', { detail: { media: fresh, previous: media } }));
+    return fresh;
+}
 let mediaSessionHandlersReady = false;
 let mediaSessionSongKey = '';
 let crossfadeInProgress = false;

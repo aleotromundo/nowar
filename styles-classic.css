@@ -79,6 +79,16 @@
     writing-mode: vertical-lr; direction: rtl; height: 96px; width: 18px; accent-color: #5eead4;
 }
 .classic-note { color: #6b7088; font-size: .68rem; }
+.classic-eq-status { margin: 0; color: #8b90a8; font-size: .7rem; line-height: 1.45; }
+.classic-eq-status[data-tone="warn"] { color: #f3c987; }
+.classic-eq-status[data-tone="error"] { color: #ff9aa2; }
+.classic-eq-alt {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 32px;
+    border: 1px dashed #2f5f58; border-radius: 8px; background: rgba(94, 234, 212, .06);
+    color: #bdf7ee; font: inherit; font-size: .74rem; font-weight: 700; cursor: pointer;
+}
+.classic-eq-alt:hover:not(:disabled) { border-color: #5eead4; background: rgba(94, 234, 212, .14); }
+.classic-eq-alt:disabled { cursor: progress; opacity: .55; }
 
 .classic-lists { display: grid; gap: 8px; }
 .classic-library { display: flex; gap: 6px; flex-wrap: wrap; }

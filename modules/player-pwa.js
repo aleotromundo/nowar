@@ -166,6 +166,15 @@ function setupBackgroundPlaybackSupport() {
         media.addEventListener('pause', updatePlaybackState);
         media.addEventListener('ended', updatePlaybackState);
     });
+    // El ecualizador puede reemplazar un <audio> para recuperar el audio normal.
+    document.addEventListener('nowarfy:media-rebuilt', (event) => {
+        const media = event.detail?.media;
+        if (!media) return;
+        media.setAttribute('preload', 'metadata');
+        media.addEventListener('play', updatePlaybackState);
+        media.addEventListener('pause', updatePlaybackState);
+        media.addEventListener('ended', updatePlaybackState);
+    });
     if ('mediaSession' in navigator) {
         try { navigator.mediaSession.playbackState = 'none'; } catch (e) {}
     }

@@ -292,6 +292,22 @@
                     <div class="nowarfy-device-picker-title"><span>Dispositivos conectados</span><small id="nowarfyDevicePickerHint">Actualizando…</small></div>
                     <div id="nowarfyDeviceList" class="nowarfy-device-list"></div>
                 </div>
+                <details class="nowarfy-remote-diag" id="nowarfyRemoteDiag" ontoggle="onNowarfyRemoteDiagToggle()">
+                    <summary><i class="fas fa-wave-square"></i> Diagnóstico de sincronización</summary>
+                    <div class="nowarfy-remote-diag-grid">
+                        <span>Rol</span><code id="ndRol">—</code>
+                        <span>Dispositivo</span><code id="ndDevice">—</code>
+                        <span>Sesión</span><code id="ndSession">—</code>
+                        <span>Versión</span><code id="ndVersion">—</code>
+                        <span>Realtime</span><code id="ndRealtime">—</code>
+                        <span>Pestañas</span><code id="ndTabs">—</code>
+                        <span>Estado</span><code id="ndState">—</code>
+                        <span>Cola</span><code id="ndQueue">—</code>
+                        <span>Comando</span><code id="ndCommand">—</code>
+                    </div>
+                    <ol class="nowarfy-remote-diag-log" id="nowarfyRemoteDiagLog"><li class="is-empty">Todavía no hay eventos.</li></ol>
+                    <button type="button" class="nowarfy-remote-diag-copy" onclick="copyNowarfyRemoteDiag()"><i class="fas fa-copy"></i> Copiar diagnóstico</button>
+                </details>
                 <button type="button" id="nowarfyClaimPlayerBtn" onclick="claimNowarfyPlayer()"><i class="fas fa-broadcast-tower"></i> Reproducir en este dispositivo</button>
                 <button type="button" onclick="switchNowarfyUser()"><i class="fas fa-user-gear"></i> Cambiar de usuario</button>
                 <button type="button" onclick="signOutNowarfy()"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</button>
@@ -367,7 +383,9 @@
                     </select>
                 </div>
                 <div class="classic-eq-bands" id="classicEqBands"></div>
-                <small class="classic-note">El ecualizador solo afecta pistas de audio directo (no YouTube).</small>
+                <p class="classic-eq-status" id="classicEqStatus" role="status" aria-live="polite">El EQ se aplica a audio directo compatible. YouTube no expone su audio.</p>
+                <button type="button" class="classic-eq-alt" id="classicEqFindAudio"><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i> Buscar versión de audio del mismo tema</button>
+                <small class="classic-note">YouTube reproduce en otro sitio y no se puede ecualizar desde la página. Si la pista actual es de YouTube, buscá una versión libre para aplicarle el EQ.</small>
             </div>
             <div class="classic-lists">
                 <nav class="classic-library" aria-label="Biblioteca">

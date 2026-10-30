@@ -423,7 +423,32 @@ function nextQueueIndex() {
 
 function getStandbyAudioEl() { return activeAudioEl === audioEl ? nextAudioEl : audioEl; }
 
+// El EQ no puede ecualizar el audio de YouTube (iframe de otro origen) y necesita
+// CORS en los medios directos. Estas dos puertas avisan al módulo clásico antes de
+// cargar una pista y desactivan el crossfade mientras el EQ está encendido.
+function nowarfyEqActive() {
+    return typeof window.nowarfyEq?.isEnabled === 'function' && window.nowarfyEq.isEnabled();
+}
+// Un elemento ruteado a Web Audio no puede volver a reproducir una pista sin CORS:
+// quedaría en silencio. Mientras exista, no precargamos ni hacemos crossfade.
+function nowarfyEqRouted(media) {
+    return !!media && typeof window.nowarfyEq?.isRouted === 'function' && window.nowarfyEq.isRouted(media);
+}
+function nowarfyEqBlocksCrossfade() {
+    return nowarfyEqActive() || nowarfyEqRouted(audioEl) || nowarfyEqRouted(nextAudioEl) || nowarfyEqRouted(freeVideoEl);
+}
+function nowarfyPrepareDirectMedia(media, url) {
+    if (typeof window.nowarfyEq?.prepareMediaLoad !== 'function') return media;
+    try {
+        return window.nowarfyEq.prepareMediaLoad(media, url) || media;
+    } catch (error) {
+        console.warn('[Nowarfy] EQ: no se pudo preparar el medio:', error);
+        return media;
+    }
+}
+
 function prepareNextDirectAudio() {
+    if (nowarfyEqBlocksCrossfade()) return;
     const nextIndex = nextQueueIndex();
     const next = queue[nextIndex];
     if (nextIndex === currentIndex || !next || next.type !== 'mp3' || !next.url) return;
@@ -536,6 +561,7 @@ function finishDirectCrossfade(nextIndex, outgoing, incoming) {
 }
 
 function beginDirectAudioCrossfade() {
+    if (nowarfyEqBlocksCrossfade()) return;
     if (!continuousPlayback || crossfadeInProgress) return;
     const nextIndex = nextQueueIndex();
     const next = queue[nextIndex];
@@ -626,32 +652,46 @@ function playQueueAt(idx, options = {}) {
         showVideoStage(song, { focus: !!options.focusVideo });
         freeVideoEl.hidden = false;
         activeAudioEl = freeVideoEl;
-        freeVideoEl.src = song.url;
-        freeVideoEl.dataset.queueId = String(song._qid);
         applyVolume(parseFloat(document.getElementById('volumeSlider').value));
-        bindDirectAudioEvents(freeVideoEl);
-        freeVideoEl.onloadedmetadata = () => {
-            applyResumeSessionToMedia(freeVideoEl, song, resumeSession);
-            if (freeVideoEl === activeAudioEl && currentQueueSong()?.type === 'freevideo') renderVideoStageDetails({ ...song, duration: freeVideoEl.duration || song.duration });
-        };
-        freeVideoEl.load();
         const shouldAutoplayFreeVideo = !options.deferAutoplay && !externalAudioFocusInterrupted && resumeSession?.wasPlaying !== false;
-        if (shouldAutoplayFreeVideo) freeVideoEl.play().catch(e => { setTrackLoading(false); showToast('No se pudo reproducir este video libre', 'fa-triangle-exclamation'); });
-        else setTrackLoading(false);
+        const startFreeVideo = (media) => {
+            if (currentQueueSong()?._qid !== song._qid) return;
+            activeAudioEl = media;
+            media.src = song.url;
+            media.dataset.queueId = String(song._qid);
+            bindDirectAudioEvents(media);
+            media.onloadedmetadata = () => {
+                applyResumeSessionToMedia(media, song, resumeSession);
+                if (media === activeAudioEl && currentQueueSong()?.type === 'freevideo') renderVideoStageDetails({ ...song, duration: media.duration || song.duration });
+            };
+            media.load();
+            if (shouldAutoplayFreeVideo) media.play().catch(e => { setTrackLoading(false); showToast('No se pudo reproducir este video libre', 'fa-triangle-exclamation'); });
+            else setTrackLoading(false);
+        };
+        const preparedFreeVideo = nowarfyPrepareDirectMedia(freeVideoEl, song.url);
+        if (preparedFreeVideo && typeof preparedFreeVideo.then === 'function') preparedFreeVideo.then(startFreeVideo).catch(() => startFreeVideo(freeVideoEl));
+        else startFreeVideo(preparedFreeVideo);
     } else {
         hideVideoStage(false);
         activeAudioEl = audioEl;
         nextAudioEl.pause();
         nextAudioEl.currentTime = 0;
         nextAudioEl.dataset.queueId = '';
-        audioEl.src = song.url;
-        audioEl.dataset.queueId = String(song._qid);
         applyVolume(parseFloat(document.getElementById('volumeSlider').value));
-        bindDirectAudioEvents(audioEl);
-        audioEl.onloadedmetadata = () => applyResumeSessionToMedia(audioEl, song, resumeSession);
         const shouldAutoplayAudio = !options.deferAutoplay && !externalAudioFocusInterrupted && resumeSession?.wasPlaying !== false;
-        if (shouldAutoplayAudio) audioEl.play().catch(e => { setTrackLoading(false); showToast('No se pudo reproducir esta pista', 'fa-triangle-exclamation'); });
-        else setTrackLoading(false);
+        const startDirectAudio = (media) => {
+            if (currentQueueSong()?._qid !== song._qid) return;
+            activeAudioEl = media;
+            media.src = song.url;
+            media.dataset.queueId = String(song._qid);
+            bindDirectAudioEvents(media);
+            media.onloadedmetadata = () => applyResumeSessionToMedia(media, song, resumeSession);
+            if (shouldAutoplayAudio) media.play().catch(e => { setTrackLoading(false); showToast('No se pudo reproducir esta pista', 'fa-triangle-exclamation'); });
+            else setTrackLoading(false);
+        };
+        const preparedDirect = nowarfyPrepareDirectMedia(audioEl, song.url);
+        if (preparedDirect && typeof preparedDirect.then === 'function') preparedDirect.then(startDirectAudio).catch(() => startDirectAudio(audioEl));
+        else startDirectAudio(preparedDirect);
     }
 }
 

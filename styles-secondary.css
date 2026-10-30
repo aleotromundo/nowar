@@ -820,6 +820,41 @@ html { scroll-behavior: smooth; }
 
         .nowarfy-device-picker-title { display:flex; justify-content:space-between; gap:8px; color:#dce8ff; font-size:.78rem; font-weight:700; }
 
+        /* Diagnóstico de sincronización: colapsado por defecto, solo lectura */
+        .nowarfy-auth-account .nowarfy-remote-diag { padding: 0 10px 10px; border: 1px solid rgba(94,234,212,.18); border-radius: 12px; background: rgba(5,8,20,.32); }
+
+        .nowarfy-remote-diag summary { display: flex; align-items: center; gap: 8px; padding: 10px 0; color: #9fe9d8; font-size: .74rem; font-weight: 800; cursor: pointer; list-style: none; }
+
+        .nowarfy-remote-diag summary::-webkit-details-marker { display: none; }
+
+        .nowarfy-remote-diag summary::after { content: '\f078'; margin-left: auto; font: 900 .6rem 'Font Awesome 6 Free'; transition: transform .18s var(--ease); }
+
+        .nowarfy-remote-diag[open] summary::after { transform: rotate(180deg); }
+
+        .nowarfy-remote-diag summary:focus-visible { outline: 2px solid #5eead4; outline-offset: 3px; border-radius: 6px; }
+
+        .nowarfy-remote-diag-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin-bottom: 8px; font-size: .68rem; }
+
+        .nowarfy-remote-diag-grid span { color: #8f93a8; }
+
+        .nowarfy-remote-diag-grid code { color: #e6fffa; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .66rem; overflow-wrap: anywhere; }
+
+        .nowarfy-remote-diag-log { display: grid; gap: 3px; max-height: 128px; margin: 0 0 8px; padding: 7px 8px; overflow-y: auto; border-radius: 8px; background: rgba(2,4,12,.55); list-style: none; font-size: .63rem; }
+
+        .nowarfy-remote-diag-log li { color: #b7bccf; line-height: 1.4; }
+
+        .nowarfy-remote-diag-log time { margin-right: 5px; color: #6f7691; font-variant-numeric: tabular-nums; }
+
+        .nowarfy-remote-diag-log strong { color: #d9fff6; font-weight: 700; }
+
+        .nowarfy-remote-diag-log span { color: #8f93a8; }
+
+        .nowarfy-remote-diag-log .is-empty { color: #7a7f95; }
+
+        .nowarfy-auth-account .nowarfy-remote-diag-copy { display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 7px 9px; border: 1px solid rgba(94,234,212,.28); border-radius: 9px; color: #d8fff7; background: rgba(94,234,212,.07); font-size: .68rem; font-weight: 700; cursor: pointer; }
+
+        .nowarfy-auth-account .nowarfy-remote-diag-copy:hover { background: rgba(94,234,212,.14); }
+
         .nowarfy-qr-modal { position: fixed; z-index: 10000; inset: 0; display: grid; place-items: center; padding: 22px; background: rgba(2,3,10,.78); backdrop-filter: blur(10px); }
 
         .nowarfy-qr-dialog { position: relative; width: min(92vw, 392px); padding: 28px; border: 1px solid rgba(190,188,255,.28); border-radius: 20px; background: linear-gradient(145deg, #20213b, #0f101e); box-shadow: 0 28px 75px rgba(0,0,0,.55); text-align: center; }

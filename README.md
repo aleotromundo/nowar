@@ -58,6 +58,34 @@ vercel dev
 
 Esto levanta tanto el sitio estático como las funciones serverless con las variables de entorno definidas en un `.env.local` (ver `.env.example`).
 
+## Sincronización entre dispositivos
+
+El modo remoto usa un modelo de **un reproductor y N controles** (tipo Spotify Connect):
+
+| Tabla (Supabase, no versionada en este repo) | Uso |
+|---|---|
+| `youtoo_remote_sessions` | Una fila por usuario. `active_device_id` es el único reproductor; `state` guarda canción, cola, volumen y posición. |
+| `youtoo_remote_devices` | Dispositivos vistos en los últimos 25 s. `last_seen_at` se actualiza cada 3 s. |
+| `youtoo_remote_commands` | Comandos (`toggle`, `next`, `seekPercent`, `handoff`…) cuando el broadcast no alcanza. |
+
+Transporte: `BroadcastChannel` para pestañas del mismo navegador y Supabase Realtime para dispositivos distintos; si ninguno confirma, el comando se inserta en la tabla. El reproductor publica su estado cada 3 s con `position` + `positionAt`, así los controles calculan el progreso sin depender de su propio reloj.
+
+Los controles **no reproducen audio**: solo reflejan el estado. Para que un dispositivo reproduzca hay que elegirlo en *Cuenta → Elegir dispositivo de reproducción*, y el navegador exige una interacción previa en ese dispositivo (política de autoplay).
+
+### Diagnóstico de sincronización
+
+En *Cuenta* hay un panel colapsable (solo visible con sesión iniciada) que muestra en vivo: rol, IDs cortos de dispositivo y sesión, versión del estado, estado de Realtime y `BroadcastChannel`, posición recibida/publicada, cola, último comando y un log de los últimos 6 eventos. Sirve para ver el protocolo funcionando al cambiar de dispositivo; no modifica nada. El botón **Copiar diagnóstico** genera un texto listo para pegar en un issue.
+
+## Ecualizador
+
+La vista clásica (`modules/classic.js`) tiene un EQ de 10 bandas. Solo puede procesar **audio del mismo documento**, así que:
+
+- **Funciona** en pistas de audio directo (Openverse/Freesound, Jamendo, Commons) y en videos libres de Wikimedia Commons, siempre que el servidor responda con CORS. Antes de conectar un medio se hace una prueba `fetch` en modo CORS; si falla, la pista se reproduce sin EQ y se avisa en el panel.
+- **No funciona con YouTube**: el reproductor vive en un iframe de otro origen y la IFrame API no expone su audio. No hay forma de ecualizarlo desde la página.
+- **Puente de audio**: con una pista de YouTube en reproducción, el botón *Buscar versión de audio del mismo tema* busca el mismo título en Openverse y Jamendo, elige el candidato con mejor coincidencia de título/artista/duración, verifica CORS y reemplaza la entrada de la cola para que el EQ sí se aplique.
+
+El ecualizador y el crossfade son excluyentes: mientras el EQ está activo se desactiva el crossfade para no rutear dos elementos a la vez.
+
 ## Despliegue
 
 El repo está conectado a Vercel. Cada push a `main` dispara un deploy automático según `vercel.json` (sin build command, `outputDirectory` es la raíz del repo).
