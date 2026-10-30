@@ -352,9 +352,9 @@ function updateMediaSession(song) {
     try {
         const nextSongKey = `${song.type || ''}:${song.url || ''}`;
         navigator.mediaSession.metadata = new MediaMetadata({
-            title: song.title || 'Nowarfy YouToo',
-            artist: song.artist || song.channelTitle || 'Nowarfy',
-            album: 'Nowarfy YouToo',
+            title: song.title || 'YouToo',
+            artist: song.artist || song.channelTitle || 'YouToo',
+            album: 'YouToo',
             artwork: song.img ? [{ src: song.img, sizes: '512x512', type: 'image/png' }] : []
         });
         if (!mediaSessionHandlersReady || mediaSessionSongKey !== nextSongKey) {
@@ -524,7 +524,7 @@ function setupInstallableApp() {
     window.addEventListener('appinstalled', () => {
         deferredInstallPrompt = null;
         if (installButton) installButton.hidden = true;
-        showToast('Nowarfy ya está instalada', 'fa-circle-check');
+        showToast('YouToo ya está instalada', 'fa-circle-check');
     });
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
     if (installButton && isIOS && !isStandaloneApp()) installButton.hidden = false;

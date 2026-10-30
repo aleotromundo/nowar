@@ -1,4 +1,4 @@
-# Nowarfy · YouToo
+# YouToo
 
 Biblioteca audiovisual de rock, metal, videos, música y canales públicos. PWA instalable construida como sitio estático (HTML/CSS/JS) con funciones serverless en Vercel para búsqueda, reservas y letras de canciones.
 
